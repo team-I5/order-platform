@@ -25,7 +25,7 @@ public class Order extends BaseEntity {
     @SequenceGenerator(
         name = "p_orders_seq",  // JPA가 식별하기 위한 name
         sequenceName = "p_orders_seq", //데이터베이스에 저장되는 name
-        allocationSize = 30
+        allocationSize = 30 // Hibernate가 미리 확보해둘 PK 개수 메모리에 저장
     )
     @UuidGenerator
     @Column(name = "orderId", nullable = false, updatable = false, columnDefinition = "uuid")
@@ -63,3 +63,5 @@ public class Order extends BaseEntity {
     private String memo;                  // 요청사항
 
 }
+
+// TODO: 연관관계 설정

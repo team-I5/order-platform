@@ -25,7 +25,7 @@ public class Payment extends BaseEntity {
     @SequenceGenerator(
         name = "p_payments_seq",  // JPA가 식별하기 위한 name
         sequenceName = "p_payments_seq", //데이터베이스에 저장되는 name
-        allocationSize = 30
+        allocationSize = 30  // Hibernate가 미리 확보해둘 PK 개수 메모리에 저장
     )
     @UuidGenerator
     @Column(name = "paymentId", nullable = false, updatable = false, columnDefinition = "uuid")
@@ -41,3 +41,5 @@ public class Payment extends BaseEntity {
     @Column(name = "status", nullable = false, length = 40)
     private PaymentStatus status;               // 결제상태
 }
+
+// TODO: 연관관계 설정

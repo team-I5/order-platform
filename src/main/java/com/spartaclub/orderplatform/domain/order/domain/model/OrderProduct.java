@@ -23,7 +23,7 @@ public class OrderProduct extends BaseEntity {
     @SequenceGenerator(
         name = "p_orders_products_seq",  // JPA가 식별하기 위한 name
         sequenceName = "p_orders_products_seq", //데이터베이스에 저장되는 name
-        allocationSize = 30
+        allocationSize = 30  // Hibernate가 미리 확보해둘 PK 개수 메모리에 저장
     )
     @UuidGenerator
     @Column(name = "orderProductId", nullable = false, updatable = false, columnDefinition = "uuid")
@@ -54,3 +54,5 @@ public class OrderProduct extends BaseEntity {
     private Long deletedId;                 // 삭제자 ID (BIGINT)
 
 }
+
+// TODO: 연관관계 설정
