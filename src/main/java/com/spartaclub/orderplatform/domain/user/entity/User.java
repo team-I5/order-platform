@@ -15,7 +15,7 @@ import jakarta.persistence.*; // JPA 어노테이션들 임포트 (Spring Boot 3
  * @date 2025-09-30(화)
  */
 @Entity // JPA 엔티티 클래스임을 나타내는 어노테이션
-@Table(name = "p_user") // 데이터베이스 테이블명을 "p_user"로 지정 (p_ 접두사 규칙 적용, 단수형)
+@Table(name = "p_users") // 데이터베이스 테이블명을 "p_user"로 지정 (p_ 접두사 규칙 적용, 단수형)
 @Getter // Lombok - 모든 필드에 대한 getter 메서드 자동 생성
 @Setter // Lombok - 모든 필드에 대한 setter 메서드 자동 생성
 @NoArgsConstructor // Lombok - 기본 생성자 자동 생성 (JPA에서 필요)
