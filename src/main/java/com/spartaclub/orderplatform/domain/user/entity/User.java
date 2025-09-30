@@ -1,21 +1,20 @@
 package com.spartaclub.orderplatform.domain.user.entity; // User 엔티티 패키지 선언
 
-import com.spartaclub.orderplatform.global.entity.BaseEntity; // BaseEntity 클래스 임포트
-import lombok.Getter; // Lombok - getter 메서드 자동 생성
-import lombok.NoArgsConstructor; // Lombok - 기본 생성자 자동 생성
-import lombok.Setter; // Lombok - setter 메서드 자동 생성
-
-import jakarta.persistence.*; // JPA 어노테이션들 임포트 (Spring Boot 3.x에서는 jakarta 사용)
+import com.spartaclub.orderplatform.global.entity.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * 회원 엔티티 클래스
  * 회원가입, 로그인, 사용자 관리 기능을 위한 사용자 정보 저장
- * 
+ *
  * @author 전우선
  * @date 2025-09-30(화)
  */
 @Entity // JPA 엔티티 클래스임을 나타내는 어노테이션
-@Table(name = "p_users") // 데이터베이스 테이블명을 "p_user"로 지정 (p_ 접두사 규칙 적용, 단수형)
+@Table(name = "p_users") // 데이터베이스 테이블명을 "p_user"로 지정 (p_ 접두사 규칙 적용, 복수형)
 @Getter // Lombok - 모든 필드에 대한 getter 메서드 자동 생성
 @Setter // Lombok - 모든 필드에 대한 setter 메서드 자동 생성
 @NoArgsConstructor // Lombok - 기본 생성자 자동 생성 (JPA에서 필요)
