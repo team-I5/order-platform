@@ -12,12 +12,14 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "p_payments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class Payment extends BaseEntity {
 
     @Id

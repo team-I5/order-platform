@@ -10,12 +10,14 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "p_orders_products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class OrderProduct extends BaseEntity {
 
     @Id
