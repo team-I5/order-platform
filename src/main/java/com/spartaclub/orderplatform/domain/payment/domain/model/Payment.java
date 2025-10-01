@@ -28,8 +28,9 @@ public class Payment extends BaseEntity {
     @Column(name = "paymentId", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID paymentId;               // 결제ID
 
-    @Column(name = "orderId", nullable = false, columnDefinition = "uuid")
-    private UUID orderId;                 // 주문ID(FK)
+//    @Column(name = "orderId", nullable = false, columnDefinition = "uuid")
+//    private UUID orderId;                 // 주문ID(FK)
+    // 임시 비활성화
 
     @Column(name = "paymentAmount", nullable = false)
     private Long paymentAmount;           // 결제금액
@@ -40,7 +41,7 @@ public class Payment extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "orderId", nullable = false, columnDefinition = "uuid")
-    private Order order;
+    private Order order;     // 주문 엔티티 연관관계 1:1
 }
 
 // TODO: 연관관계 설정

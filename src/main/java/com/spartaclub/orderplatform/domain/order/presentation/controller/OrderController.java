@@ -1,0 +1,36 @@
+package com.spartaclub.orderplatform.domain.order.presentation.controller;
+
+import com.spartaclub.orderplatform.domain.order.application.OrderService;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
+import com.spartaclub.orderplatform.global.dto.ApiResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/v1/orders")
+@RequiredArgsConstructor
+public class OrderController {
+
+    private final OrderService orderService;
+
+    // 주문 생성 API
+    @PostMapping("")
+    public ResponseEntity<ApiResponse<PlaceOrderResponseDto>> placeOrder(
+        @Valid @RequestBody PlaceOrderRequestDto requestDto) {
+
+        PlaceOrderResponseDto responseDto = orderService.placeOrder(requestDto);
+
+        String location = "/v1/orders/" + responseDto.orderId().toString(); // 헤더 Location
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .header("Location", location)
+            .body(ApiResponse.success(responseDto));
+    }
+}
