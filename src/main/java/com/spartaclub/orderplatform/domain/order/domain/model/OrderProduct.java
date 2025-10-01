@@ -3,10 +3,7 @@ package com.spartaclub.orderplatform.domain.order.domain.model;
 import com.spartaclub.orderplatform.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -21,12 +18,6 @@ import org.hibernate.annotations.UuidGenerator;
 public class OrderProduct extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "p_orders_products_seq")
-    @SequenceGenerator(
-        name = "p_orders_products_seq",  // JPA가 식별하기 위한 name
-        sequenceName = "p_orders_products_seq", //데이터베이스에 저장되는 name
-        allocationSize = 30  // Hibernate가 미리 확보해둘 PK 개수 메모리에 저장
-    )
     @UuidGenerator
     @Column(name = "orderProductId", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID orderProductId;
