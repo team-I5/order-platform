@@ -1,20 +1,52 @@
 package com.spartaclub.orderplatform.global.exception; // 패키지 선언 - global.exception 패키지에 위치
 
-import com.spartaclub.orderplatform.global.dto.ApiResponse; // 공통 응답 DTO 클래스 임포트
-import org.springframework.http.HttpStatus; // HTTP 상태 코드 클래스 임포트
-import org.springframework.http.ResponseEntity; // HTTP 응답 엔티티 클래스 임포트
-import org.springframework.web.bind.annotation.ExceptionHandler; // 예외 처리 어노테이션 임포트
-import org.springframework.web.bind.annotation.RestControllerAdvice; // 전역 예외 처리 어노테이션 임포트
+import com.spartaclub.orderplatform.global.dto.ApiResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 간단한 전역 예외 처리 핸들러
  * 포스트맨 테스트용으로 기본적인 예외만 처리
- * 
+ *
  * @author 전우선
- * @date 2025-09-30(화)
+ * @date 2025-10-01(수)
  */
 @RestControllerAdvice // 모든 Controller에서 발생하는 예외를 전역적으로 처리하는 어노테이션
 public class GlobalExceptionHandler { // 전역 예외 처리를 담당하는 클래스
+
+    /**
+     * 유효성 검증 실패 예외 처리 메서드
+     *
+     * @Valid 어노테이션으로 인한 검증 실패 시 호출
+     * 클라이언트 친화적인 에러 메시지 형태로 변환
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class) // @Valid 검증 실패 예외 처리
+    public ResponseEntity<ApiResponse<Map<String, Object>>> handleValidationException(MethodArgumentNotValidException ex) {
+
+        // 유효성 검증 에러 정보를 담을 맵 생성
+        Map<String, Object> errorDetails = new HashMap<>(); // 에러 상세 정보를 저장할 맵
+
+        // 에러 필드별로 메시지 추출
+        Map<String, String> fieldErrors = new HashMap<>(); // 필드별 에러 메시지 맵
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) { // 모든 필드 에러 순회
+            fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage()); // 필드명과 에러 메시지 저장
+        }
+
+        // 응답 데이터 구성
+        errorDetails.put("message", "유효성 검사 실패"); // 기본 에러 메시지
+        errorDetails.put("errors", fieldErrors); // 필드별 상세 에러 정보
+
+        // 400 Bad Request로 응답 반환
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST) // HTTP 400 상태코드 설정
+                .body(ApiResponse.success(errorDetails)); // 구조화된 에러 정보와 함께 응답
+    }
 
     /**
      * 일반 예외 처리 메서드
