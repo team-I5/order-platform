@@ -118,6 +118,7 @@ public class ProductService {
     }
 
     // 상품 공개/숨김 수정 서비스 로직
+    @Transactional
     public ProductResponseDto updateProductVisibility(UUID productId) {
         // 1. productId로 상품 조회
         Product product = productRepository.findById(productId)
