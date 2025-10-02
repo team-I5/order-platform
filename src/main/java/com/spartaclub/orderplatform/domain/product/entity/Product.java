@@ -1,6 +1,6 @@
 package com.spartaclub.orderplatform.domain.product.entity;
 
-import com.spartaclub.orderplatform.global.entity.BaseEntity;
+import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
