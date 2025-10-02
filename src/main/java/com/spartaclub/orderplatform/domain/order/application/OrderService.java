@@ -2,7 +2,7 @@ package com.spartaclub.orderplatform.domain.order.application;
 
 import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
-import com.spartaclub.orderplatform.domain.order.domain.repository.OrderRepository;
+import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrderDetailRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
