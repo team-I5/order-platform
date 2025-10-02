@@ -1,7 +1,9 @@
 package com.spartaclub.orderplatform.domain.product.entity;
 
+import com.spartaclub.orderplatform.domain.product.dto.ProductUpdateRequestDto;
 import com.spartaclub.orderplatform.global.entity.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -17,7 +19,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_products")
 @Getter
-@Builder
+@Builder(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
@@ -64,5 +66,12 @@ public class Product extends BaseEntity {
     // 삭제자ID
     @Column(name = "deletedId")
     private Long deletedId;
+
+    // 상품 정보 수정 메소드
+    public void updateProduct(@Valid ProductUpdateRequestDto productUpdateRequestDto) {
+        this.productName = productUpdateRequestDto.getProductName();
+        this.price = productUpdateRequestDto.getPrice();
+        this.productDescription = productUpdateRequestDto.getProductDescription();
+    }
 }
 

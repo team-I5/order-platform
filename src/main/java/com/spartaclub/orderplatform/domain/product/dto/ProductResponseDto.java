@@ -9,7 +9,7 @@ import java.util.UUID;
  * 상품 등록 응답 Dto
  *
  * @author 류형선
- * @date 2025-10-02(목)
+ * @date 2025-10-01(수)
  */
 @Data
 @NoArgsConstructor

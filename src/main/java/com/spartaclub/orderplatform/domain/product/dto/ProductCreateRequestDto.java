@@ -10,12 +10,12 @@ import java.util.UUID;
  * 상품 등록 요청 Dto
  *
  * @author 류형선
- * @date 2025-10-02(목)
+ * @date 2025-10-01(수)
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductRequestDto {
+public class ProductCreateRequestDto {
 
     // 가게 ID
     @NotNull(message = "스토어 ID는 필수입니다.")
