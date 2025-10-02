@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.order.application.mapper;
 
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
+import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
@@ -10,7 +11,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", imports = {OrderStatus.class})
 public interface OrderMapper {
 
-    // Dto -> Entity 변환
+    // PlaceOrderRequestDto -> Order 변환
     @Mapping(target = "orderId", ignore = true)
     @Mapping(target = "user", ignore = true)    // TODO:수정 필요
     @Mapping(target = "store", ignore = true)   // TODO:수정 필요
@@ -22,5 +23,16 @@ public interface OrderMapper {
     Order toEntity(PlaceOrderRequestDto placeOrderRequestDto, Long totalPrice,
         Integer productCount);
 
+    // Order -> OrderDetailResponseDto 변환
+    @Mapping(source = "orderProducts", target = "productsList")
+    @Mapping(source = "user.userId", target = "userId")
+    @Mapping(source = "store.id", target = "storeId")
     OrderDetailResponseDto toDto(Order order);
+
+    // OrderProduct -> ProductsListItem
+    @Mapping(source = "product.productId", target = "productId")
+    @Mapping(source = "productName", target = "name")
+    @Mapping(source = "unitPrice", target = "price")
+    @Mapping(target = "totalPrice", expression = "java(op.getUnitPrice() * op.getQuantity())")
+    OrderDetailResponseDto.ProductsListItem toItem(OrderProduct op);
 }

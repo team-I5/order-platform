@@ -53,19 +53,19 @@ public class Order extends BaseEntity {
         fetch = FetchType.LAZY)
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
-    @Column(name = "totalPrice", nullable = false)
+    @Column(name = "total_price", nullable = false)
     private Long totalPrice;              // 총 금액
 
-    @Column(name = "productCount", nullable = false)
+    @Column(name = "product_count", nullable = false)
     private Integer productCount;         // 상품개수
 
-    @Column(name = "createdId", columnDefinition = "uuid")
+    @Column(name = "created_id", columnDefinition = "uuid")
     private UUID createdId;               // 생성자 ID
 
-    @Column(name = "modifiedId", columnDefinition = "uuid")
+    @Column(name = "modified_id", columnDefinition = "uuid")
     private UUID modifiedId;              // 수정자 ID
 
-    @Column(name = "deletedId", columnDefinition = "uuid")
+    @Column(name = "deleted_id", columnDefinition = "uuid")
     private UUID deletedId;               // 삭제자 ID
 
     @Column(name = "address", length = 255)
