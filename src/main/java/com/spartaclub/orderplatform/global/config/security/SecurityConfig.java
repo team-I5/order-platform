@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -38,5 +39,16 @@ public class SecurityConfig {
         
         // 설정된 보안 규칙을 바탕으로 SecurityFilterChain 객체 생성 및 반환
         return http.build();
+    }
+
+    /**
+     * BCryptPasswordEncoder 빈 생성
+     * 비밀번호 암호화를 위한 BCrypt 해시 알고리즘 인코더 제공
+     * 
+     * @return BCryptPasswordEncoder - 비밀번호 암호화 인코더
+     */
+    @Bean // Spring 컨테이너가 관리하는 빈으로 등록
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(); // BCrypt 알고리즘을 사용하는 비밀번호 인코더 생성
     }
 }
