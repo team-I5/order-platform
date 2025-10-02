@@ -23,16 +23,16 @@ public class OrderProduct extends BaseEntity {
 
     @Id
     @UuidGenerator
-    @Column(name = "orderProductId", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "order_product_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID orderProductId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false, columnDefinition = "uuid")
-    private Order orderId;                   // 주문 FK
+    private Order order;                   // 주문 FK
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false, columnDefinition = "uuid")
-    private Product productId;                 // 상품 FK
+    private Product product;                 // 상품 FK
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;               // 수량

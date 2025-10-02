@@ -36,16 +36,16 @@ public class Order extends BaseEntity {
 
     @Id
     @UuidGenerator
-    @Column(name = "orderId", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "order_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID orderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
-    private User userId;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
-    private Store storeId;
+    private Store store;
 
     @OneToMany(mappedBy = "order",
         cascade = CascadeType.ALL,        // Order 저장/삭제 시 자식도 같이

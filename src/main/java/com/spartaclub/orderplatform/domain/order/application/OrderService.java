@@ -3,13 +3,14 @@ package com.spartaclub.orderplatform.domain.order.application;
 import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.repository.OrderRepository;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrderDetailRequestDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto.OrderItemRequest;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
 import com.spartaclub.orderplatform.domain.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -37,11 +38,17 @@ public class OrderService {
             productCount += orderItem.quantity();
         }
 
-        Order order = orderMapper.toEntity(placeOrderRequestDto, totalPrice, productCount,
-            UUID.randomUUID(), 1L);
+        Order order = orderMapper.toEntity(placeOrderRequestDto, totalPrice, productCount);
 
         orderRepository.save(order);
 
         return new PlaceOrderResponseDto(order.getOrderId());
+    }
+
+    //주문 상세 조회
+    public OrderDetailResponseDto getOrderDetail(GetOrderDetailRequestDto requestDto) {
+        return orderMapper.toDto(
+            orderRepository.findById(requestDto.orderId())
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다.")));
     }
 }
