@@ -6,12 +6,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 회원 엔티티 클래스
  * 회원가입, 로그인, 사용자 관리 기능을 위한 사용자 정보 저장
  *
  * @author 전우선
- * @date 2025-09-30(화)
+ * @date 2025-10-02(목)
  */
 @Entity
 @Table(name = "p_user")
@@ -37,8 +40,6 @@ public class User extends BaseEntity {
     @Column(name = "nickname", nullable = false, unique = true, length = 10)
     private String nickname;
 
-    @Column(name = "address", length = 200)
-    private String address;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
@@ -49,4 +50,7 @@ public class User extends BaseEntity {
 
     @Column(name = "phoneNumber", nullable = false, unique = true, length = 13)
     private String phoneNumber;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses = new ArrayList<>();
 }
