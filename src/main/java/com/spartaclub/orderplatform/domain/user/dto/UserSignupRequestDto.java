@@ -9,9 +9,9 @@ import lombok.Setter;
 /**
  * 회원가입 요청 DTO 클래스
  * 클라이언트로부터 받은 회원가입 데이터를 검증하고 전달
- * 
+ *
  * @author 전우선
- * @date 2025-10-01(수)
+ * @date 2025-10-02(목)
  */
 @Getter
 @Setter
@@ -31,8 +31,8 @@ public class UserSignupRequestDto {
     @NotBlank(message = "비밀번호는 필수입니다.")
     @Size(min = 8, max = 15, message = "비밀번호는 8-15자 이내여야 합니다.")
     // 영대소문자, 숫자, 특수문자 모두 포함 필수
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$", 
-             message = "비밀번호는 영대소문자, 숫자, 특수문자를 모두 포함해야 합니다.")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
+            message = "비밀번호는 영대소문자, 숫자, 특수문자를 모두 포함해야 합니다.")
     private String password;
 
     @NotBlank(message = "닉네임은 필수입니다.")
@@ -42,10 +42,6 @@ public class UserSignupRequestDto {
     @NotBlank(message = "연락처는 필수입니다.")
     @Pattern(regexp = "^\\d{10,11}$", message = "연락처는 10-11자리 숫자만 입력 가능합니다.")
     private String phoneNumber;
-
-    @NotBlank(message = "주소는 필수입니다.")
-    @Size(min = 10, max = 200, message = "주소는 10-200자 이내여야 합니다.")
-    private String address;
 
     @NotNull(message = "권한은 필수입니다.")
     private UserRole role;
@@ -57,7 +53,7 @@ public class UserSignupRequestDto {
      * 권한별 사업자번호 유효성 검증
      * OWNER 권한 선택 시 사업자번호 필수
      * CUSTOMER 권한 선택 시 사업자번호 입력 불가
-     * 
+     *
      * @return 유효성 검증 결과
      */
     @AssertTrue(message = "OWNER 권한 선택 시 사업자번호는 필수입니다.")
@@ -73,7 +69,7 @@ public class UserSignupRequestDto {
     /**
      * 관리자 권한 선택 방지 검증
      * MANAGER, MASTER 권한은 일반 회원가입에서 선택 불가
-     * 
+     *
      * @return 유효성 검증 결과
      */
     @AssertTrue(message = "MANAGER, MASTER 권한은 선택할 수 없습니다.")
