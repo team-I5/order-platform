@@ -116,4 +116,20 @@ public class ProductService {
         // 2. Product Entity -> Dto 변환 후 반환
         return productMapper.toDto(product);
     }
+
+    // 상품 공개/숨김 수정 서비스 로직
+    public ProductResponseDto updateProductVisibility(UUID productId) {
+        // 1. productId로 상품 조회
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+
+        // 2. isHidden 속성 수정
+        product.updateVisibility();
+
+        // 3. JPA의 변경 감지(dirty checking)로 자동 저장
+        // 별도로 save 호출 안 해도 @Transactional 안에서 commit 시 DB 반영
+
+        // 4. Product Entity -> Dto 변환 후 반환
+        return productMapper.toDto(product);
+    }
 }

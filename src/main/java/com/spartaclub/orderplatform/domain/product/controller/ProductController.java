@@ -76,4 +76,9 @@ public class ProductController {
     }
 
     // 상품 공개/숨김 설정 API
+    @PatchMapping("/{productId}/visibility")
+    public ResponseEntity<ApiResponse<ProductResponseDto>> updateProductVisibility(@PathVariable UUID productId) {
+        ProductResponseDto requestDto = productService.updateProductVisibility(productId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(requestDto));
+    }
 }
