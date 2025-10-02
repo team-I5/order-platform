@@ -1,0 +1,20 @@
+package com.spartaclub.orderplatform.domain.review.controller;
+
+import com.spartaclub.orderplatform.domain.review.service.ReviewService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/*
+ * Review 컨트롤러 클래스
+ * 리뷰 관련 API Endpoint 제공
+ *
+ * @author 이준성
+ * @date 2025-10-02
+ */
+@RestController
+@RequestMapping("/v1/reviews")
+@RequiredArgsConstructor
+public class ReviewController {
+    private final ReviewService reviewService;
+}
