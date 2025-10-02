@@ -4,10 +4,12 @@ import com.spartaclub.orderplatform.domain.product.dto.ProductResponseDto;
 import com.spartaclub.orderplatform.domain.product.dto.ProductCreateRequestDto;
 import com.spartaclub.orderplatform.domain.product.dto.ProductUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.product.service.ProductService;
+import com.spartaclub.orderplatform.global.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -27,23 +29,30 @@ public class ProductController {
 
     // 상품 등록 API
     @PostMapping
-    public ResponseEntity<ProductResponseDto> createProduct(@Valid @RequestBody ProductCreateRequestDto productCreateRequestDto) {
+    public ResponseEntity<ApiResponse<ProductResponseDto>> createProduct(@Valid @RequestBody ProductCreateRequestDto productCreateRequestDto) {
         ProductResponseDto responseDto = productService.createProduct(productCreateRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
     }
 
     // 상품 수정 API
     @PutMapping("/{productId}")
-    public ResponseEntity<ProductResponseDto> updateProduct(
+    public ResponseEntity<ApiResponse<ProductResponseDto>> updateProduct(
             @PathVariable UUID productId,
             @Valid @RequestBody ProductUpdateRequestDto productUpdateRequestDto
     ) {
         ProductResponseDto responseDto = productService.updateProduct(productId, productUpdateRequestDto);
-        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
     }
 
-    // 상품 삭제 API
-
+    // 상품 삭제 API, 회원 연결 시 서비스 로직에 id 추가
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(
+            @PathVariable UUID productId
+//            @AuthenticationPrincipal Long userId
+    ) {
+        productService.deleteProduct(productId);
+        return ResponseEntity.noContent().build();
+    }
 
     // 상품 목록 조회 API
 

@@ -73,5 +73,12 @@ public class Product extends BaseEntity {
         this.price = productUpdateRequestDto.getPrice();
         this.productDescription = productUpdateRequestDto.getProductDescription();
     }
+
+    // 상품 삭제 메소드 (soft delete)
+    public void deleteProduct(Long userId) {
+        this.isHidden = true;
+        this.deletedId = userId;
+        delete();
+    }
 }
 

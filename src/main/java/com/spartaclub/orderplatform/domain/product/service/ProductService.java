@@ -65,4 +65,17 @@ public class ProductService {
         // 4. entity -> dto 변환 후 반환
         return productMapper.toDto(product);
     }
+
+    @Transactional
+    public void deleteProduct(
+            UUID productId
+//            Long userId
+    ) {
+        // 1. productId로 상품 조회
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+
+        product.deleteProduct(0L); // 도메인 메서드 호출, 회원 연결 전 하드코딩
+        // @Transactional 안에서 dirty checking으로 자동 반영
+    }
 }
