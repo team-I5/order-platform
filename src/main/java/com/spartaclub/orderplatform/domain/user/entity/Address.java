@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
+
+import java.util.UUID;
 
 /**
  * 주소 엔티티 클래스
@@ -21,9 +24,9 @@ import lombok.Setter;
 public class Address extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @UuidGenerator
     @Column(name = "addressId")
-    private Long addressId;
+    private UUID addressId;
 
     @Column(name = "name", nullable = false, length = 50)
     private String name;
