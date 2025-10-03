@@ -2,6 +2,7 @@ package com.spartaclub.orderplatform.domain.order.application;
 
 import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
+import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrderDetailRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
@@ -10,6 +11,8 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponse
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto.OrderItemRequest;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
+import com.spartaclub.orderplatform.domain.product.entity.Product;
+import com.spartaclub.orderplatform.domain.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +31,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final ProductRepository productRepository;
 
     //주문 생성
     @Transactional
@@ -36,16 +40,32 @@ public class OrderService {
 
         Long totalPrice = 0L;
         Integer productCount = 0;
+        List<OrderProduct> orderProducts = new ArrayList<>();
 
-        // 총 주문 금액, 상품 개수 집계
+        // 총 주문 금액, 상품 개수 집계, 주문-상품 엔티티 생성
         for (OrderItemRequest orderItem : products) {
-            //Optional<Product> product=productRepository.findById(orderItem.productId());
+            Product product = productRepository.findById(orderItem.productId())
+                .orElseThrow(
+                    () -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + orderItem.productId()));
 
             totalPrice += (long) orderItem.quantity();
             productCount += orderItem.quantity();
+
+            OrderProduct orderProduct = OrderProduct.builder()
+                .product(product)
+                .quantity(orderItem.quantity())
+                .unitPrice(Long.valueOf(product.getPrice()))   // Product 필드 수정되면 수정하기
+                .productName(product.getProductName())
+                .build();
+
+            orderProducts.add(orderProduct);
         }
 
         Order order = orderMapper.toEntity(placeOrderRequestDto, totalPrice, productCount);
+
+        for (OrderProduct orderProduct : orderProducts) {
+            order.addOrderProduct(orderProduct);
+        }
 
         orderRepository.save(order);
 

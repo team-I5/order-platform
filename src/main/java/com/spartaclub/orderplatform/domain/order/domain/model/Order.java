@@ -81,6 +81,13 @@ public class Order extends BaseEntity {
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     private Payment payment;     // 결제 엔티티 연관관계 1:1
+
+    //주문 상품 추가(연관관계 형성)
+    public void addOrderProduct(OrderProduct orderProduct) {
+        this.orderProducts.add(orderProduct);
+        //orderProduct에서는 OrderProduct.of()메서드에서 order 지정해줌
+    }
+
 }
 
 // TODO: 연관관계 설정

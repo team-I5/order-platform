@@ -11,6 +11,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
@@ -19,6 +21,8 @@ import org.hibernate.annotations.UuidGenerator;
 @Table(name = "p_orders_products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Builder
+@AllArgsConstructor
 public class OrderProduct extends BaseEntity {
 
     @Id
@@ -51,5 +55,4 @@ public class OrderProduct extends BaseEntity {
 
     @Column(name = "deletedId")
     private Long deletedId;                 // 삭제자 ID
-
 }
