@@ -16,7 +16,6 @@ public record PlaceOrderRequestDto(
     String address,
 
     @NotEmpty(message = "주문 상품 목록은 최소 1개 이상이어야 합니다.")
-
     List<OrderItemRequest> items,
 
     @Size(max = 100, message = "메모는 최대 100자까지 가능합니다.")

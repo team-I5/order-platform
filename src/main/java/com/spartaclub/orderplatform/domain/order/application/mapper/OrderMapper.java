@@ -20,6 +20,7 @@ public interface OrderMapper {
     @Mapping(target = "deletedId", ignore = true)
     @Mapping(target = "status", expression = "java(OrderStatus.PAYMENT_PENDING)")
     @Mapping(target = "payment", ignore = true)
+    // TODO:수정 필요
     Order toEntity(PlaceOrderRequestDto placeOrderRequestDto, Long totalPrice,
         Integer productCount);
 
