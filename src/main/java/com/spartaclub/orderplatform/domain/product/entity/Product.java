@@ -1,7 +1,7 @@
 package com.spartaclub.orderplatform.domain.product.entity;
 
+import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import com.spartaclub.orderplatform.domain.product.dto.ProductUpdateRequestDto;
-import com.spartaclub.orderplatform.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.*;
