@@ -1,15 +1,12 @@
 package com.spartaclub.orderplatform.user.application.service;
 
-import com.spartaclub.orderplatform.user.presentation.dto.UserLoginRequestDto;
-import com.spartaclub.orderplatform.user.presentation.dto.UserLoginResponseDto;
-import com.spartaclub.orderplatform.user.presentation.dto.UserSignupRequestDto;
-import com.spartaclub.orderplatform.user.presentation.dto.UserSignupResponseDto;
+import com.spartaclub.orderplatform.global.application.jwt.JwtUtil;
+import com.spartaclub.orderplatform.user.application.mapper.UserMapper;
 import com.spartaclub.orderplatform.user.domain.entity.RefreshToken;
 import com.spartaclub.orderplatform.user.domain.entity.User;
-import com.spartaclub.orderplatform.user.application.mapper.UserMapper;
 import com.spartaclub.orderplatform.user.infrastructure.repository.RefreshTokenRepository;
 import com.spartaclub.orderplatform.user.infrastructure.repository.UserRepository;
-import com.spartaclub.orderplatform.global.application.jwt.JwtUtil;
+import com.spartaclub.orderplatform.user.presentation.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +19,7 @@ import java.time.LocalDateTime;
  * 사용자 관련 비즈니스 로직 처리
  *
  * @author 전우선
- * @date 2025-10-02(목)
+ * @date 2025-10-03(금)
  */
 @Service
 @RequiredArgsConstructor
@@ -113,7 +110,7 @@ public class UserService {
 
         // 4. 기존 리프레시 토큰 삭제 후 새 토큰 저장
         refreshTokenRepository.deleteByUser(user);
-        
+
         LocalDateTime expiresAt = LocalDateTime.now().plusSeconds(
                 jwtUtil.getRefreshTokenExpiration() / 1000);
         RefreshToken refreshTokenEntity = new RefreshToken(refreshToken, user, expiresAt);
@@ -121,5 +118,63 @@ public class UserService {
 
         // 5. 응답 DTO 생성
         return new UserLoginResponseDto(accessToken, refreshToken, jwtUtil.getAccessTokenExpirationInSeconds(), user);
+    }
+
+    /**
+     * 토큰 갱신 처리 (RTR 패턴)
+     * 리프레시 토큰을 검증하고 새로운 액세스/리프레시 토큰 발급
+     *
+     * @param requestDto 토큰 갱신 요청 데이터
+     * @return 토큰 갱신 응답 데이터
+     * @throws RuntimeException 토큰 검증 실패 시
+     */
+    @Transactional
+    public TokenRefreshResponseDto refreshToken(TokenRefreshRequestDto requestDto) {
+        String refreshTokenValue = requestDto.getRefreshToken();
+
+        // 1. 리프레시 토큰 유효성 검증
+        if (!jwtUtil.validateToken(refreshTokenValue)) {
+            throw new RuntimeException("유효하지 않은 리프레시 토큰입니다.");
+        }
+
+        // 2. 리프레시 토큰인지 확인
+        if (!jwtUtil.isRefreshToken(refreshTokenValue)) {
+            throw new RuntimeException("유효하지 않은 리프레시 토큰입니다.");
+        }
+
+        // 3. DB에서 리프레시 토큰 조회
+        RefreshToken refreshTokenEntity = refreshTokenRepository.findByTokenAndDeletedAtIsNull(refreshTokenValue)
+                .orElseThrow(() -> new RuntimeException("유효하지 않은 리프레시 토큰입니다."));
+
+        // 4. 토큰 만료 여부 확인
+        if (refreshTokenEntity.isExpired()) {
+            // 만료된 토큰 삭제
+            refreshTokenRepository.delete(refreshTokenEntity);
+            throw new RuntimeException("만료된 리프레시 토큰입니다.");
+        }
+
+        // 5. 사용자 정보 조회 및 상태 확인
+        User user = refreshTokenEntity.getUser();
+        if (user.isDeleted()) {
+            // 탈퇴한 사용자의 토큰 삭제
+            refreshTokenRepository.delete(refreshTokenEntity);
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        // 6. 새로운 토큰 생성
+        String newAccessToken = jwtUtil.createAccessToken(user.getUserId(), user.getEmail(), user.getRole().name());
+        String newRefreshToken = jwtUtil.createRefreshToken(user.getUserId());
+
+        // 7. RTR 패턴: 기존 리프레시 토큰 삭제 후 새 토큰 저장
+        refreshTokenRepository.delete(refreshTokenEntity);
+
+        LocalDateTime newExpiresAt = LocalDateTime.now().plusSeconds(
+                jwtUtil.getRefreshTokenExpiration() / 1000);
+        RefreshToken newRefreshTokenEntity = new RefreshToken(newRefreshToken, user, newExpiresAt);
+        refreshTokenRepository.save(newRefreshTokenEntity);
+
+        // 8. 응답 DTO 생성
+        return new TokenRefreshResponseDto(newAccessToken, newRefreshToken,
+                jwtUtil.getAccessTokenExpirationInSeconds(), user);
     }
 }
