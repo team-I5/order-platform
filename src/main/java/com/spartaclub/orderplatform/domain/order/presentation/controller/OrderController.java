@@ -2,7 +2,9 @@ package com.spartaclub.orderplatform.domain.order.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.order.application.OrderService;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrderDetailRequestDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
 import com.spartaclub.orderplatform.global.dto.ApiResponse;
@@ -41,5 +43,11 @@ public class OrderController {
     public ResponseEntity<ApiResponse<OrderDetailResponseDto>> getOrderDetail(
         @Valid GetOrderDetailRequestDto requestDto) {
         return ResponseEntity.ok(ApiResponse.success(orderService.getOrderDetail(requestDto)));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<ApiResponse<OrdersResponseDto>> getOrders(
+        @Valid GetOrdersRequestDto requestDto) {
+        return ResponseEntity.ok(ApiResponse.success(orderService.getOrders(requestDto)));
     }
 }
