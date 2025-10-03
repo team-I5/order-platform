@@ -200,4 +200,23 @@ public class UserService {
         // 3. 성공 응답 반환 (멱등성: 이미 로그아웃된 상태여도 성공)
         return LogoutResponseDto.success();
     }
+
+    /**
+     * 회원정보 조회
+     * JWT 토큰에서 추출한 사용자 ID로 최신 회원정보 조회
+     * 실시간 정보 반영 (권한 변경, 정보 수정 등)
+     *
+     * @param userId 조회할 사용자 ID
+     * @return 사용자 프로필 정보
+     * @throws RuntimeException 사용자를 찾을 수 없는 경우
+     */
+    @Transactional(readOnly = true)
+    public UserProfileResponseDto getUserProfile(Long userId) {
+        // 1. DB에서 최신 사용자 정보 조회 (실시간 정보 반영)
+        User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 2. 응답 DTO 생성 및 반환 (민감정보 제외)
+        return UserProfileResponseDto.from(user);
+    }
 }

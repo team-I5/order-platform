@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * User 컨트롤러 클래스
@@ -87,6 +84,26 @@ public class UserController {
         Long userId = userDetails.getUser().getUserId();
         LogoutResponseDto responseDto = userService.logout(userId);
 
+        return ResponseEntity.ok(responseDto);
+    }
+
+    /**
+     * 회원정보 조회 API
+     * GET /v1/users/me
+     * 인증된 사용자의 최신 프로필 정보 조회
+     * 실시간 정보 반영 (권한 변경, 정보 수정 등)
+     * 
+     * @param userDetails 인증된 사용자 정보 (JWT에서 추출)
+     * @return 사용자 프로필 정보 (민감정보 제외)
+     */
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponseDto> getUserProfile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        
+        // 인증된 사용자 ID로 최신 프로필 정보 조회
+        Long userId = userDetails.getUser().getUserId();
+        UserProfileResponseDto responseDto = userService.getUserProfile(userId);
+        
         return ResponseEntity.ok(responseDto);
     }
 }
