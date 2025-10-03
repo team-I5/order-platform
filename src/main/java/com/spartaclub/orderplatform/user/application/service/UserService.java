@@ -177,4 +177,27 @@ public class UserService {
         return new TokenRefreshResponseDto(newAccessToken, newRefreshToken,
                 jwtUtil.getAccessTokenExpirationInSeconds(), user);
     }
+
+    /**
+     * 로그아웃 처리
+     * 사용자의 모든 리프레시 토큰을 무효화하여 로그아웃 처리
+     * 액세스 토큰은 짧은 만료시간(15분)으로 자연 만료 처리
+     *
+     * @param userId 로그아웃할 사용자 ID
+     * @return 로그아웃 응답 데이터
+     */
+    @Transactional
+    public LogoutResponseDto logout(Long userId) {
+        // 1. 사용자 조회 (이미 인증된 사용자이므로 존재함이 보장됨)
+        User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
+                .orElse(null); // 사용자가 없어도 멱등성을 위해 성공 처리
+
+        // 2. 해당 사용자의 모든 리프레시 토큰 삭제 (토큰 무효화)
+        if (user != null) {
+            refreshTokenRepository.deleteByUser(user);
+        }
+
+        // 3. 성공 응답 반환 (멱등성: 이미 로그아웃된 상태여도 성공)
+        return LogoutResponseDto.success();
+    }
 }
