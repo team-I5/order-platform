@@ -27,23 +27,22 @@ public class Product extends BaseEntity {
     // 상품 ID
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "productId")
     private UUID productId;
 
     // 상품명
-    @Column(name = "productName", nullable = false, length = 100)
+    @Column(nullable = false, length = 100)
     private String productName;
 
     // 가격
-    @Column(name = "price", nullable = false)
+    @Column(nullable = false)
     private Integer price;
 
     // 상품 설명
-    @Column(name = "productDescription", length = 500)
+    @Column(length = 500)
     private String productDescription;
 
     // 상품 숨김 여부
-    @Column(name = "isHidden", nullable = false)
+    @Column(nullable = false)
     private Boolean isHidden = false;
 
 
@@ -53,18 +52,16 @@ public class Product extends BaseEntity {
 //    private Store store;
 
 
-    // 생성자ID
+    // 생성자 ID
     @CreatedBy
-    @Column(name = "createdId", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)
     private Long createdId;
 
-    // 수정자ID
+    // 수정자 ID
     @LastModifiedBy
-    @Column(name = "modifiedId")
     private Long modifiedId;
 
-    // 삭제자ID
-    @Column(name = "deletedId")
+    // 삭제자 ID
     private Long deletedId;
 
     // 상품 정보 수정 메소드
@@ -79,6 +76,11 @@ public class Product extends BaseEntity {
         this.isHidden = true;
         this.deletedId = userId;
         delete();
+    }
+
+    // 상품 공개/숨김 여부 수정 메소드
+    public void updateVisibility() {
+        this.isHidden = true;
     }
 }
 

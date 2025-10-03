@@ -1,9 +1,11 @@
 package com.spartaclub.orderplatform.domain.product.mapper;
 
+import com.spartaclub.orderplatform.domain.product.dto.PageMetaDto;
 import com.spartaclub.orderplatform.domain.product.dto.ProductCreateRequestDto;
 import com.spartaclub.orderplatform.domain.product.dto.ProductResponseDto;
 import com.spartaclub.orderplatform.domain.product.entity.Product;
 import org.mapstruct.*;
+import org.springframework.data.domain.Page;
 
 /**
  * 상품 Entity <-> Dto 매핑
@@ -28,4 +30,19 @@ public interface ProductMapper {
 //    @Mapping(target = "storeId", source = "store.storeId")
     ProductResponseDto toDto(Product product);
 
-}
+    // Page Entity -> dto 변환
+    // Page 객체는 자옫 변환이 불가능해서 자동 구현 x
+    default PageMetaDto toPageDto(Page<?> productPage) {
+        if (productPage == null) {
+            return null;
+        }
+
+        return PageMetaDto.builder()
+                .pageNumber(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .isFirst(productPage.isFirst())
+                .isLast(productPage.isLast())
+                .build();
+    }}
