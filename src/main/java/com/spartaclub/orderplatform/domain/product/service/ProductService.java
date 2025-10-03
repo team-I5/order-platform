@@ -9,8 +9,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -56,8 +58,7 @@ public class ProductService {
     @Transactional
     public ProductResponseDto updateProduct(UUID productId, @Valid ProductUpdateRequestDto productUpdateRequestDto) {
         // 1. productId로 상품 조회
-        Product product =  productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+        Product product = findProductOrThrow(productId);
 
         // 2. 상품 정보 수정
         product.updateProduct(productUpdateRequestDto);
@@ -76,8 +77,7 @@ public class ProductService {
 //            Long userId
     ) {
         // 1. productId로 상품 조회
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+        Product product = findProductOrThrow(productId);
 
         product.deleteProduct(0L); // 도메인 메서드 호출, 회원 연결 전 하드코딩
         // @Transactional 안에서 dirty checking으로 자동 반영
@@ -94,14 +94,7 @@ public class ProductService {
                 .collect(Collectors.toList());
 
         // 3. 페이지 메타 데이터 -> dto 변환
-        PageMetaDto pageMetaDto = PageMetaDto.builder()
-                .pageNumber(productPage.getNumber())
-                .pageSize(productPage.getSize())
-                .totalElements(productPage.getTotalElements())
-                .totalPages(productPage.getTotalPages())
-                .isFirst(productPage.isFirst())
-                .isLast(productPage.isLast())
-                .build();
+        PageMetaDto pageMetaDto = productMapper.toPageDto(productPage);
 
         // 4. 상품 리스트와 메타 데이터 dto 반환
         return new PageResponseDto<>(productList, pageMetaDto);
@@ -110,18 +103,17 @@ public class ProductService {
     // 상품 상세 조회 서비스 로직
     public ProductResponseDto getProduct(UUID productId) {
         // 1. productId로 상품 조회
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+        Product product = findProductOrThrow(productId);
 
         // 2. Product Entity -> Dto 변환 후 반환
         return productMapper.toDto(product);
     }
 
     // 상품 공개/숨김 수정 서비스 로직
+    @Transactional
     public ProductResponseDto updateProductVisibility(UUID productId) {
         // 1. productId로 상품 조회
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+        Product product = findProductOrThrow(productId);
 
         // 2. isHidden 속성 수정
         product.updateVisibility();
@@ -131,5 +123,11 @@ public class ProductService {
 
         // 4. Product Entity -> Dto 변환 후 반환
         return productMapper.toDto(product);
+    }
+
+    // --- 상품 공통 조회 함수 ---
+    private Product findProductOrThrow(UUID productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
     }
 }
