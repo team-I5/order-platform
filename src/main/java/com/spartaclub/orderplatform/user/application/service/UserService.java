@@ -219,4 +219,130 @@ public class UserService {
         // 2. 응답 DTO 생성 및 반환 (민감정보 제외)
         return UserProfileResponseDto.from(user);
     }
+
+    /**
+     * 회원정보 수정
+     * 선택적 필드 수정, 중복 체크, 권한 검증, 비밀번호 변경 처리
+     *
+     * @param userId 수정할 사용자 ID
+     * @param requestDto 수정 요청 데이터
+     * @return 수정된 사용자 정보
+     * @throws RuntimeException 검증 실패 시
+     */
+    @Transactional
+    public UserUpdateResponseDto updateUserProfile(Long userId, UserUpdateRequestDto requestDto) {
+        // 1. 사용자 조회
+        User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 2. 비밀번호 변경 검증
+        if (requestDto.isPasswordChangeRequested()) {
+            validatePasswordChange(requestDto, user);
+        }
+
+        // 3. 중복 데이터 검증 (변경하려는 필드만)
+        validateDuplicateDataForUpdate(requestDto, user);
+
+        // 4. 권한별 제한 검증
+        validateBusinessNumberPermission(requestDto, user);
+
+        // 5. 필드별 선택적 업데이트
+        updateUserFields(user, requestDto);
+
+        // 6. 변경사항 저장
+        User updatedUser = userRepository.save(user);
+
+        // 7. 응답 DTO 생성
+        return UserUpdateResponseDto.success(updatedUser);
+    }
+
+    /**
+     * 비밀번호 변경 검증
+     * 새 비밀번호 제공 시 현재 비밀번호 확인 필수
+     */
+    private void validatePasswordChange(UserUpdateRequestDto requestDto, User user) {
+        if (!requestDto.isCurrentPasswordProvided()) {
+            throw new RuntimeException("비밀번호 변경 시 현재 비밀번호는 필수입니다.");
+        }
+
+        if (!passwordEncoder.matches(requestDto.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("현재 비밀번호가 일치하지 않습니다.");
+        }
+    }
+
+    /**
+     * 수정 시 중복 데이터 검증
+     * 현재 사용자 데이터와 다른 경우에만 중복 체크
+     */
+    private void validateDuplicateDataForUpdate(UserUpdateRequestDto requestDto, User currentUser) {
+        // 사용자명 중복 체크 (변경하려는 경우만)
+        if (requestDto.getUsername() != null && !requestDto.getUsername().equals(currentUser.getUsername())) {
+            if (userRepository.existsByUsernameAndDeletedAtIsNull(requestDto.getUsername())) {
+                throw new RuntimeException("이미 존재하는 사용자명입니다.");
+            }
+        }
+
+        // 닉네임 중복 체크 (변경하려는 경우만)
+        if (requestDto.getNickname() != null && !requestDto.getNickname().equals(currentUser.getNickname())) {
+            if (userRepository.existsByNicknameAndDeletedAtIsNull(requestDto.getNickname())) {
+                throw new RuntimeException("이미 존재하는 닉네임입니다.");
+            }
+        }
+
+        // 연락처 중복 체크 (변경하려는 경우만)
+        if (requestDto.getPhoneNumber() != null && !requestDto.getPhoneNumber().equals(currentUser.getPhoneNumber())) {
+            if (userRepository.existsByPhoneNumberAndDeletedAtIsNull(requestDto.getPhoneNumber())) {
+                throw new RuntimeException("이미 존재하는 전화번호입니다.");
+            }
+        }
+
+        // 사업자번호 중복 체크 (변경하려는 경우만)
+        if (requestDto.getBusinessNumber() != null && !requestDto.getBusinessNumber().equals(currentUser.getBusinessNumber())) {
+            if (userRepository.existsByBusinessNumberAndDeletedAtIsNull(requestDto.getBusinessNumber())) {
+                throw new RuntimeException("이미 존재하는 사업자번호입니다.");
+            }
+        }
+    }
+
+    /**
+     * 사업자번호 수정 권한 검증
+     * CUSTOMER 권한은 사업자번호 수정 불가
+     */
+    private void validateBusinessNumberPermission(UserUpdateRequestDto requestDto, User user) {
+        if (requestDto.getBusinessNumber() != null && user.getRole().name().equals("CUSTOMER")) {
+            throw new RuntimeException("CUSTOMER 권한으로는 사업자번호를 수정할 수 없습니다.");
+        }
+    }
+
+    /**
+     * 사용자 필드 선택적 업데이트
+     * null이 아닌 필드만 업데이트
+     */
+    private void updateUserFields(User user, UserUpdateRequestDto requestDto) {
+        // 사용자명 업데이트
+        if (requestDto.getUsername() != null) {
+            user.setUsername(requestDto.getUsername());
+        }
+
+        // 닉네임 업데이트
+        if (requestDto.getNickname() != null) {
+            user.setNickname(requestDto.getNickname());
+        }
+
+        // 연락처 업데이트
+        if (requestDto.getPhoneNumber() != null) {
+            user.setPhoneNumber(requestDto.getPhoneNumber());
+        }
+
+        // 사업자번호 업데이트 (권한 검증 완료된 경우)
+        if (requestDto.getBusinessNumber() != null) {
+            user.setBusinessNumber(requestDto.getBusinessNumber());
+        }
+
+        // 비밀번호 업데이트 (암호화 처리)
+        if (requestDto.isPasswordChangeRequested()) {
+            String encodedPassword = passwordEncoder.encode(requestDto.getNewPassword());
+            user.setPassword(encodedPassword);
+        }
+    }
 }

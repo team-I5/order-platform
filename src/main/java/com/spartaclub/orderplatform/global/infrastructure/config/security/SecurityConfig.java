@@ -6,6 +6,7 @@ import com.spartaclub.orderplatform.global.application.security.UserDetailsServi
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -62,7 +63,9 @@ public class SecurityConfig {
                         .requestMatchers("/v1/users", "/v1/users/").hasAnyRole("MANAGER", "MASTER")
 
                         // 개별 사용자 관련 기능은 인증된 사용자 모두 접근 가능
-                        .requestMatchers("/v1/users/me", "/v1/users/logout").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/v1/users/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/v1/users/me").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/v1/users/logout").authenticated()
 
                         // 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()

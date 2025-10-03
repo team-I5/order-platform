@@ -106,4 +106,26 @@ public class UserController {
         
         return ResponseEntity.ok(responseDto);
     }
+
+    /**
+     * 회원정보 수정 API
+     * PUT /v1/users/me
+     * 인증된 사용자의 프로필 정보 선택적 수정
+     * 비밀번호 변경, 중복 체크, 권한별 제한 처리
+     * 
+     * @param userDetails 인증된 사용자 정보 (JWT에서 추출)
+     * @param requestDto 수정할 정보 (선택적 필드)
+     * @return 수정된 사용자 정보
+     */
+    @PutMapping("/me")
+    public ResponseEntity<UserUpdateResponseDto> updateUserProfile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody UserUpdateRequestDto requestDto) {
+        
+        // 인증된 사용자 ID로 프로필 정보 수정
+        Long userId = userDetails.getUser().getUserId();
+        UserUpdateResponseDto responseDto = userService.updateUserProfile(userId, requestDto);
+        
+        return ResponseEntity.ok(responseDto);
+    }
 }
