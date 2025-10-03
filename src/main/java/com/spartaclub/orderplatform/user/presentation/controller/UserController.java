@@ -54,7 +54,7 @@ public class UserController {
      * @return 로그인 성공 시 JWT 토큰과 사용자 정보 반환
      */
     @PostMapping("/login")
-    public ResponseEntity<UserLoginResponseDto> login(
+    public ResponseEntity<ApiResponse<UserLoginResponseDto>> login(
             @Valid @RequestBody UserLoginRequestDto requestDto,
             HttpServletResponse response) {
 
@@ -64,7 +64,7 @@ public class UserController {
         response.setHeader(JwtUtil.AUTHORIZATION_HEADER,
                 JwtUtil.BEARER_PREFIX + responseDto.getAccessToken());
 
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
 
     /**
@@ -77,14 +77,14 @@ public class UserController {
      * @return 로그아웃 성공 메시지와 처리 시간
      */
     @PostMapping("/logout")
-    public ResponseEntity<LogoutResponseDto> logout(
+    public ResponseEntity<ApiResponse<LogoutResponseDto>> logout(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         // 인증된 사용자 ID로 로그아웃 처리
         Long userId = userDetails.getUser().getUserId();
         LogoutResponseDto responseDto = userService.logout(userId);
 
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
 
     /**
@@ -97,14 +97,14 @@ public class UserController {
      * @return 사용자 프로필 정보 (민감정보 제외)
      */
     @GetMapping("/me")
-    public ResponseEntity<UserProfileResponseDto> getUserProfile(
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> getUserProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         
         // 인증된 사용자 ID로 최신 프로필 정보 조회
         Long userId = userDetails.getUser().getUserId();
         UserProfileResponseDto responseDto = userService.getUserProfile(userId);
         
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
 
     /**
@@ -118,7 +118,7 @@ public class UserController {
      * @return 수정된 사용자 정보
      */
     @PutMapping("/me")
-    public ResponseEntity<UserUpdateResponseDto> updateUserProfile(
+    public ResponseEntity<ApiResponse<UserUpdateResponseDto>> updateUserProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody UserUpdateRequestDto requestDto) {
         
@@ -126,6 +126,6 @@ public class UserController {
         Long userId = userDetails.getUser().getUserId();
         UserUpdateResponseDto responseDto = userService.updateUserProfile(userId, requestDto);
         
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
 }
