@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * 회원 탈퇴 완료 시 클라이언트에게 반환되는 데이터 전송 객체
  *
  * @author 전우선
- * @date 2025-10-04(토)
+ * @date 2025-10-05(일)
  */
 @Getter
 @Setter
@@ -39,14 +39,4 @@ public class UserDeleteResponseDto {
         this.deletedAt = deletedAt;
     }
 
-    /**
-     * 회원 탈퇴 완료 응답 생성 정적 메서드
-     *
-     * @param userId    탈퇴한 사용자 ID
-     * @param deletedAt 탈퇴 처리 일시
-     * @return UserDeleteResponseDto 인스턴스
-     */
-    public static UserDeleteResponseDto success(Long userId, LocalDateTime deletedAt) {
-        return new UserDeleteResponseDto(userId, deletedAt);
-    }
 }
