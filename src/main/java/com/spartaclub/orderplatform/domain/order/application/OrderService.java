@@ -48,7 +48,7 @@ public class OrderService {
                 .orElseThrow(
                     () -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + orderItem.productId()));
 
-            totalPrice += (long) orderItem.quantity();
+            totalPrice += (long) orderItem.quantity() * product.getPrice();
             productCount += orderItem.quantity();
 
             OrderProduct orderProduct = OrderProduct.builder()
