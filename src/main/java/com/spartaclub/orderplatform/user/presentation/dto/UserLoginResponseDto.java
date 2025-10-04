@@ -34,50 +34,8 @@ public class UserLoginResponseDto {
     private long expiresIn;
 
     // 로그인한 사용자 기본 정보
-    private UserInfo user;
+    private UserInfoDto user;
 
-    /**
-     * 사용자 정보 내부 클래스
-     * 로그인 응답에 포함될 사용자 기본 정보
-     * 민감 정보(비밀번호 등)는 제외하고 필요한 정보만 포함
-     */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class UserInfo {
-        // 사용자 고유 ID
-        private Long userId;
-
-        // 사용자명
-        private String username;
-
-        // 이메일 주소
-        private String email;
-
-        // 닉네임
-        private String nickname;
-
-        // 연락처
-        private String phoneNumber;
-
-        // 사용자 권한 (CUSTOMER, OWNER 등)
-        private String role;
-
-        /**
-         * User 엔티티로부터 UserInfo 객체 생성
-         * 엔티티의 정보를 DTO로 변환
-         *
-         * @param user User 엔티티 객체
-         */
-        public UserInfo(User user) {
-            this.userId = user.getUserId();
-            this.username = user.getUsername();
-            this.email = user.getEmail();
-            this.nickname = user.getNickname();
-            this.phoneNumber = user.getPhoneNumber();
-            this.role = user.getRole().name(); // Enum을 문자열로 변환
-        }
-    }
 
     /**
      * 로그인 성공 응답 DTO 생성자
@@ -86,14 +44,14 @@ public class UserLoginResponseDto {
      * @param accessToken  JWT 액세스 토큰
      * @param refreshToken JWT 리프레시 토큰
      * @param expiresIn    액세스 토큰 만료 시간(초)
-     * @param user         로그인한 사용자 엔티티
+     * @param userInfo     로그인한 사용자 정보 DTO
      */
-    public UserLoginResponseDto(String accessToken, String refreshToken, long expiresIn, User user) {
+    public UserLoginResponseDto(String accessToken, String refreshToken, long expiresIn, UserInfoDto userInfo) {
         this.message = "로그인 성공";
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.tokenType = "Bearer"; // Bearer 토큰 타입 고정
         this.expiresIn = expiresIn;
-        this.user = new UserInfo(user); // User 엔티티를 UserInfo DTO로 변환
+        this.user = userInfo; // MapStruct로 변환된 UserInfo DTO 사용
     }
 }

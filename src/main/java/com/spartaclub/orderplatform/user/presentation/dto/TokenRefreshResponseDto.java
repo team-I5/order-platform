@@ -34,33 +34,8 @@ public class TokenRefreshResponseDto {
     private long expiresIn;
 
     // 토큰 갱신 요청한 사용자 기본 정보
-    private UserInfo user;
+    private UserInfoDto user;
 
-    /**
-     * 사용자 정보 내부 클래스
-     * 토큰 갱신 응답에 포함될 사용자 기본 정보
-     */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class UserInfo {
-        private Long userId;
-        private String username;
-        private String email;
-        private String phoneNumber;
-        private String role;
-
-        /**
-         * User 엔티티로부터 UserInfo 객체 생성
-         */
-        public UserInfo(User user) {
-            this.userId = user.getUserId();
-            this.username = user.getUsername();
-            this.email = user.getEmail();
-            this.phoneNumber = user.getPhoneNumber();
-            this.role = user.getRole().name();
-        }
-    }
 
     /**
      * 토큰 갱신 성공 응답 DTO 생성자
@@ -68,14 +43,14 @@ public class TokenRefreshResponseDto {
      * @param accessToken  새로 발급된 액세스 토큰
      * @param refreshToken 새로 발급된 리프레시 토큰
      * @param expiresIn    액세스 토큰 만료 시간(초)
-     * @param user         사용자 엔티티
+     * @param userInfo     사용자 정보 DTO
      */
-    public TokenRefreshResponseDto(String accessToken, String refreshToken, long expiresIn, User user) {
+    public TokenRefreshResponseDto(String accessToken, String refreshToken, long expiresIn, UserInfoDto userInfo) {
         this.message = "토큰이 갱신되었습니다.";
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.tokenType = "Bearer";
         this.expiresIn = expiresIn;
-        this.user = new UserInfo(user);
+        this.user = userInfo; // MapStruct로 변환된 UserInfo DTO 사용
     }
 }

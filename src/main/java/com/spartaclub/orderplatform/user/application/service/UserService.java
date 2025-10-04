@@ -116,8 +116,9 @@ public class UserService {
         RefreshToken refreshTokenEntity = new RefreshToken(refreshToken, user, expiresAt);
         refreshTokenRepository.save(refreshTokenEntity);
 
-        // 5. 응답 DTO 생성
-        return new UserLoginResponseDto(accessToken, refreshToken, jwtUtil.getAccessTokenExpirationInSeconds(), user);
+        // 5. MapStruct를 사용한 응답 DTO 생성
+        UserInfoDto userInfo = userMapper.toUserInfo(user);
+        return new UserLoginResponseDto(accessToken, refreshToken, jwtUtil.getAccessTokenExpirationInSeconds(), userInfo);
     }
 
     /**
@@ -173,9 +174,10 @@ public class UserService {
         RefreshToken newRefreshTokenEntity = new RefreshToken(newRefreshToken, user, newExpiresAt);
         refreshTokenRepository.save(newRefreshTokenEntity);
 
-        // 8. 응답 DTO 생성
+        // 8. MapStruct를 사용한 응답 DTO 생성
+        UserInfoDto userInfo = userMapper.toUserInfo(user);
         return new TokenRefreshResponseDto(newAccessToken, newRefreshToken,
-                jwtUtil.getAccessTokenExpirationInSeconds(), user);
+                jwtUtil.getAccessTokenExpirationInSeconds(), userInfo);
     }
 
     /**
@@ -216,8 +218,8 @@ public class UserService {
         User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 2. 응답 DTO 생성 및 반환 (민감정보 제외)
-        return UserProfileResponseDto.from(user);
+        // 2. MapStruct를 사용한 응답 DTO 생성 및 반환 (민감정보 제외)
+        return userMapper.toProfileResponse(user);
     }
 
     /**
@@ -252,8 +254,8 @@ public class UserService {
         // 6. 변경사항 저장
         User updatedUser = userRepository.save(user);
 
-        // 7. 응답 DTO 생성
-        return UserUpdateResponseDto.success(updatedUser);
+        // 7. MapStruct를 사용한 응답 DTO 생성
+        return userMapper.toUpdateResponse(updatedUser);
     }
 
     /**
