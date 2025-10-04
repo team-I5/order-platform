@@ -35,7 +35,7 @@ public class Product extends BaseEntity {
 
     // 가격
     @Column(nullable = false)
-    private Integer price;
+    private Long price;
 
     // 상품 설명
     @Column(length = 500)
