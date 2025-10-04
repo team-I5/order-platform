@@ -1,9 +1,9 @@
-package com.spartaclub.orderplatform.domain.product.service;
+package com.spartaclub.orderplatform.domain.product.application.service;
 
-import com.spartaclub.orderplatform.domain.product.dto.*;
-import com.spartaclub.orderplatform.domain.product.entity.Product;
-import com.spartaclub.orderplatform.domain.product.mapper.ProductMapper;
-import com.spartaclub.orderplatform.domain.product.repository.ProductRepository;
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
+import com.spartaclub.orderplatform.domain.product.application.mapper.ProductMapper;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
 import com.spartaclub.orderplatform.domain.store.repository.StoreRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,9 +1,9 @@
-package com.spartaclub.orderplatform.domain.product.mapper;
+package com.spartaclub.orderplatform.domain.product.application.mapper;
 
-import com.spartaclub.orderplatform.domain.product.dto.PageMetaDto;
-import com.spartaclub.orderplatform.domain.product.dto.ProductCreateRequestDto;
-import com.spartaclub.orderplatform.domain.product.dto.ProductResponseDto;
-import com.spartaclub.orderplatform.domain.product.entity.Product;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 

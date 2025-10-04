@@ -1,11 +1,11 @@
-package com.spartaclub.orderplatform.domain.product.controller;
+package com.spartaclub.orderplatform.domain.product.presentation.controller;
 
-import com.spartaclub.orderplatform.domain.product.dto.PageResponseDto;
-import com.spartaclub.orderplatform.domain.product.dto.ProductCreateRequestDto;
-import com.spartaclub.orderplatform.domain.product.dto.ProductResponseDto;
-import com.spartaclub.orderplatform.domain.product.dto.ProductUpdateRequestDto;
-import com.spartaclub.orderplatform.domain.product.service.ProductService;
-import com.spartaclub.orderplatform.global.dto.ApiResponse;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
+import com.spartaclub.orderplatform.domain.product.application.service.ProductService;
+import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;

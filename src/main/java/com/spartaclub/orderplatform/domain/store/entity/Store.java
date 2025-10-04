@@ -4,7 +4,7 @@ import static jakarta.persistence.EnumType.STRING;
 
 import com.spartaclub.orderplatform.domain.category.entity.Category;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
-import com.spartaclub.orderplatform.domain.product.entity.Product;
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import com.spartaclub.orderplatform.user.domain.entity.User;
