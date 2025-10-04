@@ -24,7 +24,7 @@ import java.io.IOException;
  * 실시간 권한 체크를 위해 매 요청마다 DB에서 최신 사용자 정보 조회
  *
  * @author 전우선
- * @date 2025-10-02(목)
+ * @date 2025-10-04(토)
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -62,7 +62,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // 4. 실시간 권한 체크: DB에서 최신 사용자 정보 조회
                     // 권한 변경이나 계정 탈퇴 등의 실시간 반영을 위해 매번 DB 조회
-                    UserDetails userDetails = userDetailsService.loadUserByUserId(userId);
+                    UserDetails userDetails;
+                    try {
+                        userDetails = userDetailsService.loadUserByUserId(userId);
+                    } catch (Exception e) {
+                        // 사용자가 탈퇴했거나 존재하지 않는 경우 접근 차단
+                        log.warn("사용자 정보 조회 실패. 사용자 ID: {}", userId);
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
 
                     // 5. 토큰의 권한과 현재 DB의 권한 비교
                     String tokenRole = jwtUtil.getRoleFromToken(token);

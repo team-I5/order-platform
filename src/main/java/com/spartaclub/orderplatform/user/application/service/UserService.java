@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
  * 사용자 관련 비즈니스 로직 처리
  *
  * @author 전우선
- * @date 2025-10-03(금)
+ * @date 2025-10-04(토)
  */
 @Service
 @RequiredArgsConstructor
@@ -224,7 +224,7 @@ public class UserService {
      * 회원정보 수정
      * 선택적 필드 수정, 중복 체크, 권한 검증, 비밀번호 변경 처리
      *
-     * @param userId 수정할 사용자 ID
+     * @param userId     수정할 사용자 ID
      * @param requestDto 수정 요청 데이터
      * @return 수정된 사용자 정보
      * @throws RuntimeException 검증 실패 시
@@ -344,5 +344,43 @@ public class UserService {
             String encodedPassword = passwordEncoder.encode(requestDto.getNewPassword());
             user.setPassword(encodedPassword);
         }
+    }
+
+    /**
+     * 회원 탈퇴 처리
+     * 비밀번호 확인 후 소프트 삭제 처리 및 토큰 무효화
+     *
+     * @param userId     탈퇴할 사용자 ID
+     * @param requestDto 탈퇴 요청 데이터 (비밀번호)
+     * @return 탈퇴 완료 응답 데이터
+     * @throws RuntimeException 검증 실패 시
+     */
+    @Transactional
+    public UserDeleteResponseDto deleteUser(Long userId, UserDeleteRequestDto requestDto) {
+        // 1. 사용자 조회
+        User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 2. 이미 탈퇴한 회원인지 확인
+        if (user.isDeleted()) {
+            throw new RuntimeException("이미 탈퇴한 회원입니다.");
+        }
+
+        // 3. 비밀번호 확인 (본인 인증)
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 4. 소프트 삭제 처리 (deletedAt 설정)
+        user.delete(); // BaseEntity의 delete() 메서드 사용
+
+        // 5. 관련 토큰 무효화 (모든 리프레시 토큰 삭제)
+        refreshTokenRepository.deleteByUser(user);
+
+        // 6. 변경사항 저장
+        User deletedUser = userRepository.save(user);
+
+        // 7. 응답 DTO 생성
+        return UserDeleteResponseDto.success(deletedUser.getUserId(), deletedUser.getDeletedAt());
     }
 }

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  * 사용자 관련 API 엔드포인트 제공
  *
  * @author 전우선
- * @date 2025-10-03(금)
+ * @date 2025-10-04(토)
  */
 @RestController
 @RequestMapping("/v1/users")
@@ -92,18 +92,18 @@ public class UserController {
      * GET /v1/users/me
      * 인증된 사용자의 최신 프로필 정보 조회
      * 실시간 정보 반영 (권한 변경, 정보 수정 등)
-     * 
+     *
      * @param userDetails 인증된 사용자 정보 (JWT에서 추출)
      * @return 사용자 프로필 정보 (민감정보 제외)
      */
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserProfileResponseDto>> getUserProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        
+
         // 인증된 사용자 ID로 최신 프로필 정보 조회
         Long userId = userDetails.getUser().getUserId();
         UserProfileResponseDto responseDto = userService.getUserProfile(userId);
-        
+
         return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
 
@@ -112,20 +112,41 @@ public class UserController {
      * PUT /v1/users/me
      * 인증된 사용자의 프로필 정보 선택적 수정
      * 비밀번호 변경, 중복 체크, 권한별 제한 처리
-     * 
+     *
      * @param userDetails 인증된 사용자 정보 (JWT에서 추출)
-     * @param requestDto 수정할 정보 (선택적 필드)
+     * @param requestDto  수정할 정보 (선택적 필드)
      * @return 수정된 사용자 정보
      */
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<UserUpdateResponseDto>> updateUserProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody UserUpdateRequestDto requestDto) {
-        
+
         // 인증된 사용자 ID로 프로필 정보 수정
         Long userId = userDetails.getUser().getUserId();
         UserUpdateResponseDto responseDto = userService.updateUserProfile(userId, requestDto);
-        
+
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
+    }
+
+    /**
+     * 회원 탈퇴 API
+     * DELETE /v1/users/me
+     * 본인 확인 후 소프트 삭제 처리 및 토큰 무효화
+     *
+     * @param userDetails 인증된 사용자 정보 (JWT에서 추출)
+     * @param requestDto  탈퇴 요청 데이터 (비밀번호 확인)
+     * @return 탈퇴 완료 메시지와 처리 시간
+     */
+    @DeleteMapping("/me")
+    public ResponseEntity<ApiResponse<UserDeleteResponseDto>> deleteUser(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody UserDeleteRequestDto requestDto) {
+
+        // 인증된 사용자 ID로 회원 탈퇴 처리
+        Long userId = userDetails.getUser().getUserId();
+        UserDeleteResponseDto responseDto = userService.deleteUser(userId, requestDto);
+
         return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
 }
