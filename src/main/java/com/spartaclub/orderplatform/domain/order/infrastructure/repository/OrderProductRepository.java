@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.order.domain.repository;
+package com.spartaclub.orderplatform.domain.order.infrastructure.repository;
 
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import java.util.UUID;

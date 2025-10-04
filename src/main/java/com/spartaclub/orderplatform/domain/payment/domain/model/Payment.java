@@ -1,14 +1,15 @@
 package com.spartaclub.orderplatform.domain.payment.domain.model;
 
+import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -23,18 +24,13 @@ import org.hibernate.annotations.UuidGenerator;
 public class Payment extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "p_payments_seq")
-    @SequenceGenerator(
-        name = "p_payments_seq",  // JPA가 식별하기 위한 name
-        sequenceName = "p_payments_seq", //데이터베이스에 저장되는 name
-        allocationSize = 30  // Hibernate가 미리 확보해둘 PK 개수 메모리에 저장
-    )
     @UuidGenerator
-    @Column(name = "paymentId", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "payment_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID paymentId;               // 결제ID
 
-    @Column(name = "orderId", nullable = false, columnDefinition = "uuid")
-    private UUID orderId;                 // 주문ID(FK)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "order_id", nullable = false, columnDefinition = "uuid")
+    private Order order;     // 주문 엔티티 연관관계 1:1
 
     @Column(name = "paymentAmount", nullable = false)
     private Long paymentAmount;           // 결제금액
@@ -42,6 +38,7 @@ public class Payment extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 40)
     private PaymentStatus status;               // 결제상태
+
+
 }
 
-// TODO: 연관관계 설정
