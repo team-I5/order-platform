@@ -2,9 +2,9 @@ package com.spartaclub.orderplatform.domain.order.domain.model;
 
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
 import com.spartaclub.orderplatform.domain.store.entity.Store;
-import com.spartaclub.orderplatform.domain.user.entity.User;
-import com.spartaclub.orderplatform.global.entity.BaseEntity;
+import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.persistence.CascadeType;
+import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
