@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.product.dto;
+package com.spartaclub.orderplatform.domain.product.presentation.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -22,7 +22,7 @@ public class ProductUpdateRequestDto {
     private String productName;
 
     @Positive(message = "가격은 0보다 커야 합니다.")
-    private Integer price;
+    private Long price;
 
     @Size(max = 500)
     private String productDescription;

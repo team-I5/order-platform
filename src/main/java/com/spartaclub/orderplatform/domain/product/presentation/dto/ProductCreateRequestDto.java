@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.product.dto;
+package com.spartaclub.orderplatform.domain.product.presentation.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

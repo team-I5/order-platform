@@ -1,6 +1,6 @@
-package com.spartaclub.orderplatform.domain.product.repository;
+package com.spartaclub.orderplatform.domain.product.infrastructure.repository;
 
-import com.spartaclub.orderplatform.domain.product.entity.Product;
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

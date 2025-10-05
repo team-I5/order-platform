@@ -1,7 +1,8 @@
-package com.spartaclub.orderplatform.domain.product.entity;
+package com.spartaclub.orderplatform.domain.product.domain.entity;
 
+import com.spartaclub.orderplatform.domain.store.entity.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import com.spartaclub.orderplatform.domain.product.dto.ProductUpdateRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.*;
@@ -35,7 +36,7 @@ public class Product extends BaseEntity {
 
     // 가격
     @Column(nullable = false)
-    private Integer price;
+    private Long price;
 
     // 상품 설명
     @Column(length = 500)
@@ -43,13 +44,14 @@ public class Product extends BaseEntity {
 
     // 상품 숨김 여부
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isHidden = false;
 
 
     // 소속 가게
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "store_id", nullable = false)
-//    private Store store;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
 
 
     // 생성자 ID

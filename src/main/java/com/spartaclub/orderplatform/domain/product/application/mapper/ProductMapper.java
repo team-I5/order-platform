@@ -1,9 +1,9 @@
-package com.spartaclub.orderplatform.domain.product.mapper;
+package com.spartaclub.orderplatform.domain.product.application.mapper;
 
-import com.spartaclub.orderplatform.domain.product.dto.PageMetaDto;
-import com.spartaclub.orderplatform.domain.product.dto.ProductCreateRequestDto;
-import com.spartaclub.orderplatform.domain.product.dto.ProductResponseDto;
-import com.spartaclub.orderplatform.domain.product.entity.Product;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 
@@ -18,7 +18,7 @@ public interface ProductMapper {
 
     // RequestDto → Entity 변환
     // store는 Service에서 주입해야 하므로 무시(ignore)
-//    @Mapping(target = "store", ignore = true)
+    @Mapping(target = "store", ignore = true)
     @Mapping(target = "productId", ignore = true) // DB에서 생성
     @Mapping(target = "createdId", ignore = true) // Audit 자동 세팅
     @Mapping(target = "modifiedId", ignore = true)
@@ -27,7 +27,7 @@ public interface ProductMapper {
 
     // Entity → ResponseDto 변환
     // store.storeId → dto.storeId 로 매핑
-//    @Mapping(target = "storeId", source = "store.storeId")
+    @Mapping(target = "storeId", source = "store.storeId")
     ProductResponseDto toDto(Product product);
 
     // Page Entity -> dto 변환
