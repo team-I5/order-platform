@@ -71,7 +71,10 @@ public class OrderService {
         }
 
         //Dto -> Entity 매핑
-        Order order = orderMapper.toEntity(placeOrderRequestDto, totalPrice, productCount);
+        Order order = orderMapper.toEntity(placeOrderRequestDto,
+            totalPrice,
+            productCount,
+            user.getUserId());
 
         //연관관계 형성
         for (OrderProduct orderProduct : orderProducts) {
