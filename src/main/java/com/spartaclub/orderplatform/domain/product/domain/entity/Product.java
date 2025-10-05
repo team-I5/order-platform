@@ -44,6 +44,7 @@ public class Product extends BaseEntity {
 
     // 상품 숨김 여부
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isHidden = false;
 
 
