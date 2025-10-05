@@ -6,6 +6,7 @@ import com.spartaclub.orderplatform.global.application.security.UserDetailsServi
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -19,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * 실시간 권한 체크를 통한 보안 강화 구현
  *
  * @author 전우선
- * @date 2025-10-02(목)
+ * @date 2025-10-04(토)
  */
 @Configuration
 @EnableWebSecurity
@@ -58,8 +59,14 @@ public class SecurityConfig {
                         // 관리자 계정 생성은 MASTER 권한만 접근 가능
                         .requestMatchers("/v1/users/manager").hasRole("MASTER")
 
-                        // 사용자 목록 조회는 MANAGER, MASTER 권한만 접근 가능
-                        .requestMatchers("/v1/users").hasAnyRole("MANAGER", "MASTER")
+                        // 사용자 목록 조회는 MANAGER, MASTER 권한만 접근 가능 (정확한 경로 지정)
+                        .requestMatchers("/v1/users", "/v1/users/").hasAnyRole("MANAGER", "MASTER")
+
+                        // 개별 사용자 관련 기능은 인증된 사용자 모두 접근 가능
+                        .requestMatchers(HttpMethod.GET, "/v1/users/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/v1/users/me").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/v1/users/me").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/v1/users/logout").authenticated()
 
                         // 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()

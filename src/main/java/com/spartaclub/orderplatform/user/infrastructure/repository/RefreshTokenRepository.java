@@ -16,7 +16,7 @@ import java.util.Optional;
  * RTR(Refresh Token Rotation) 패턴 지원을 위한 토큰 관리 메서드 포함
  *
  * @author 전우선
- * @date 2025-10-02(목)
+ * @date 2025-10-03(금)
  */
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
@@ -28,6 +28,15 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
      * @return 조회된 리프레시 토큰 엔티티 (Optional)
      */
     Optional<RefreshToken> findByToken(String token);
+
+    /**
+     * 토큰 문자열로 삭제되지 않은 리프레시 토큰 조회
+     * 소프트 삭제 패턴 적용하여 삭제되지 않은 토큰만 조회
+     *
+     * @param token JWT 리프레시 토큰 문자열
+     * @return 조회된 리프레시 토큰 엔티티 (Optional)
+     */
+    Optional<RefreshToken> findByTokenAndDeletedAtIsNull(String token);
 
     /**
      * 사용자로 리프레시 토큰 조회
