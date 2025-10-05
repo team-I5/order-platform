@@ -1,5 +1,6 @@
 package com.spartaclub.orderplatform.domain.product.domain.entity;
 
+import com.spartaclub.orderplatform.domain.store.entity.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
 import jakarta.persistence.*;
@@ -47,9 +48,9 @@ public class Product extends BaseEntity {
 
 
     // 소속 가게
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "store_id", nullable = false)
-//    private Store store;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
 
 
     // 생성자 ID
