@@ -13,6 +13,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
@@ -21,6 +23,8 @@ import org.hibernate.annotations.UuidGenerator;
 @Table(name = "p_payments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Builder
+@AllArgsConstructor
 public class Payment extends BaseEntity {
 
     @Id
@@ -39,6 +43,9 @@ public class Payment extends BaseEntity {
     @Column(name = "status", nullable = false, length = 40)
     private PaymentStatus status;               // 결제상태
 
+    public void changeStatus(PaymentStatus status) {
+        this.status = status;
+    }
 
 }
 
