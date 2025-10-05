@@ -29,7 +29,7 @@ public interface OrderMapper {
     // Order -> OrderDetailResponseDto 변환
     @Mapping(source = "orderProducts", target = "productsList")
     @Mapping(source = "user.userId", target = "userId")
-    @Mapping(source = "store.id", target = "storeId")
+    @Mapping(source = "store.storeId", target = "storeId")
     OrderDetailResponseDto toDto(Order order);
 
     // OrderProduct -> ProductsListItem

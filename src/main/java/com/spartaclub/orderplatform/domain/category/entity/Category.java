@@ -1,6 +1,6 @@
 package com.spartaclub.orderplatform.domain.category.entity;
 
-import com.spartaclub.orderplatform.global.entity.BaseEntity;
+import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -1,10 +1,10 @@
 package com.spartaclub.orderplatform.domain.review.entity;
 
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
-import com.spartaclub.orderplatform.domain.product.entity.Product;
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.store.entity.Store;
-import com.spartaclub.orderplatform.domain.user.entity.User;
-import com.spartaclub.orderplatform.global.entity.BaseEntity;
+import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

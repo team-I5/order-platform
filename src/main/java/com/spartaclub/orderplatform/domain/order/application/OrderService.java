@@ -11,8 +11,8 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponse
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto.OrderItemRequest;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
-import com.spartaclub.orderplatform.domain.product.entity.Product;
-import com.spartaclub.orderplatform.domain.product.repository.ProductRepository;
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;

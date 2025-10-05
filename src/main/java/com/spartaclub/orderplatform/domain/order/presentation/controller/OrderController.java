@@ -7,7 +7,7 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailRes
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
-import com.spartaclub.orderplatform.global.dto.ApiResponse;
+import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
