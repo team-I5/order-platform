@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.order.application;
 
 import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
+import com.spartaclub.orderplatform.domain.order.domain.event.PaymentRequestedEvent;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
@@ -11,16 +12,14 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponse
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto.OrderItemRequest;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
+import com.spartaclub.orderplatform.domain.payment.application.PaymentService;
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
-import com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus;
-import com.spartaclub.orderplatform.domain.payment.infrastructure.repository.PaymentRepository;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.store.entity.Store;
 import com.spartaclub.orderplatform.domain.store.repository.StoreRepository;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.user.domain.entity.User;
-import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -32,8 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +41,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
-    private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
     private final ApplicationEventPublisher eventPublisher;
 
     //주문 생성
@@ -71,7 +69,7 @@ public class OrderService {
             OrderProduct orderProduct = OrderProduct.builder()
                 .product(product)
                 .quantity(orderItem.quantity())
-                .unitPrice(Long.valueOf(product.getPrice()))   // Product 필드 수정되면 수정하기
+                .unitPrice(product.getPrice())
                 .productName(product.getProductName())
                 .build();
 
@@ -93,37 +91,14 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        // TODO: Payment 생성 및 결제 요청
-        Payment payment = Payment.builder()
-            .order(order)
-            .paymentAmount(totalPrice)
-            .status(PaymentStatus.PAYMENT_PENDING)
-            .build();
-
-        paymentRepository.save(payment);
+        //결제 생성
+        Payment payment = paymentService.createPending(order, totalPrice);
 
         //커밋 이후 실행되도록 이벤트 발행
         eventPublisher.publishEvent(
-            new PaymentRequested(payment, totalPrice, order));
+            new PaymentRequestedEvent(payment.getPaymentId(), order.getOrderId(), totalPrice));
 
         return new PlaceOrderResponseDto(order.getOrderId());
-    }
-
-    // 커밋 이후 결제 요청
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void onPaymentRequested(PaymentRequested paymentRequested) {
-        // pg 결제 요청 호출
-        // boolean success = /* PG 응답 성공 여부 */;
-        Payment p = paymentRequested.payment();
-        Order o = paymentRequested.order();
-
-//        if (success) {
-//            p.setStatus(PaymentStatus.CAPTURED);
-//            o.setStatus(OrderStatus.PAID);
-//        } else {
-//            p.setStatus(PaymentStatus.FAILED);
-//            o.setStatus(OrderStatus.CANCELED);
-//        }
     }
 
     //주문 상세 조회
@@ -182,9 +157,5 @@ public class OrderService {
         }
 
         return orders.isEmpty() ? Sort.by(defaultDir, defaultProperty) : Sort.by(orders);
-    }
-
-    private record PaymentRequested(Payment payment, Long amount, Order order) {
-
     }
 }
