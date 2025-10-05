@@ -15,6 +15,7 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.store.entity.Store;
 import com.spartaclub.orderplatform.domain.store.repository.StoreRepository;
+import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -94,14 +95,16 @@ public class OrderService {
     }
 
     //주문 목록 조회
-    public OrdersResponseDto getOrders(GetOrdersRequestDto requestDto) {
+    public OrdersResponseDto getOrders(GetOrdersRequestDto requestDto,
+        UserDetailsImpl userDetails) {
 
         Pageable pageable = PageRequest.of(
             requestDto.page() - 1,
             requestDto.size(),
             parseSort(requestDto.sort()));
 
-        Page<Order> page = orderRepository.findByUser_UserId(1001L,
+        Page<Order> page = orderRepository.findByUser_UserId(
+            userDetails.getUser().getUserId(),
             pageable);  // TODO: userId 수정 필요
 
         List<OrderDetailResponseDto> ordersList = page.stream()

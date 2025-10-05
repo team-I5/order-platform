@@ -45,13 +45,16 @@ public class OrderController {
 
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OrderDetailResponseDto>> getOrderDetail(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Valid GetOrderDetailRequestDto requestDto) {
         return ResponseEntity.ok(ApiResponse.success(orderService.getOrderDetail(requestDto)));
     }
 
     @GetMapping("")
     public ResponseEntity<ApiResponse<OrdersResponseDto>> getOrders(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Valid GetOrdersRequestDto requestDto) {
-        return ResponseEntity.ok(ApiResponse.success(orderService.getOrders(requestDto)));
+        return ResponseEntity.ok(
+            ApiResponse.success(orderService.getOrders(requestDto, userDetails)));
     }
 }
