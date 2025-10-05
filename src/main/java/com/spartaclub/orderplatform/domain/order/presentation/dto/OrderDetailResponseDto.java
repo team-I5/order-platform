@@ -20,9 +20,9 @@ public record OrderDetailResponseDto(
     LocalDateTime modifiedAt,
     LocalDateTime deletedAt,
     List<ProductsListItem> productsList,
-    UUID createdId,
-    UUID modifiedId,
-    UUID deletedId
+    Long createdId,
+    Long modifiedId,
+    Long deletedId
 ) {
 
     public record ProductsListItem(

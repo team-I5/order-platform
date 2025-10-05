@@ -62,14 +62,14 @@ public class Order extends BaseEntity {
     @Column(name = "product_count", nullable = false)
     private Integer productCount;         // 상품개수
 
-    @Column(name = "created_id", columnDefinition = "uuid")
-    private UUID createdId;               // 생성자 ID
+    @Column(name = "created_id")
+    private Long createdId;               // 생성자 ID
 
-    @Column(name = "modified_id", columnDefinition = "uuid")
-    private UUID modifiedId;              // 수정자 ID
+    @Column(name = "modified_id")
+    private Long modifiedId;              // 수정자 ID
 
-    @Column(name = "deleted_id", columnDefinition = "uuid")
-    private UUID deletedId;               // 삭제자 ID
+    @Column(name = "deleted_id")
+    private Long deletedId;               // 삭제자 ID
 
     @Column(name = "address", length = 255)
     private String address;               // 배송 주소
@@ -97,5 +97,10 @@ public class Order extends BaseEntity {
         if (!store.getOrders().contains(this)) {
             store.getOrders().add(this);
         }
+    }
+
+    //주문 상태 변경
+    public void changeStatus(OrderStatus orderStatus) {
+        this.status = orderStatus;
     }
 }
