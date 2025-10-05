@@ -13,6 +13,9 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequ
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
+import com.spartaclub.orderplatform.domain.store.entity.Store;
+import com.spartaclub.orderplatform.domain.store.repository.StoreRepository;
+import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +35,16 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final ProductRepository productRepository;
+    private final StoreRepository storeRepository;
 
     //주문 생성
     @Transactional
-    public PlaceOrderResponseDto placeOrder(PlaceOrderRequestDto placeOrderRequestDto) {
+    public PlaceOrderResponseDto placeOrder(PlaceOrderRequestDto placeOrderRequestDto, User user) {
         List<OrderItemRequest> products = placeOrderRequestDto.items(); // 주문 상품 리스트
+
+        Store store = storeRepository.findById(placeOrderRequestDto.storeId())
+            .orElseThrow(() -> new IllegalArgumentException(
+                "음식점을 찾을 수 없습니다: " + placeOrderRequestDto.storeId()));
 
         Long totalPrice = 0L;
         Integer productCount = 0;
@@ -48,7 +56,7 @@ public class OrderService {
                 .orElseThrow(
                     () -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + orderItem.productId()));
 
-            totalPrice += (long) orderItem.quantity() * product.getPrice();
+            totalPrice += orderItem.quantity() * product.getPrice();
             productCount += orderItem.quantity();
 
             OrderProduct orderProduct = OrderProduct.builder()
@@ -61,13 +69,19 @@ public class OrderService {
             orderProducts.add(orderProduct);
         }
 
+        //Dto -> Entity 매핑
         Order order = orderMapper.toEntity(placeOrderRequestDto, totalPrice, productCount);
 
+        //연관관계 형성
         for (OrderProduct orderProduct : orderProducts) {
             order.addOrderProduct(orderProduct);
         }
+        order.setUser(user);
+        order.setStore(store);
 
         orderRepository.save(order);
+
+        // TODO: Payment 생성 및 결제 요청
 
         return new PlaceOrderResponseDto(order.getOrderId());
     }

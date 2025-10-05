@@ -7,11 +7,13 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailRes
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
+import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,9 +30,11 @@ public class OrderController {
     // 주문 생성 API
     @PostMapping("")
     public ResponseEntity<ApiResponse<PlaceOrderResponseDto>> placeOrder(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Valid @RequestBody PlaceOrderRequestDto requestDto) {
 
-        PlaceOrderResponseDto responseDto = orderService.placeOrder(requestDto);
+        PlaceOrderResponseDto responseDto = orderService.placeOrder(requestDto,
+            userDetails.getUser());
 
         String location = "/v1/orders/" + responseDto.orderId().toString(); // 헤더 Location
 

@@ -24,6 +24,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 @Entity
@@ -41,6 +42,7 @@ public class Order extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @Setter
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -51,6 +53,7 @@ public class Order extends BaseEntity {
         cascade = CascadeType.ALL,        // Order 저장/삭제 시 자식도 같이
         orphanRemoval = true,             // 컬렉션에서 제거 시 DB에서도 삭제
         fetch = FetchType.LAZY)
+    @Builder.Default
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
     @Column(name = "total_price", nullable = false)
@@ -85,9 +88,14 @@ public class Order extends BaseEntity {
     //주문 상품 추가(연관관계 형성)
     public void addOrderProduct(OrderProduct orderProduct) {
         this.orderProducts.add(orderProduct);
-        //orderProduct에서는 OrderProduct.of()메서드에서 order 지정해줌
+        orderProduct.setOrder(this);
     }
 
+    //음식점 연관관계 형성
+    public void setStore(Store store) {
+        this.store = store;
+        if (!store.getOrders().contains(this)) {
+            store.getOrders().add(this);
+        }
+    }
 }
-
-// TODO: 연관관계 설정

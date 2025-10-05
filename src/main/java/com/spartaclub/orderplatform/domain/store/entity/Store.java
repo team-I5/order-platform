@@ -21,6 +21,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -84,7 +85,7 @@ public class Store extends BaseEntity {
     private StoreStatus status;
 
     @Column(name = "averageRating", precision = 2, scale = 1)      // 총 두 자리, 소수점 아래 한 자리까지 표시
-    private Double averageRating;
+    private BigDecimal averageRating;
 
     @Column(name = "reviewCount")
     private Integer reviewCount;

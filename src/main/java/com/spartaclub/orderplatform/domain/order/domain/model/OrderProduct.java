@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 @Entity
@@ -32,6 +33,7 @@ public class OrderProduct extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false, columnDefinition = "uuid")
+    @Setter
     private Order order;                   // 주문 FK
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
