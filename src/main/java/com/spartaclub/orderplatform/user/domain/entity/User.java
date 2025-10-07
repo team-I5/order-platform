@@ -1,23 +1,30 @@
 package com.spartaclub.orderplatform.user.domain.entity;
 
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * 회원 엔티티 클래스
- * 회원가입, 로그인, 사용자 관리 기능을 위한 사용자 정보 저장
+ * 회원 엔티티 클래스 회원가입, 로그인, 사용자 관리 기능을 위한 사용자 정보 저장
  *
  * @author 전우선
  * @date 2025-10-02(목)
  */
 @Entity
-@Table(name = "p_user")
+@Table(name = "p_users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,7 +32,7 @@ public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "userid")
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(name = "username", nullable = false, unique = true, length = 10)
