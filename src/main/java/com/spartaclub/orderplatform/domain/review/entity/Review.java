@@ -2,10 +2,12 @@ package com.spartaclub.orderplatform.domain.review.entity;
 
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
+import com.spartaclub.orderplatform.domain.review.dto.ReviewUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.store.entity.Store;
-import com.spartaclub.orderplatform.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
+import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +37,7 @@ public class Review extends BaseEntity {
     @Column(nullable = false, length = 1000)
     private String contents;            // 리뷰 내용
     @CreatedBy
-    @Column(updatable = false)
+    @Column(updatable = false, nullable = false)
     private Long createdId;             // 리뷰 생성자 ID
     @LastModifiedBy
     private Long modifiedId;            // 리뷰 수정자 ID
@@ -56,4 +58,18 @@ public class Review extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)    // 리뷰 : 상품 → Many to One
     @JoinColumn(name = "productId")
     private Product product;
+
+    // 리뷰 수정 메서드
+    public void updateReview(@Valid ReviewUpdateRequestDto reviewUpdateRequestDto) {
+        this.rating = reviewUpdateRequestDto.getRating();
+        this.contents = reviewUpdateRequestDto.getContents();
+    }
+
+    // 리뷰 삭제 메서드(soft delete)
+    public void deleteReview(Long userId) {
+        this.deletedId = userId;
+        delete();
+    }
+
+
 }

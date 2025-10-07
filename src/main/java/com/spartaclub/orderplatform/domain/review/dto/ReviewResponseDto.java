@@ -16,8 +16,20 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ReviewResponseDto {
 
-    private String message;
+    // 리뷰 ID
     private UUID reviewId;
+    // 고객 ID
+    private UUID userId;
+    // 가게 ID
+    private UUID storeId;
+    // 주문 ID
+    private UUID orderId;
+    // 메뉴 ID
+    private UUID productId;
+    // 별점
+    private Integer rating;
+    // 리뷰내용
+    private String contents;
 
     /*
      * 리뷰 작성 응답 생성 메서드
@@ -25,7 +37,7 @@ public class ReviewResponseDto {
      * @param reviewId 작성된 리뷰 ID
      * @return 리뷰 작성 응답 메시지
      */
-    public static ReviewResponseDto write(UUID reviewId) {
-        return new ReviewResponseDto("리뷰가 작성되었습니다.", reviewId);
-    }
+//    public static ReviewResponseDto write(UUID reviewId) {
+//        return new ReviewResponseDto("리뷰가 작성되었습니다.", reviewId);
+//    }
 }
