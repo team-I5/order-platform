@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
  * 사용자 관련 비즈니스 로직 처리
  *
  * @author 전우선
- * @date 2025-10-04(토)
+ * @date 2025-10-05(일)
  */
 @Service
 @RequiredArgsConstructor
@@ -57,7 +57,7 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         // 5. 응답 DTO 반환
-        return UserSignupResponseDto.success(savedUser.getUserId());
+        return new UserSignupResponseDto("회원가입이 완료되었습니다.", savedUser.getUserId());
     }
 
     /**
@@ -200,7 +200,7 @@ public class UserService {
         }
 
         // 3. 성공 응답 반환 (멱등성: 이미 로그아웃된 상태여도 성공)
-        return LogoutResponseDto.success();
+        return new LogoutResponseDto();
     }
 
     /**
@@ -363,26 +363,21 @@ public class UserService {
         User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 2. 이미 탈퇴한 회원인지 확인
-        if (user.isDeleted()) {
-            throw new RuntimeException("이미 탈퇴한 회원입니다.");
-        }
-
-        // 3. 비밀번호 확인 (본인 인증)
+        // 2. 비밀번호 확인 (본인 인증)
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 4. 소프트 삭제 처리 (deletedAt 설정)
+        // 3. 소프트 삭제 처리 (deletedAt 설정)
         user.delete(); // BaseEntity의 delete() 메서드 사용
 
-        // 5. 관련 토큰 무효화 (모든 리프레시 토큰 삭제)
+        // 4. 관련 토큰 무효화 (모든 리프레시 토큰 삭제)
         refreshTokenRepository.deleteByUser(user);
 
-        // 6. 변경사항 저장
+        // 5. 변경사항 저장
         User deletedUser = userRepository.save(user);
 
-        // 7. 응답 DTO 생성
-        return UserDeleteResponseDto.success(deletedUser.getUserId(), deletedUser.getDeletedAt());
+        // 6. 응답 DTO 생성
+        return new UserDeleteResponseDto(deletedUser.getUserId(), deletedUser.getDeletedAt());
     }
 }
