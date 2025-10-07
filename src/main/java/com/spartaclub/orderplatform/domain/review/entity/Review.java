@@ -9,7 +9,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 
@@ -28,9 +27,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
     @Id // primary key
-    // UUID 자동 생성
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @UuidGenerator
+    @GeneratedValue(strategy = GenerationType.UUID) // UUID 자동 생성
     private UUID reviewId;              // 리뷰 ID
 
     private Integer rating;             // 리뷰 별점
@@ -43,7 +40,7 @@ public class Review extends BaseEntity {
     @LastModifiedBy
     private Long modifiedId;            // 리뷰 수정자 ID
     private Long deletedId;             // 리뷰 삭제자 ID
-
+    // 외래 키 관계 설정
     @ManyToOne(fetch = FetchType.LAZY)  // 리뷰 : 회원 → Many to one
     @JoinColumn(name = "userId")
     private User user;

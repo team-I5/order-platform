@@ -1,7 +1,6 @@
 package com.spartaclub.orderplatform.domain.review.controller;
 
 import com.spartaclub.orderplatform.domain.review.service.ReviewService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,7 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/v1/reviews")
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class ReviewController {
+    // 필드 선언
     private final ReviewService reviewService;
+
+    // 생성자
+    public ReviewController(ReviewService reviewService) {
+        this.reviewService = reviewService;
+    }
+
 }
