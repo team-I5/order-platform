@@ -5,7 +5,10 @@ import com.spartaclub.orderplatform.domain.review.dto.ReviewResponseDto;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+
+import java.util.UUID;
 
 /*
  * 리뷰 Entity ↔ Dto 맵핑
@@ -33,10 +36,16 @@ public interface ReviewMapper {
     Review toReviewEntity(ReviewCreateRequestDto reviewCreateRequestDto);
 
     // Entity → ResponseDto 변환
-    @Mapping(target = "userId", source = "user.userId")
+    @Mapping(target = "userId", source = "user.userId", qualifiedByName = "LongToUuid")
     @Mapping(target = "storeId", source = "store.storeId")
     @Mapping(target = "orderId", source = "order.orderId")
     @Mapping(target = "productId", source = "product.productId")
     ReviewResponseDto toReviewDto(Review review);
+
+    // @Named 애너테이션으로 구현한 메서드의 식별 가능 이름을 부여하고, qualifiedByName속성으로 지정해 지정한 이름의 메서드로 Long에서 UUID 변환이 이루어집니다.
+    @Named("LongToUuid")
+    default UUID LongToUuid(Long id) {
+        return (id == null) ? null : UUID.nameUUIDFromBytes(id.toString().getBytes());
+    }
 
 }

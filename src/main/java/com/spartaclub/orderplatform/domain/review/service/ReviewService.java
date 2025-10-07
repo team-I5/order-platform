@@ -25,6 +25,7 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
+//@Transactional(readOnly = true)
 public class ReviewService {
     // 필드 선언
     private final ReviewRepository reviewRepository;
@@ -47,7 +48,7 @@ public class ReviewService {
         Review review = findReview(reviewId);
         // 2. 리뷰 정보 수정
         review.updateReview(reviewUpdateRequestDto);
-        // 3. entity → dto 변환 뒤 반환
+        // 3. entity → responseDto 변환 뒤 반환
         return reviewMapper.toReviewDto(review);
     }
 
@@ -56,6 +57,7 @@ public class ReviewService {
     public void deleteReview(UUID reviewId) {
         // 1. reviewId로 해당 리뷰 DB 존재 확인
         Review review = findReview(reviewId);
+        // 2. 리뷰 도메인 삭제 메서드 호출
         review.deleteReview(0L);
     }
 

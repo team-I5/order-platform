@@ -9,6 +9,7 @@ import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
@@ -26,6 +27,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_reviews")
 @Getter
+// 외부에서 접근해 리뷰 객체 생성할 수 있게 애너테이션 추가
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
     @Id // primary key

@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /*
- * 리뷰 수정 요청 Dto
+ * 리뷰 수정 요청 Dto 클래스
  *
  * @author 이준성
  * @date 2025-10-07(화)
