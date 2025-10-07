@@ -1,9 +1,10 @@
 package com.spartaclub.orderplatform.domain.product.application.service;
 
-import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.application.mapper.ProductMapper;
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
+import com.spartaclub.orderplatform.domain.store.entity.Store;
 import com.spartaclub.orderplatform.domain.store.repository.StoreRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final StoreRepository storeRepository;
+//    private final AddressRepository addressRepository;
 
     // 상품 등록 서비스 로직
     @Transactional
@@ -125,9 +127,38 @@ public class ProductService {
         return productMapper.toDto(product);
     }
 
-    // --- 상품 공통 조회 함수 ---
+
+
+    // 검색 키워드와 사용자 배송지 정보로 상점 검색
+//    public Page<Store> getStoreListByProductNameAndAddressId(String keyword, UUID addressId, Pageable pageable) {
+        // 1. 사용자의 배송지 조회
+//        Address address = addressRepository.findByAddressId(addressId)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "배송지가 존재하지 않습니다."));
+
+        // 2. 도로명 주소만 추출
+//        String roadName = extractRoadName(address.getRoadNameAddress());
+
+        // 3. 키워드로 찾은 상품과 연계된 가게 중 배송지 주소 근처인 가게 조회
+//        Page<Store> storePage = storeRepository.findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable);
+
+        // 3. entity -> dto 후 반환
+//    }
+
+    // --- 상품 공통 조회 메소드 ---
     private Product findProductOrThrow(UUID productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
+    }
+
+    // 사용자 배송지에서 도로명 주소만 추출하는 메소드
+    private String extractRoadName(String roadAddress) {
+        // 예: "서울특별시 노원구 한글비석로 24" → "한글비석로"
+        String[] parts = roadAddress.split(" ");
+        for (String part : parts) {
+            if (part.endsWith("로") || part.endsWith("길")) {
+                return part;
+            }
+        }
+        return ""; // 못 찾은 경우
     }
 }

@@ -15,7 +15,7 @@ import java.util.UUID;
  * 상품 정보 Entity
  *
  * @author 류형선
- * @date 2025-10-02(목)
+ * @date 2025-10-05(일)
  */
 @Entity
 @Table(name = "p_products")

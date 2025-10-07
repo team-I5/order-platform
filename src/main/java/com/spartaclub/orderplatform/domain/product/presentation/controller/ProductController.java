@@ -5,15 +5,18 @@ import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreat
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.product.application.service.ProductService;
+import com.spartaclub.orderplatform.domain.store.entity.Store;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -81,4 +84,20 @@ public class ProductController {
         ProductResponseDto requestDto = productService.updateProductVisibility(productId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(requestDto));
     }
+
+    // 상품 검색 API
+//    @GetMapping("search-by-product-Name")
+//    public ResponseEntity<ApiResponse<ProductResponseDto>> searchProductByProductName(
+//            @RequestParam String keyword,
+//            @RequestParam(required = false) UUID addressId,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size
+//    ) {
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<Store> stores = productService.getStoreListByProductNameAndAddressId(keyword, addressId, pageable);
+//
+//    }
+
+    // 상품 설명 AI 요청 API
+
 }
