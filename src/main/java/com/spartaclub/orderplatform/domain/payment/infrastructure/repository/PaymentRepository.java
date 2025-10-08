@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.payment.domain.repository;
+package com.spartaclub.orderplatform.domain.payment.infrastructure.repository;
 
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
 import java.util.UUID;
