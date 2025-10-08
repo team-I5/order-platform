@@ -179,4 +179,28 @@ public class UserController {
 
         return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
+
+    /**
+     * 관리자 계정 생성 API (MASTER 전용)
+     * MASTER 권한 사용자만 MANAGER 계정을 생성할 수 있음
+     *
+     * @param userDetails 인증된 MASTER 사용자 정보
+     * @param requestDto 관리자 생성 요청 데이터
+     * @return 생성된 관리자 정보와 생성자 정보
+     */
+    @PostMapping("/manager")
+    @PreAuthorize("hasRole('MASTER')")
+    public ResponseEntity<ApiResponse<ManagerCreateResponseDto>> createManager(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody ManagerCreateRequestDto requestDto) {
+
+        // 인증된 MASTER 사용자의 이메일 추출
+        String masterEmail = userDetails.getUser().getEmail();
+        
+        // 관리자 계정 생성
+        ManagerCreateResponseDto responseDto = userService.createManager(requestDto, masterEmail);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(responseDto));
+    }
 }
