@@ -20,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * 실시간 권한 체크를 통한 보안 강화 구현
  *
  * @author 전우선
- * @date 2025-10-04(토)
+ * @date 2025-10-09(목)
  */
 @Configuration
 @EnableWebSecurity
@@ -67,6 +67,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/v1/users/me").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/v1/users/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/v1/users/logout").authenticated()
+
+                        // 주소 관련 기능은 인증된 사용자 모두 접근 가능
+                        .requestMatchers("/v1/addresses/**").authenticated()
 
                         // 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()

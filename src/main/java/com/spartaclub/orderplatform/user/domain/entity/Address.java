@@ -2,9 +2,7 @@ package com.spartaclub.orderplatform.user.domain.entity;
 
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
@@ -14,13 +12,15 @@ import java.util.UUID;
  * 사용자의 배송지 주소 정보 관리
  *
  * @author 전우선
- * @date 2025-10-02(목)
+ * @date 2025-10-09(목)
  */
 @Entity
 @Table(name = "p_address")
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Address extends BaseEntity {
 
     @Id
@@ -47,6 +47,7 @@ public class Address extends BaseEntity {
     private String addressName;
 
     @Column(name = "defaultAddress", nullable = false)
+    @Builder.Default
     private Boolean defaultAddress = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
