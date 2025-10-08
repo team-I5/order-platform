@@ -36,12 +36,18 @@ public class Payment extends BaseEntity {
     @JoinColumn(name = "order_id", nullable = false, columnDefinition = "uuid")
     private Order order;     // 주문 엔티티 연관관계 1:1
 
-    @Column(name = "paymentAmount", nullable = false)
+    @Column(name = "payment_amount", nullable = false)
     private Long paymentAmount;           // 결제금액
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 40)
     private PaymentStatus status;               // 결제상태
+
+    @Column(name = "pg_payment_key")
+    private String PgPaymentKey;
+
+    @Column(name = "pg_order_id")
+    private String PgOrderId;
 
     public void changeStatus(PaymentStatus status) {
         this.status = status;

@@ -1,7 +1,6 @@
 package com.spartaclub.orderplatform.domain.order.application;
 
 import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
-import com.spartaclub.orderplatform.domain.order.domain.event.PaymentRequestedEvent;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
@@ -12,20 +11,19 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponse
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto.OrderItemRequest;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
-import com.spartaclub.orderplatform.domain.payment.application.PaymentService;
-import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.store.entity.Store;
 import com.spartaclub.orderplatform.domain.store.repository.StoreRepository;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.user.domain.entity.User;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,8 +39,6 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
-    private final PaymentService paymentService;
-    private final ApplicationEventPublisher eventPublisher;
 
     //주문 생성
     @Transactional
@@ -91,13 +87,6 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        //결제 생성
-        Payment payment = paymentService.createPending(order, totalPrice);
-
-        //커밋 이후 실행되도록 이벤트 발행
-        eventPublisher.publishEvent(
-            new PaymentRequestedEvent(payment.getPaymentId(), order.getOrderId(), totalPrice));
-
         return new PlaceOrderResponseDto(order.getOrderId());
     }
 
@@ -119,13 +108,12 @@ public class OrderService {
 
         Page<Order> page = orderRepository.findByUser_UserId(
             userDetails.getUser().getUserId(),
-            pageable);  // TODO: userId 수정 필요
+            pageable);
 
         List<OrderDetailResponseDto> ordersList = page.stream()
             .map(orderMapper::toDto)
             .collect(Collectors.toList());
 
-        //TODO: Pageable Mapper 만들기
         OrdersResponseDto.PageableDto meta = orderMapper.toPageableDto(page);
 
         return new OrdersResponseDto(ordersList, meta);
@@ -157,5 +145,10 @@ public class OrderService {
         }
 
         return orders.isEmpty() ? Sort.by(defaultDir, defaultProperty) : Sort.by(orders);
+    }
+
+    public Order findById(UUID orderId) {
+        return orderRepository.findById(orderId)
+            .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다: " + orderId));
     }
 }
