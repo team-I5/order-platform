@@ -5,10 +5,7 @@ import com.spartaclub.orderplatform.domain.review.dto.ReviewResponseDto;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-
-import java.util.UUID;
 
 /*
  * 리뷰 Entity ↔ Dto 맵핑
@@ -19,7 +16,8 @@ import java.util.UUID;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ReviewMapper {
     // RequestDto → Entity 변환
-    /* 외래키
+    /*
+     * 외래키
      * 고객ID userId
      * 가게ID storeId
      * 주문ID orderId
@@ -29,23 +27,18 @@ public interface ReviewMapper {
     @Mapping(target = "store", ignore = true)
     @Mapping(target = "order", ignore = true)
     @Mapping(target = "product", ignore = true)
-    // 생성자, 수정자, 삭제자
+    // reviewId DB auto_increment로 자동 생성
+    @Mapping(target = "reviewId", ignore = true)
+    // 생성자, 수정자, 삭제자 Audit에서 자동 생성
     @Mapping(target = "createdId", ignore = true)
     @Mapping(target = "modifiedId", ignore = true)
     @Mapping(target = "deletedId", ignore = true)
     Review toReviewEntity(ReviewCreateRequestDto reviewCreateRequestDto);
 
     // Entity → ResponseDto 변환
-    @Mapping(target = "userId", source = "user.userId", qualifiedByName = "LongToUuid")
+    @Mapping(target = "userId", source = "user.userId")
     @Mapping(target = "storeId", source = "store.storeId")
     @Mapping(target = "orderId", source = "order.orderId")
     @Mapping(target = "productId", source = "product.productId")
     ReviewResponseDto toReviewDto(Review review);
-
-    // @Named 애너테이션으로 구현한 메서드의 식별 가능 이름을 부여하고, qualifiedByName속성으로 지정해 지정한 이름의 메서드로 Long에서 UUID 변환이 이루어집니다.
-    @Named("LongToUuid")
-    default UUID LongToUuid(Long id) {
-        return (id == null) ? null : UUID.nameUUIDFromBytes(id.toString().getBytes());
-    }
-
 }

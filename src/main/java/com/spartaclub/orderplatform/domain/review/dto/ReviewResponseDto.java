@@ -19,7 +19,7 @@ public class ReviewResponseDto {
     // 리뷰 ID
     private UUID reviewId;
     // 고객 ID
-    private UUID userId;
+    private Long userId;
     // 가게 ID
     private UUID storeId;
     // 주문 ID
@@ -30,6 +30,12 @@ public class ReviewResponseDto {
     private Integer rating;
     // 리뷰내용
     private String contents;
+
+    // 리뷰 수정 메서드
+    public void updateReview(ReviewUpdateRequestDto reviewUpdateRequestDto) {
+        this.rating = reviewUpdateRequestDto.getRating();
+        this.contents = reviewUpdateRequestDto.getContents();
+    }
 
     /*
      * 리뷰 작성 응답 생성 메서드

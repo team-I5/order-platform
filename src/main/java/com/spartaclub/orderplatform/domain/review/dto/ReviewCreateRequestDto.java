@@ -18,6 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ReviewCreateRequestDto {
     // 주문 Id for 중복체크
+    @NotNull(message = "중복 체크를 위한 주문 ID 필요합니다.")
     private UUID orderId;
     // 별점
     @NotNull(message = "서비스를 평가해주세요.")

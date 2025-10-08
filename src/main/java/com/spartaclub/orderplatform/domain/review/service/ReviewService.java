@@ -7,7 +7,6 @@ import com.spartaclub.orderplatform.domain.review.dto.ReviewUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
 import com.spartaclub.orderplatform.domain.review.mapper.ReviewMapper;
 import com.spartaclub.orderplatform.domain.review.repository.ReviewRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,7 +31,7 @@ public class ReviewService {
     private final ReviewMapper reviewMapper;
 
     // 리뷰 등록 로직(create)
-    public ReviewResponseDto createReview(@Valid ReviewCreateRequestDto reviewCreateRequestDto) {
+    public ReviewResponseDto createReview(ReviewCreateRequestDto reviewCreateRequestDto) {
         // 1. requestDto → entity 전환
         Review review = reviewMapper.toReviewEntity(reviewCreateRequestDto);
         // 2. 저장
@@ -43,13 +42,14 @@ public class ReviewService {
 
     // 리뷰 수정 로직(update)
     @Transactional
-    public ReviewResponseDto updateReview(UUID reviewId, @Valid ReviewUpdateRequestDto reviewUpdateRequestDto) {
+    public ReviewResponseDto updateReview(UUID reviewId, ReviewUpdateRequestDto reviewUpdateRequestDto) {
         // 1. reviewId로 해당 리뷰 DB 존재 확인
         Review review = findReview(reviewId);
-        // 2. 리뷰 정보 수정
-        review.updateReview(reviewUpdateRequestDto);
-        // 3. entity → responseDto 변환 뒤 반환
-        return reviewMapper.toReviewDto(review);
+        // 2. entity → responseDto 변환 뒤 반환
+        ReviewResponseDto responseDto = reviewMapper.toReviewDto(review);
+        // 3. 반환 한 곳에서 리뷰 정보 수정
+        responseDto.updateReview(reviewUpdateRequestDto);
+        return responseDto;
     }
 
     // 리뷰 삭제 로직(delete)
