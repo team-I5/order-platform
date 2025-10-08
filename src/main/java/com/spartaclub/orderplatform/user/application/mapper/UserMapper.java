@@ -1,7 +1,7 @@
 package com.spartaclub.orderplatform.user.application.mapper;
 
-import com.spartaclub.orderplatform.user.presentation.dto.*;
 import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.user.presentation.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
  * 컴파일 타임에 구현체가 자동 생성됨
  *
  * @author 전우선
- * @date 2025-10-04(토)
+ * @date 2025-10-08(수)
  */
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -45,4 +45,11 @@ public interface UserMapper {
     @Mapping(target = "message", constant = "회원정보가 성공적으로 수정되었습니다.")
     @Mapping(target = "userInfo", expression = "java(toUserInfo(user))")
     UserUpdateResponseDto toUpdateResponse(User user);
+
+    /**
+     * User 엔티티를 회원 목록 응답 DTO로 변환
+     */
+    @Mapping(target = "role", expression = "java(user.getRole().name())")
+    @Mapping(target = "isActive", expression = "java(!user.isDeleted())")
+    UserListResponseDto toListResponse(User user);
 }

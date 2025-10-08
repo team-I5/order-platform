@@ -8,8 +8,12 @@ import com.spartaclub.orderplatform.user.presentation.dto.*;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * 사용자 관련 API 엔드포인트 제공
  *
  * @author 전우선
- * @date 2025-10-04(토)
+ * @date 2025-10-08(수)
  */
 @RestController
 @RequestMapping("/v1/users")
@@ -146,6 +150,32 @@ public class UserController {
         // 인증된 사용자 ID로 회원 탈퇴 처리
         Long userId = userDetails.getUser().getUserId();
         UserDeleteResponseDto responseDto = userService.deleteUser(userId, requestDto);
+
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
+    }
+
+    /**
+     * 회원 전체 조회 API (관리자용)
+     * 검색, 필터링, 정렬, 페이징 지원
+     * MANAGER, MASTER 권한만 접근 가능
+     *
+     * @param requestDto 검색/필터링 조건
+     * @param pageable   페이징/정렬 정보
+     * @return 회원 목록과 통계 정보
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'MASTER')")
+    public ResponseEntity<ApiResponse<UserListPageResponseDto>> getAllUsers(
+            @ModelAttribute UserListRequestDto requestDto,
+            @PageableDefault(size = 10)
+            Pageable pageable) {
+
+        // 페이지 크기 검증 (최대 50)
+        if (pageable.getPageSize() > 50) {
+            throw new RuntimeException("페이지 크기는 1~50 사이여야 합니다.");
+        }
+
+        UserListPageResponseDto responseDto = userService.getAllUsers(requestDto, pageable);
 
         return ResponseEntity.ok(ApiResponse.success(responseDto));
     }

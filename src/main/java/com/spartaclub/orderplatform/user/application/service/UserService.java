@@ -4,22 +4,29 @@ import com.spartaclub.orderplatform.global.application.jwt.JwtUtil;
 import com.spartaclub.orderplatform.user.application.mapper.UserMapper;
 import com.spartaclub.orderplatform.user.domain.entity.RefreshToken;
 import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.user.domain.entity.UserRole;
 import com.spartaclub.orderplatform.user.infrastructure.repository.RefreshTokenRepository;
 import com.spartaclub.orderplatform.user.infrastructure.repository.UserRepository;
 import com.spartaclub.orderplatform.user.presentation.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * User 서비스 클래스
  * 사용자 관련 비즈니스 로직 처리
  *
  * @author 전우선
- * @date 2025-10-05(일)
+ * @date 2025-10-08(수)
  */
 @Service
 @RequiredArgsConstructor
@@ -379,5 +386,75 @@ public class UserService {
 
         // 6. 응답 DTO 생성
         return new UserDeleteResponseDto(deletedUser.getUserId(), deletedUser.getDeletedAt());
+    }
+
+    /**
+     * 회원 전체 조회 (관리자용)
+     * 검색, 필터링, 정렬, 페이징 지원
+     * 통계 정보 포함
+     *
+     * @param requestDto 검색/필터링 조건
+     * @param pageable   페이징/정렬 정보
+     * @return 회원 목록과 통계 정보
+     */
+    @Transactional(readOnly = true)
+    public UserListPageResponseDto getAllUsers(UserListRequestDto requestDto, Pageable pageable) {
+        // 1. 날짜 범위 조건 변환 (LocalDate -> LocalDateTime)
+        LocalDateTime startDateTime = requestDto.getStartDate() != null ?
+                requestDto.getStartDate().atStartOfDay() : null;
+        LocalDateTime endDateTime = requestDto.getEndDate() != null ?
+                requestDto.getEndDate().atTime(23, 59, 59) : null;
+
+        // 2. 조건별 회원 목록 조회
+        Page<User> userPage;
+        
+        if (requestDto.getRole() != null) {
+            // 권한별 조회
+            if (Boolean.TRUE.equals(requestDto.getIncludeDeleted())) {
+                userPage = userRepository.findByRole(requestDto.getRole(), pageable);
+            } else {
+                userPage = userRepository.findByRoleAndDeletedAtIsNull(requestDto.getRole(), pageable);
+            }
+        } else {
+            // 전체 조회
+            if (Boolean.TRUE.equals(requestDto.getIncludeDeleted())) {
+                userPage = userRepository.findAll(pageable);
+            } else {
+                userPage = userRepository.findByDeletedAtIsNull(pageable);
+            }
+        }
+
+        // 3. User -> UserListResponseDto 변환
+        List<UserListResponseDto> userList = userPage.getContent().stream()
+                .map(userMapper::toListResponse)
+                .collect(Collectors.toList());
+
+        // 4. 권한별 분포 계산
+        Map<String, Long> roleDistribution = new HashMap<>();
+        List<Object[]> roleStats = userRepository.countByRoleAndActiveUsers();
+        for (Object[] stat : roleStats) {
+            UserRole role = (UserRole) stat[0];
+            Long count = (Long) stat[1];
+            roleDistribution.put(role.name(), count);
+        }
+
+        // 5. Builder 패턴으로 응답 DTO 생성
+        return UserListPageResponseDto.builder()
+                .content(userList)
+                .pageable(UserListPageResponseDto.PageableInfo.builder()
+                        .page(userPage.getNumber())
+                        .size(userPage.getSize())
+                        .totalElements(userPage.getTotalElements())
+                        .totalPages(userPage.getTotalPages())
+                        .first(userPage.isFirst())
+                        .last(userPage.isLast())
+                        .build())
+                .summary(UserListPageResponseDto.SummaryInfo.builder()
+                        .totalUsers(userRepository.countAllUsers())
+                        .activeUsers(userRepository.countActiveUsers())
+                        .deletedUsers(userRepository.countDeletedUsers())
+                        .roleDistribution(roleDistribution)
+                        .build())
+                .build();
     }
 }
