@@ -3,13 +3,13 @@ package com.spartaclub.orderplatform.domain.review.entity;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.store.entity.Store;
-import com.spartaclub.orderplatform.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
+import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 
@@ -25,12 +25,12 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_reviews")
 @Getter
+// 외부에서 접근해 리뷰 객체 생성할 수 있게 애너테이션 추가
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
     @Id // primary key
-    // UUID 자동 생성
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @UuidGenerator
+    @GeneratedValue(strategy = GenerationType.UUID) // UUID 자동 생성
     private UUID reviewId;              // 리뷰 ID
 
     private Integer rating;             // 리뷰 별점
@@ -38,12 +38,12 @@ public class Review extends BaseEntity {
     @Column(nullable = false, length = 1000)
     private String contents;            // 리뷰 내용
     @CreatedBy
-    @Column(updatable = false)
+    @Column(updatable = false, nullable = false)
     private Long createdId;             // 리뷰 생성자 ID
     @LastModifiedBy
     private Long modifiedId;            // 리뷰 수정자 ID
     private Long deletedId;             // 리뷰 삭제자 ID
-
+    // 외래 키 관계 설정
     @ManyToOne(fetch = FetchType.LAZY)  // 리뷰 : 회원 → Many to one
     @JoinColumn(name = "userId")
     private User user;
@@ -59,4 +59,12 @@ public class Review extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)    // 리뷰 : 상품 → Many to One
     @JoinColumn(name = "productId")
     private Product product;
+
+    // 리뷰 삭제 메서드(soft delete)
+    public void deleteReview(Long userId) {
+        this.deletedId = userId;
+        delete();
+    }
+
+
 }
