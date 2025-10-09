@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.store.entity;
+package com.spartaclub.orderplatform.domain.store.domain.model;
 
 public enum StoreStatus {
 
