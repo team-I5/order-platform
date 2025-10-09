@@ -12,6 +12,7 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.request.Reject
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.RejectStoreResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.User;
@@ -163,6 +164,30 @@ public class StoreService {
             default -> stores = Page.empty();
         }
         return stores.map(storeMapper::toStoreSearchResponseDto);
+    }
+
+    // 음식점 상세 조회
+    public StoreDetailResponseDto searchStoreDetail(UUID storeId, User user, UserRole role) {
+        Store store = getStore(storeId);
+
+        switch (role) {
+            case CUSTOMER -> {
+                if (store.getStatus() != APPROVED) {
+                    throw new RuntimeException("권한이 없습니다.");
+                }
+            }
+            case OWNER -> {
+                if (!store.getUser().getUserId().equals(user.getUserId())) {
+                    throw new RuntimeException("권한이 없습니다.");
+                }
+            }
+            case MANAGER, MASTER -> {
+                // 모든 음식점 조회 가능
+            }
+            default -> throw new RuntimeException("권한이 없습니다.");
+        }
+
+        return storeMapper.toStoreDetailResponseDto(store);
     }
 
     // 존재하는 음식점인지 확인
