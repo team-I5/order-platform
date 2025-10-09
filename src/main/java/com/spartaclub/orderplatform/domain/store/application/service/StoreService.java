@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ public class StoreService {
     private final StoreMapper storeMapper;
 
     // Owner의 음식점 생성
+    @Transactional
     public StoreResponseDto createStore(User user, StoreRequestDto dto) {
         // 이미 나에게 존재하는 가게 이름인지 확인
         boolean existStoreName = storeRepository
@@ -53,6 +55,7 @@ public class StoreService {
     }
 
     // Owner의 음식점 재승인 신청
+    @Transactional
     public StoreResponseDto reapplyStore(User user, UUID storeId, StoreRequestDto dto) {
         Store store = getStore(storeId);
 
@@ -70,6 +73,7 @@ public class StoreService {
     }
 
     // 승인된 음식점의 기본정보 수정
+    @Transactional
     public StoreResponseDto updateApprovedStore(
         User user, UUID storeId, StoreRequestDto dto
     ) {
@@ -89,6 +93,7 @@ public class StoreService {
     }
 
     // Owner의 음식점 삭제
+    @Transactional
     public void deleteStore(User user, UUID storeId) {
         Store store = getStore(storeId);
 
@@ -101,6 +106,7 @@ public class StoreService {
     }
 
     // Manager의 음식점 승인
+    @Transactional
     public StoreResponseDto approveStore(User user, UUID storeId) {
         Store store = getStore(storeId);
 
@@ -112,6 +118,7 @@ public class StoreService {
 
 
     // Manager의 음식점 승인 거절
+    @Transactional
     public RejectStoreResponseDto rejectStore(User user, UUID storeId,
         RejectStoreRequestDto dto) {
         Store store = getStore(storeId);
@@ -122,7 +129,14 @@ public class StoreService {
             storeRepository.save(store.reject(user.getUserId(), dto.getRejectReason())));
     }
 
-    //음식점 목록 조회
+    /*
+     *  음식점 목록 조회
+     *    Role별로 목록 내용 다름
+     *      - customer: 승인된 음식점
+     *      - owner: 자신의 음식점
+     *      - manager/master: 전체 음식점, 승인 상태별 / 음식점 주인별
+     */
+    @Transactional(readOnly = true)
     public Page<StoreSearchResponseDto> searchStore(
         StoreSearchRequestDto dto, UserRole role, User user
     ) {
@@ -135,12 +149,6 @@ public class StoreService {
 
         Page<Store> stores;
 
-        /**
-         * Role별로 목록 내용 다름
-         *  - customer: 승인된 음식점
-         *  - owner: 자신의 음식점
-         *  - manager/master: 전체 음식점, 승인 상태별 / 음식점 주인별
-         */
         switch (role) {
             case CUSTOMER -> stores = storeRepository.findByStatus(APPROVED, pageable);
             case OWNER -> stores = storeRepository.findByUser(user, pageable);
