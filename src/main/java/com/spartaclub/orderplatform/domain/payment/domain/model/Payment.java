@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -44,14 +45,47 @@ public class Payment extends BaseEntity {
     private PaymentStatus status;               // 결제상태
 
     @Column(name = "pg_payment_key")
-    private String PgPaymentKey;
+    private String pgPaymentKey;
 
     @Column(name = "pg_order_id")
-    private String PgOrderId;
+    private String pgOrderId;
 
     public void changeStatus(PaymentStatus status) {
         this.status = status;
     }
 
+    public void validateApproval(String requestPgPaymentKey, String requestPgOrderId,
+        Long requestAmount) {
+        // 결제 상태 검증
+        if (this.status != PaymentStatus.AUTHORIZED) {
+            throw new IllegalStateException(
+                "결제를 승인할 수 없는 상태입니다. (현재 상태: " + this.status + ")"
+            );
+        }
+
+        // PG 결제키 검증
+        if (!this.pgPaymentKey.trim().equals(requestPgPaymentKey.trim())) {
+            throw new IllegalStateException(
+                "PG 결제키가 일치하지 않습니다. (저장된 키: " + this.pgPaymentKey + ", 요청 키: " + requestPgPaymentKey
+                    + ")"
+            );
+        }
+
+        // PG 주문번호 검증
+        if (!this.pgOrderId.trim().equals(requestPgOrderId.trim())) {
+            throw new IllegalStateException(
+                "PG 주문번호가 일치하지 않습니다. (저장된 주문번호: " + this.pgOrderId + ", 요청 주문번호: "
+                    + requestPgOrderId + ")"
+            );
+        }
+
+        // 결제 금액 검증
+        if (!Objects.equals(this.paymentAmount, requestAmount)) {
+            throw new IllegalStateException(
+                "결제 금액이 일치하지 않습니다. (저장된 금액: " + this.paymentAmount + ", 요청 금액: " + requestAmount
+                    + ")"
+            );
+        }
+    }
 }
 

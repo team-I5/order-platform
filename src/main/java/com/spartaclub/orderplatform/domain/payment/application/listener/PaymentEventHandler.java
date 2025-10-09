@@ -1,12 +1,8 @@
 package com.spartaclub.orderplatform.domain.payment.application.listener;
 
 import com.spartaclub.orderplatform.domain.order.domain.event.PaymentRequestedEvent;
-import com.spartaclub.orderplatform.domain.order.domain.model.Order;
-import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
 import com.spartaclub.orderplatform.domain.payment.application.PaymentService;
-import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
-import com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus;
 import com.spartaclub.orderplatform.domain.payment.infrastructure.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,21 +28,21 @@ public class PaymentEventHandler {
         log.info("Received PaymentRequested event {}", e);
 
         // pg 결제 요청 호출 연동X
-        boolean success = paymentService.confirmPayment();
-        Payment p = paymentRepository.findById(e.paymentId())
-            .orElseThrow(() -> new RuntimeException("Payment not found"));
-        Order o = orderRepository.findById(e.orderId())
-            .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        if (success) {
-            p.changeStatus(PaymentStatus.CAPTURED);
-            o.changeStatus(OrderStatus.PAID);
-        } else {
-            p.changeStatus(PaymentStatus.FAILED);
-            o.changeStatus(OrderStatus.CANCELED);
-        }
-
-        paymentRepository.save(p);
-        orderRepository.save(o);
+//        boolean success = paymentService.confirmPayment();
+//        Payment p = paymentRepository.findById(e.paymentId())
+//            .orElseThrow(() -> new RuntimeException("Payment not found"));
+//        Order o = orderRepository.findById(e.orderId())
+//            .orElseThrow(() -> new RuntimeException("Order not found"));
+//
+//        if (success) {
+//            p.changeStatus(PaymentStatus.CAPTURED);
+//            o.changeStatus(OrderStatus.PAID);
+//        } else {
+//            p.changeStatus(PaymentStatus.FAILED);
+//            o.changeStatus(OrderStatus.CANCELED);
+//        }
+//
+//        paymentRepository.save(p);
+//        orderRepository.save(o);
     }
 }

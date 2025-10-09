@@ -2,13 +2,14 @@ package com.spartaclub.orderplatform.domain.payment.application;
 
 import com.spartaclub.orderplatform.domain.order.application.OrderService;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
-import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
 import com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus;
+import com.spartaclub.orderplatform.domain.payment.infrastructure.pg.TossPaymentsClient;
 import com.spartaclub.orderplatform.domain.payment.infrastructure.repository.PaymentRepository;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.ConfirmPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentResponseDto;
-import java.util.Objects;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,27 +21,18 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OrderService orderService;
+    private final TossPaymentsClient tossPaymentsClient;
 
     //결제 생성
     @Transactional
     public InitPaymentResponseDto initPayment(InitPaymentRequestDto requestDto) {
         Order order = orderService.findById(requestDto.orderId());
 
-        // 주문 상태 검증
-        if (order.getStatus() != OrderStatus.PAYMENT_PENDING) {
-            throw new IllegalStateException(
-                "결제를 진행할 수 없는 주문 상태입니다. (현재 상태: " + order.getStatus() + ")"
-            );
-        }
-
-        //결제 금액 검증
-        if (!Objects.equals(order.getTotalPrice(), requestDto.amount())) {
-            throw new IllegalStateException("결제 요청 금액이 주문 총액과 일치하지 않습니다. "
-                + "(주문금액: " + order.getTotalPrice() + ", 요청금액: " + requestDto.amount() + ")");
-        }
+        //주문 상태 및 결제 금액 검증
+        order.validatePaymentAvailable(requestDto.amount());
 
         //PG사 결제 요청
-        String redirectUrl = requestPaymentReady(requestDto.amount());
+        String redirectUrl = tossPaymentsClient.requestPaymentReady(requestDto.amount());
 
         //리다이렉트 URL 파싱
         String[] redirectUrlParts = parseRedirectUrl(redirectUrl);
@@ -53,8 +45,8 @@ public class PaymentService {
                 .order(order)
                 .paymentAmount(requestDto.amount())
                 .status(PaymentStatus.AUTHORIZED)
-                .PgPaymentKey(PgPaymentKey)
-                .PgOrderId(PgOrderId)
+                .pgPaymentKey(PgPaymentKey)
+                .pgOrderId(PgOrderId)
                 .build();
 
             paymentRepository.save(payment);
@@ -72,20 +64,33 @@ public class PaymentService {
         }
     }
 
-    //PG사에 결제 요청 실제 연동 X
-    public String requestPaymentReady(Long amount) {
-        /*PG사 결제 요청 실제 연동 하지 않으므로
-         * redirectUrl 임의로 생성*/
-        return "https://store.com/success?paymentKey="
-            + UUID.randomUUID()
-            + "&orderId=" + UUID.randomUUID()
-            + "&amount=" + amount;
+    @Transactional
+    public void confirmPayment(ConfirmPaymentRequestDto requestDto, UUID paymentId) {
+        Order order = orderService.findById(requestDto.orderId());
+
+        //주문 상태 및 결제 금액 검증
+        order.validatePaymentAvailable(requestDto.amount());
+
+        Payment payment = findById(paymentId);
+
+        //결제 상태, PG 결제키, PG orderId, 금액 검증
+        payment.validateApproval(requestDto.pgPaymentKey(), requestDto.pgOrderId(),
+            requestDto.amount());
+
+        boolean success = tossPaymentsClient.confirmPayment(requestDto.pgPaymentKey(),
+            requestDto.pgOrderId(), requestDto.amount());
+
+        if (success) {
+            payment.changeStatus(PaymentStatus.CAPTURED);
+        }
+//        else {
+//            payment.changeStatus(PaymentStatus.FAILED);
+//        }
     }
 
-    //PG사 결제 승인
-    public boolean confirmPayment() {
-        /*실제 PG 연동하지 않기 때문에 무조건 true*/
-        return true;
+    public Payment findById(UUID paymentId) {
+        return paymentRepository.findById(paymentId)
+            .orElseThrow(() -> new EntityNotFoundException("결제 정보를 찾을 수 없습니다: " + paymentId));
     }
 
     private String[] parseRedirectUrl(String redirectUrl) {

@@ -18,6 +18,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -102,5 +103,19 @@ public class Order extends BaseEntity {
     //주문 상태 변경
     public void changeStatus(OrderStatus orderStatus) {
         this.status = orderStatus;
+    }
+
+    //주문 상태 및 결제 금액 검증
+    public void validatePaymentAvailable(Long requestAmount) {
+        if (this.status != OrderStatus.PAYMENT_PENDING) {
+            throw new IllegalStateException(
+                "결제를 진행할 수 없는 주문 상태입니다. (현재 상태: " + this.status + ")"
+            );
+        }
+
+        if (!Objects.equals(this.totalPrice, requestAmount)) {
+            throw new IllegalStateException("결제 요청 금액이 주문 총액과 일치하지 않습니다. "
+                + "(주문금액: " + this.totalPrice + ", 요청금액: " + requestAmount + ")");
+        }
     }
 }
