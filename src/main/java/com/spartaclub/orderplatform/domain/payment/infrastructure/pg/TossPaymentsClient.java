@@ -22,4 +22,10 @@ public class TossPaymentsClient {
         return true;
     }
 
+    //결제 환불 요청
+    public boolean cancelPayment(String paymentKey, String cancelReason) {
+        /*실제 PG 연동하지 않기 때문에 무조건 true*/
+        return true;
+    }
+
 }

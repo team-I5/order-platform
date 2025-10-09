@@ -6,6 +6,7 @@ import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
 import com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus;
 import com.spartaclub.orderplatform.domain.payment.infrastructure.pg.TossPaymentsClient;
 import com.spartaclub.orderplatform.domain.payment.infrastructure.repository.PaymentRepository;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.CancelPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.ConfirmPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentResponseDto;
@@ -68,6 +69,7 @@ public class PaymentService {
         }
     }
 
+    //결제 승인
     @Transactional
     public void confirmPayment(ConfirmPaymentRequestDto requestDto, UUID paymentId) {
         Order order = orderService.findById(requestDto.orderId());
@@ -90,6 +92,21 @@ public class PaymentService {
 //        else {
 //            payment.changeStatus(PaymentStatus.FAILED);
 //        }
+    }
+
+    //결제 취소
+    @Transactional
+    public void cancelPayment(CancelPaymentRequestDto requestDto, UUID paymentId) {
+        Payment payment = findById(paymentId);
+
+        //결제 취소 검증
+        payment.checkCancelable(requestDto.pgPaymentKey());
+
+        boolean success = tossPaymentsClient.cancelPayment(requestDto.pgPaymentKey(),
+            requestDto.cancelReason());
+        if (success) {
+            payment.changeStatus(PaymentStatus.REFUNDED);
+        }
     }
 
     public Payment findById(UUID paymentId) {

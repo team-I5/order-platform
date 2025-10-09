@@ -63,13 +63,7 @@ public class Payment extends BaseEntity {
             );
         }
 
-        // PG 결제키 검증
-        if (!this.pgPaymentKey.trim().equals(requestPgPaymentKey.trim())) {
-            throw new IllegalStateException(
-                "PG 결제키가 일치하지 않습니다. (저장된 키: " + this.pgPaymentKey + ", 요청 키: " + requestPgPaymentKey
-                    + ")"
-            );
-        }
+        validatePgPaymentKey(requestPgPaymentKey);
 
         // PG 주문번호 검증
         if (!this.pgOrderId.trim().equals(requestPgOrderId.trim())) {
@@ -83,6 +77,33 @@ public class Payment extends BaseEntity {
         if (!Objects.equals(this.paymentAmount, requestAmount)) {
             throw new IllegalStateException(
                 "결제 금액이 일치하지 않습니다. (저장된 금액: " + this.paymentAmount + ", 요청 금액: " + requestAmount
+                    + ")"
+            );
+        }
+    }
+
+    //결제 취소 검증
+    public void checkCancelable(String requestPgPaymentKey) {
+        //결제 상태 검증
+        if (this.status != PaymentStatus.CAPTURED) {
+            throw new IllegalStateException(
+                "결제를 취소할 수 없는 상태입니다. (현재 상태: " + this.status + ")"
+            );
+        }
+
+        //결제 키 검증
+        validatePgPaymentKey(requestPgPaymentKey);
+    }
+
+    //결제 키 검증
+    public void validatePgPaymentKey(String requestPgPaymentKey) {
+        if (this.pgPaymentKey == null || requestPgPaymentKey == null) {
+            throw new IllegalStateException("PG 결제키가 존재하지 않습니다.");
+        }
+
+        if (!this.pgPaymentKey.trim().equals(requestPgPaymentKey.trim())) {
+            throw new IllegalStateException(
+                "PG 결제키가 일치하지 않습니다. (저장된 키: " + this.pgPaymentKey + ", 요청 키: " + requestPgPaymentKey
                     + ")"
             );
         }

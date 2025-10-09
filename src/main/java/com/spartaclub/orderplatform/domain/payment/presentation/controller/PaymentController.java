@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.payment.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.payment.application.PaymentService;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.CancelPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.ConfirmPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentResponseDto;
@@ -42,4 +43,14 @@ public class PaymentController {
         paymentService.confirmPayment(requestDto, paymentId);
         return ResponseEntity.ok(ApiResponse.success());
     }
+
+    @PostMapping("/{paymentId}/cancel")
+    public ResponseEntity<ApiResponse<Void>> cancelPayment(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID paymentId,
+        @Valid @RequestBody CancelPaymentRequestDto requestDto) {
+        paymentService.cancelPayment(requestDto, paymentId);
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
 }
