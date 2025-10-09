@@ -102,7 +102,7 @@ public class StoreService {
 
     // Manager의 음식점 승인
     @Transactional
-    public StoreResponseDto approveStore(User user, UUID storeId) {
+    public StoreResponseDto approveStore(UUID storeId) {
         Store store = getStore(storeId);
 
         checkStatus(store);
@@ -115,9 +115,7 @@ public class StoreService {
 
     // Manager의 음식점 승인 거절
     @Transactional
-    public RejectStoreResponseDto rejectStore(
-        User user, UUID storeId, RejectStoreRequestDto dto
-    ) {
+    public RejectStoreResponseDto rejectStore(UUID storeId, RejectStoreRequestDto dto) {
         Store store = getStore(storeId);
 
         checkStatus(store);
