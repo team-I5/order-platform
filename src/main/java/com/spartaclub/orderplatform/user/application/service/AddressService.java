@@ -6,10 +6,13 @@ import com.spartaclub.orderplatform.user.domain.entity.User;
 import com.spartaclub.orderplatform.user.infrastructure.repository.AddressRepository;
 import com.spartaclub.orderplatform.user.presentation.dto.AddressCreateRequestDto;
 import com.spartaclub.orderplatform.user.presentation.dto.AddressCreateResponseDto;
+import com.spartaclub.orderplatform.user.presentation.dto.AddressListPageResponseDto;
+import com.spartaclub.orderplatform.user.presentation.dto.AddressListResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -17,7 +20,7 @@ import java.util.Optional;
  * 주소 등록, 조회, 수정, 삭제 등의 비즈니스 로직 처리
  *
  * @author 전우선
- * @date 2025-10-09(목)
+ * @date 2025-10-10(금)
  */
 @Service
 @RequiredArgsConstructor
@@ -106,5 +109,43 @@ public class AddressService {
      */
     private boolean isFirstAddress(User user) {
         return addressRepository.countByUserAndDeletedAtIsNull(user) == 0;
+    }
+
+    /**
+     * 주소 목록 조회
+     * 사용자의 주소 목록을 조회하고 통계 정보와 함께 반환
+     *
+     * @param includeDeleted 삭제된 주소 포함 여부
+     * @param user           주소를 조회하는 사용자
+     * @return 주소 목록과 통계 정보
+     */
+    @Transactional(readOnly = true)
+    public AddressListPageResponseDto getAllAddresses(Boolean includeDeleted, User user) {
+
+        // 1. 주소 목록 조회 (기본 주소 우선, 생성일시 최신순)
+        List<Address> addresses;
+        if (Boolean.TRUE.equals(includeDeleted)) {
+            addresses = addressRepository.findByUserOrderByDefaultAddressDescCreatedAtDesc(user);
+        } else {
+            addresses = addressRepository.findByUserAndDeletedAtIsNullOrderByDefaultAddressDescCreatedAtDesc(user);
+        }
+
+        // 2. Address -> AddressListResponseDto 변환
+        List<AddressListResponseDto> addressList = addresses.stream()
+                .map(addressMapper::toListResponse)
+                .collect(java.util.stream.Collectors.toList());
+
+        // 3. 기본 주소 조회
+        Address defaultAddress = addressRepository
+                .findByUserAndDefaultAddressTrueAndDeletedAtIsNull(user)
+                .orElse(null);
+
+        // 4. 총 주소 개수 계산
+        long totalCount = Boolean.TRUE.equals(includeDeleted)
+                ? addresses.size()
+                : addressRepository.countByUserAndDeletedAtIsNull(user);
+
+        // 5. Mapper를 통한 응답 DTO 생성
+        return addressMapper.toPageResponse(addressList, totalCount, defaultAddress);
     }
 }

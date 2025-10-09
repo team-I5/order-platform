@@ -79,7 +79,7 @@ public class ReviewService {
      * @throws RuntimeException 발생 - 중복 데이터 발견될 때
      */
     private void validateDuplicateData(ReviewCreateRequestDto requestDto) {
-        if (reviewRepository.existsByOrderIdAndDeletedAtIsNull(requestDto.getOrderId())) {
+        if (reviewRepository.existsByOrder_OrderIdAndDeletedAtIsNull(requestDto.getOrderId())) {
             throw new RuntimeException("리뷰가 존재하는 주문입니다.");
         }
     }
