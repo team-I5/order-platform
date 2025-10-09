@@ -4,22 +4,29 @@ import com.spartaclub.orderplatform.global.application.jwt.JwtUtil;
 import com.spartaclub.orderplatform.user.application.mapper.UserMapper;
 import com.spartaclub.orderplatform.user.domain.entity.RefreshToken;
 import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.user.domain.entity.UserRole;
 import com.spartaclub.orderplatform.user.infrastructure.repository.RefreshTokenRepository;
 import com.spartaclub.orderplatform.user.infrastructure.repository.UserRepository;
 import com.spartaclub.orderplatform.user.presentation.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * User 서비스 클래스
  * 사용자 관련 비즈니스 로직 처리
  *
  * @author 전우선
- * @date 2025-10-05(일)
+ * @date 2025-10-09(목)
  */
 @Service
 @RequiredArgsConstructor
@@ -379,5 +386,150 @@ public class UserService {
 
         // 6. 응답 DTO 생성
         return new UserDeleteResponseDto(deletedUser.getUserId(), deletedUser.getDeletedAt());
+    }
+
+    /**
+     * 회원 전체 조회 (관리자용)
+     * 검색, 필터링, 정렬, 페이징 지원
+     * 통계 정보 포함
+     *
+     * @param requestDto 검색/필터링 조건
+     * @param pageable   페이징/정렬 정보
+     * @return 회원 목록과 통계 정보
+     */
+    @Transactional(readOnly = true)
+    public UserListPageResponseDto getAllUsers(UserListRequestDto requestDto, Pageable pageable) {
+        // 1. 날짜 범위 조건 변환 (LocalDate -> LocalDateTime)
+        LocalDateTime startDateTime = requestDto.getStartDate() != null ?
+                requestDto.getStartDate().atStartOfDay() : null;
+        LocalDateTime endDateTime = requestDto.getEndDate() != null ?
+                requestDto.getEndDate().atTime(23, 59, 59) : null;
+
+        // 2. 조건별 회원 목록 조회
+        Page<User> userPage;
+
+        if (requestDto.getRole() != null) {
+            // 권한별 조회
+            if (Boolean.TRUE.equals(requestDto.getIncludeDeleted())) {
+                userPage = userRepository.findByRole(requestDto.getRole(), pageable);
+            } else {
+                userPage = userRepository.findByRoleAndDeletedAtIsNull(requestDto.getRole(), pageable);
+            }
+        } else {
+            // 전체 조회
+            if (Boolean.TRUE.equals(requestDto.getIncludeDeleted())) {
+                userPage = userRepository.findAll(pageable);
+            } else {
+                userPage = userRepository.findByDeletedAtIsNull(pageable);
+            }
+        }
+
+        // 3. User -> UserListResponseDto 변환
+        List<UserListResponseDto> userList = userPage.getContent().stream()
+                .map(userMapper::toListResponse)
+                .collect(Collectors.toList());
+
+        // 4. 통계 정보 계산 (별도 메서드로 분리)
+        UserListPageResponseDto.SummaryInfo summaryInfo = calculateUserStatistics();
+
+        // 5. Mapper를 통한 응답 DTO 생성
+        return userMapper.toPageResponse(userList, userPage, summaryInfo);
+    }
+
+    /**
+     * 사용자 통계 정보 계산
+     * 전체/활성/삭제 사용자 수와 권한별 분포를 계산
+     *
+     * @return 통계 정보 DTO
+     */
+    private UserListPageResponseDto.SummaryInfo calculateUserStatistics() {
+        // 기본 통계 정보 조회
+        long totalUsers = userRepository.countAllUsers();
+        long activeUsers = userRepository.countActiveUsers();
+        long deletedUsers = userRepository.countDeletedUsers();
+
+        // 권한별 분포 계산
+        Map<String, Long> roleDistribution = calculateRoleDistribution();
+
+        // Mapper를 통한 SummaryInfo 생성
+        return userMapper.toSummaryInfo(totalUsers, activeUsers, deletedUsers, roleDistribution);
+    }
+
+    /**
+     * 권한별 사용자 분포 계산
+     * 활성 사용자들의 권한별 개수를 계산
+     *
+     * @return 권한별 사용자 수 맵
+     */
+    private Map<String, Long> calculateRoleDistribution() {
+        Map<String, Long> roleDistribution = new HashMap<>();
+        List<Object[]> roleStats = userRepository.countByRoleAndActiveUsers();
+
+        for (Object[] stat : roleStats) {
+            UserRole role = (UserRole) stat[0];
+            Long count = (Long) stat[1];
+            roleDistribution.put(role.name(), count);
+        }
+
+        return roleDistribution;
+    }
+
+    /**
+     * 관리자 계정 생성 (MASTER 전용)
+     * MASTER 권한 사용자가 MANAGER 계정을 생성
+     *
+     * @param requestDto  관리자 생성 요청 데이터
+     * @param masterEmail 생성을 요청한 MASTER의 이메일
+     * @return 관리자 생성 응답 데이터
+     * @throws RuntimeException 중복 데이터 발견 시
+     */
+    @Transactional
+    public ManagerCreateResponseDto createManager(ManagerCreateRequestDto requestDto, String masterEmail) {
+
+        // 1. 중복 데이터 검증
+        validateDuplicateDataForManager(requestDto);
+
+        // 2. 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+
+        // 3. User 엔티티 생성 (MapStruct 사용)
+        User user = userMapper.toEntityFromManagerRequest(requestDto);
+        user.setPassword(encodedPassword);
+
+        // 4. 데이터베이스 저장
+        User savedUser = userRepository.save(user);
+
+        // 5. 응답 DTO 생성 (Builder 패턴)
+        return ManagerCreateResponseDto.builder()
+                .message("관리자 계정이 생성되었습니다.")
+                .user(userMapper.toManagerUserInfo(savedUser))
+                .createdBy(masterEmail)
+                .build();
+    }
+
+    /**
+     * 관리자 생성 시 중복 데이터 검증
+     * 이메일, 사용자명, 닉네임, 전화번호의 중복 여부 확인
+     *
+     * @param requestDto 관리자 생성 요청 데이터
+     * @throws RuntimeException 중복 데이터 발견 시
+     */
+    private void validateDuplicateDataForManager(ManagerCreateRequestDto requestDto) {
+
+        if (userRepository.existsByEmailAndDeletedAtIsNull(requestDto.getEmail())) {
+            throw new RuntimeException("이미 존재하는 이메일입니다.");
+        }
+
+        if (userRepository.existsByUsernameAndDeletedAtIsNull(requestDto.getUsername())) {
+            throw new RuntimeException("이미 존재하는 사용자명입니다.");
+        }
+
+        if (userRepository.existsByNicknameAndDeletedAtIsNull(requestDto.getNickname())) {
+            throw new RuntimeException("이미 존재하는 닉네임입니다.");
+        }
+
+        if (userRepository.existsByPhoneNumberAndDeletedAtIsNull(requestDto.getPhoneNumber())) {
+            throw new RuntimeException("이미 존재하는 전화번호입니다.");
+        }
     }
 }

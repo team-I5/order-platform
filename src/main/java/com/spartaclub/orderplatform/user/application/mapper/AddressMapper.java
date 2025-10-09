@@ -1,0 +1,34 @@
+package com.spartaclub.orderplatform.user.application.mapper;
+
+import com.spartaclub.orderplatform.user.domain.entity.Address;
+import com.spartaclub.orderplatform.user.presentation.dto.AddressCreateRequestDto;
+import com.spartaclub.orderplatform.user.presentation.dto.AddressCreateResponseDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
+/**
+ * 주소 매퍼 인터페이스
+ * Address 엔티티와 DTO 간의 변환을 담당
+ *
+ * @author 전우선
+ * @date 2025-10-09(목)
+ */
+@Mapper(componentModel = "spring")
+public interface AddressMapper {
+
+    /**
+     * 주소 생성 요청 DTO를 Address 엔티티로 변환
+     * user는 서비스에서 별도 설정
+     */
+    @Mapping(target = "addressId", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    Address toEntityFromCreateRequest(AddressCreateRequestDto requestDto);
+
+    /**
+     * Address 엔티티를 주소 생성 응답 DTO로 변환
+     * fullAddress는 별도 계산 후 설정
+     */
+    @Mapping(target = "message", constant = "주소가 성공적으로 등록되었습니다.")
+    @Mapping(target = "fullAddress", expression = "java(address.getRoadNameAddress() + \" \" + address.getDetailedAddress())")
+    AddressCreateResponseDto toCreateResponse(Address address);
+}

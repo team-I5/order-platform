@@ -8,8 +8,12 @@ import com.spartaclub.orderplatform.user.presentation.dto.*;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * 사용자 관련 API 엔드포인트 제공
  *
  * @author 전우선
- * @date 2025-10-04(토)
+ * @date 2025-10-08(수)
  */
 @RestController
 @RequestMapping("/v1/users")
@@ -148,5 +152,55 @@ public class UserController {
         UserDeleteResponseDto responseDto = userService.deleteUser(userId, requestDto);
 
         return ResponseEntity.ok(ApiResponse.success(responseDto));
+    }
+
+    /**
+     * 회원 전체 조회 API (관리자용)
+     * 검색, 필터링, 정렬, 페이징 지원
+     * MANAGER, MASTER 권한만 접근 가능
+     *
+     * @param requestDto 검색/필터링 조건
+     * @param pageable   페이징/정렬 정보
+     * @return 회원 목록과 통계 정보
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'MASTER')")
+    public ResponseEntity<ApiResponse<UserListPageResponseDto>> getAllUsers(
+            @ModelAttribute UserListRequestDto requestDto,
+            @PageableDefault(size = 10)
+            Pageable pageable) {
+
+        // 페이지 크기 검증 (최대 50)
+        if (pageable.getPageSize() > 50) {
+            throw new RuntimeException("페이지 크기는 1~50 사이여야 합니다.");
+        }
+
+        UserListPageResponseDto responseDto = userService.getAllUsers(requestDto, pageable);
+
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
+    }
+
+    /**
+     * 관리자 계정 생성 API (MASTER 전용)
+     * MASTER 권한 사용자만 MANAGER 계정을 생성할 수 있음
+     *
+     * @param userDetails 인증된 MASTER 사용자 정보
+     * @param requestDto 관리자 생성 요청 데이터
+     * @return 생성된 관리자 정보와 생성자 정보
+     */
+    @PostMapping("/manager")
+    @PreAuthorize("hasRole('MASTER')")
+    public ResponseEntity<ApiResponse<ManagerCreateResponseDto>> createManager(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody ManagerCreateRequestDto requestDto) {
+
+        // 인증된 MASTER 사용자의 이메일 추출
+        String masterEmail = userDetails.getUser().getEmail();
+        
+        // 관리자 계정 생성
+        ManagerCreateResponseDto responseDto = userService.createManager(requestDto, masterEmail);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(responseDto));
     }
 }
