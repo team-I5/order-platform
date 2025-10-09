@@ -37,7 +37,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @Table(name = "p_stores")
 @Getter
-@Builder(toBuilder = true)
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
@@ -100,34 +100,33 @@ public class Store extends BaseEntity {
     private Long deletedId;
 
     // 음식점 정보 업데이트(기본 정보만)
-    public Store updateStoreInfo(Long userId, StoreRequestDto dto) {
-        return this.toBuilder()
-            .storeName(dto.getStoreName()).storeAddress(dto.getStoreAddress())
-            .storeNumber(dto.getStoreNumber()).storeDescription(dto.getStoreDescription())
-            .modifiedId(userId)
-            .build();
+    public void updateStoreInfo(StoreRequestDto dto) {
+        this.storeName = dto.getStoreName();
+        this.storeAddress = dto.getStoreAddress();
+        this.storeNumber = dto.getStoreNumber();
+        this.storeDescription = dto.getStoreDescription();
     }
 
     // 재승인 요청
-    public Store requestReapproval() {
-        return this.toBuilder()
-            .status(StoreStatus.PENDING).rejectReason(null)
-            .build();
+    public void requestReapproval() {
+        this.status = StoreStatus.PENDING;
+        this.rejectReason = null;
     }
 
     // 음식점 승인
-    public Store approve(Long userId) {
-        return this.toBuilder()
-            .status(StoreStatus.APPROVED).rejectReason(null)
-            .modifiedId(userId)
-            .build();
+    public void approve() {
+        this.status = StoreStatus.APPROVED;
+        this.rejectReason = null;
     }
 
     // 음식점 승인 거절
-    public Store reject(Long userId, String rejectReason) {
-        return this.toBuilder()
-            .status(StoreStatus.REJECTED).rejectReason(rejectReason)
-            .modifiedId(userId)
-            .build();
+    public void reject(String rejectReason) {
+        this.status = StoreStatus.REJECTED;
+        this.rejectReason = rejectReason;
+    }
+
+    // 음식점 삭제 처리
+    public void softDelete(Long userId) {
+        this.deletedId = userId;
     }
 }

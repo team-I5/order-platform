@@ -1,6 +1,5 @@
 package com.spartaclub.orderplatform.domain.store.application.service;
 
-
 import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.APPROVED;
 import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.PENDING;
 import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.REJECTED;
@@ -44,12 +43,7 @@ public class StoreService {
             throw new IllegalArgumentException("이미 같은 이름의 음식점이 존재합니다.");
         }
 
-        // 음식점 기본 정보로 음식점 생성
-        Store store = Store.builder().user(user).storeName(dto.getStoreName())
-            .storeAddress(dto.getStoreAddress()).storeNumber(dto.getStoreNumber())
-            .storeDescription(dto.getStoreDescription()).status(PENDING)
-            .averageRating(0.0).reviewCount(0)
-            .createdId(user.getUserId()).build();
+        Store store = storeMapper.toCreateStoreEntity(user, dto);
 
         return storeMapper.toStoreResponseDto(storeRepository.save(store));
     }
@@ -67,9 +61,10 @@ public class StoreService {
             throw new IllegalArgumentException("승인 거절된 가게만 수정할 수 있습니다.");
         }
 
-        Store reapply = store.updateStoreInfo(user.getUserId(), dto).requestReapproval();
+        store.updateStoreInfo(dto);
+        store.requestReapproval();
 
-        return storeMapper.toStoreResponseDto(storeRepository.save(reapply));
+        return storeMapper.toStoreResponseDto(store);
     }
 
     // 승인된 음식점의 기본정보 수정
@@ -87,9 +82,9 @@ public class StoreService {
             throw new IllegalArgumentException("승인된 가게만 수정할 수 있습니다.");
         }
 
-        Store update = store.updateStoreInfo(user.getUserId(), dto);
+        store.updateStoreInfo(dto);
 
-        return storeMapper.toStoreResponseDto(storeRepository.save(update));
+        return storeMapper.toStoreResponseDto(store);
     }
 
     // Owner의 음식점 삭제
@@ -101,8 +96,8 @@ public class StoreService {
             throw new IllegalArgumentException("본인의 음식점만 삭제할 수 있습니다.");
         }
 
-        Store deleteStore = store.toBuilder().deletedId(user.getUserId()).build();
-        storeRepository.save(deleteStore);
+        store.delete();
+        store.softDelete(user.getUserId());
     }
 
     // Manager의 음식점 승인
@@ -112,21 +107,24 @@ public class StoreService {
 
         checkStatus(store);
 
-        return storeMapper.toStoreResponseDto(
-            storeRepository.save(store.approve(user.getUserId())));
+        store.approve();
+
+        return storeMapper.toStoreResponseDto(store);
     }
 
 
     // Manager의 음식점 승인 거절
     @Transactional
-    public RejectStoreResponseDto rejectStore(User user, UUID storeId,
-        RejectStoreRequestDto dto) {
+    public RejectStoreResponseDto rejectStore(
+        User user, UUID storeId, RejectStoreRequestDto dto
+    ) {
         Store store = getStore(storeId);
 
         checkStatus(store);
 
-        return storeMapper.toRejectStoreResponseDto(
-            storeRepository.save(store.reject(user.getUserId(), dto.getRejectReason())));
+        store.reject(dto.getRejectReason());
+
+        return storeMapper.toRejectStoreResponseDto(store);
     }
 
     /*

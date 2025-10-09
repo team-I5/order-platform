@@ -1,9 +1,11 @@
 package com.spartaclub.orderplatform.domain.store.application.mapper;
 
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.RejectStoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
+import com.spartaclub.orderplatform.user.domain.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -23,4 +25,20 @@ public interface StoreMapper {
     @Mapping(source = "averageRating", target = "averageRating")
     @Mapping(source = "reviewCount", target = "reviewCount")
     StoreSearchResponseDto toStoreSearchResponseDto(Store store);
+
+    @Mapping(target = "storeId", ignore = true)
+    @Mapping(target = "user", source = "user")
+    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "orders", ignore = true)
+    @Mapping(target = "products", ignore = true)
+    @Mapping(target = "reviews", ignore = true)
+    @Mapping(target = "status", expression = "java(StoreStatus.PENDING)")
+    @Mapping(target = "averageRating", expression = "java(0.0)")
+    @Mapping(target = "reviewCount", expression = "java(0)")
+    @Mapping(target = "createdId", expression = "java(user.getUserId())")
+    @Mapping(target = "modifiedId", ignore = true)
+    @Mapping(target = "deletedId", ignore = true)
+    @Mapping(target = "rejectReason", ignore = true)
+    Store toCreateStoreEntity(User user, StoreRequestDto dto);
+
 }
