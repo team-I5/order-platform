@@ -31,6 +31,10 @@ public class PaymentService {
         //주문 상태 및 결제 금액 검증
         order.validatePaymentAvailable(requestDto.amount());
 
+        if (paymentRepository.existsByOrder(order)) {
+            throw new IllegalStateException("이미 결제가 존재하는 주문입니다.");
+        }
+
         //PG사 결제 요청
         String redirectUrl = tossPaymentsClient.requestPaymentReady(requestDto.amount());
 
