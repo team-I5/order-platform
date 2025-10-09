@@ -73,9 +73,10 @@ public class StoreOwnerController {
     @PreAuthorize("hasRole('OWNER')")
     @DeleteMapping("/{storeId}")
     public ResponseEntity<ApiResponse<Void>> deleteStore(
-        @AuthenticationPrincipal User user,
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable UUID storeId
     ) {
+        User user = userDetails.getUser();
         storeService.deleteStore(user, storeId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
