@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * 사용자 관련 비즈니스 로직 처리
  *
  * @author 전우선
- * @date 2025-10-08(수)
+ * @date 2025-10-09(목)
  */
 @Service
 @RequiredArgsConstructor
@@ -407,7 +407,7 @@ public class UserService {
 
         // 2. 조건별 회원 목록 조회
         Page<User> userPage;
-        
+
         if (requestDto.getRole() != null) {
             // 권한별 조회
             if (Boolean.TRUE.equals(requestDto.getIncludeDeleted())) {
@@ -429,40 +429,56 @@ public class UserService {
                 .map(userMapper::toListResponse)
                 .collect(Collectors.toList());
 
-        // 4. 권한별 분포 계산
+        // 4. 통계 정보 계산 (별도 메서드로 분리)
+        UserListPageResponseDto.SummaryInfo summaryInfo = calculateUserStatistics();
+
+        // 5. Mapper를 통한 응답 DTO 생성
+        return userMapper.toPageResponse(userList, userPage, summaryInfo);
+    }
+
+    /**
+     * 사용자 통계 정보 계산
+     * 전체/활성/삭제 사용자 수와 권한별 분포를 계산
+     *
+     * @return 통계 정보 DTO
+     */
+    private UserListPageResponseDto.SummaryInfo calculateUserStatistics() {
+        // 기본 통계 정보 조회
+        long totalUsers = userRepository.countAllUsers();
+        long activeUsers = userRepository.countActiveUsers();
+        long deletedUsers = userRepository.countDeletedUsers();
+
+        // 권한별 분포 계산
+        Map<String, Long> roleDistribution = calculateRoleDistribution();
+
+        // Mapper를 통한 SummaryInfo 생성
+        return userMapper.toSummaryInfo(totalUsers, activeUsers, deletedUsers, roleDistribution);
+    }
+
+    /**
+     * 권한별 사용자 분포 계산
+     * 활성 사용자들의 권한별 개수를 계산
+     *
+     * @return 권한별 사용자 수 맵
+     */
+    private Map<String, Long> calculateRoleDistribution() {
         Map<String, Long> roleDistribution = new HashMap<>();
         List<Object[]> roleStats = userRepository.countByRoleAndActiveUsers();
+
         for (Object[] stat : roleStats) {
             UserRole role = (UserRole) stat[0];
             Long count = (Long) stat[1];
             roleDistribution.put(role.name(), count);
         }
 
-        // 5. Builder 패턴으로 응답 DTO 생성
-        return UserListPageResponseDto.builder()
-                .content(userList)
-                .pageable(UserListPageResponseDto.PageableInfo.builder()
-                        .page(userPage.getNumber())
-                        .size(userPage.getSize())
-                        .totalElements(userPage.getTotalElements())
-                        .totalPages(userPage.getTotalPages())
-                        .first(userPage.isFirst())
-                        .last(userPage.isLast())
-                        .build())
-                .summary(UserListPageResponseDto.SummaryInfo.builder()
-                        .totalUsers(userRepository.countAllUsers())
-                        .activeUsers(userRepository.countActiveUsers())
-                        .deletedUsers(userRepository.countDeletedUsers())
-                        .roleDistribution(roleDistribution)
-                        .build())
-                .build();
+        return roleDistribution;
     }
 
     /**
      * 관리자 계정 생성 (MASTER 전용)
      * MASTER 권한 사용자가 MANAGER 계정을 생성
      *
-     * @param requestDto 관리자 생성 요청 데이터
+     * @param requestDto  관리자 생성 요청 데이터
      * @param masterEmail 생성을 요청한 MASTER의 이메일
      * @return 관리자 생성 응답 데이터
      * @throws RuntimeException 중복 데이터 발견 시
