@@ -5,6 +5,7 @@ import com.spartaclub.orderplatform.domain.payment.presentation.dto.CancelPaymen
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.ConfirmPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentResponseDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.PaymentDetailResponseDto;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,4 +55,10 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success());
     }
 
+    @GetMapping("/{paymentId}")
+    public ResponseEntity<ApiResponse<PaymentDetailResponseDto>> getPaymentDetail(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID paymentId) {
+        return ResponseEntity.ok(ApiResponse.success(paymentService.getPaymentDetail(paymentId)));
+    }
 }

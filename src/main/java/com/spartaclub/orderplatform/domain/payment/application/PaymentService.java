@@ -2,6 +2,7 @@ package com.spartaclub.orderplatform.domain.payment.application;
 
 import com.spartaclub.orderplatform.domain.order.application.OrderService;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
+import com.spartaclub.orderplatform.domain.payment.application.mapper.PaymentMapper;
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
 import com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus;
 import com.spartaclub.orderplatform.domain.payment.infrastructure.pg.TossPaymentsClient;
@@ -10,6 +11,7 @@ import com.spartaclub.orderplatform.domain.payment.presentation.dto.CancelPaymen
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.ConfirmPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentResponseDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.PaymentDetailResponseDto;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderService orderService;
     private final TossPaymentsClient tossPaymentsClient;
+    private final PaymentMapper paymentMapper;
 
     //결제 생성
     @Transactional
@@ -107,6 +110,12 @@ public class PaymentService {
         if (success) {
             payment.changeStatus(PaymentStatus.REFUNDED);
         }
+    }
+
+    //결제 상세 조회
+    public PaymentDetailResponseDto getPaymentDetail(UUID paymentId) {
+        Payment payment = findById(paymentId);
+        return paymentMapper.toDto(payment);
     }
 
     public Payment findById(UUID paymentId) {
