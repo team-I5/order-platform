@@ -47,7 +47,8 @@ public class OrderController {
     public ResponseEntity<ApiResponse<OrderDetailResponseDto>> getOrderDetail(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Valid GetOrderDetailRequestDto requestDto) {
-        return ResponseEntity.ok(ApiResponse.success(orderService.getOrderDetail(requestDto)));
+        return ResponseEntity.ok(
+            ApiResponse.success(orderService.getOrderDetail(requestDto, userDetails)));
     }
 
     @GetMapping("")

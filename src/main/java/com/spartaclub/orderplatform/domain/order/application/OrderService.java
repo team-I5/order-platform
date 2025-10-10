@@ -28,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,13 +92,41 @@ public class OrderService {
     }
 
     //주문 상세 조회
-    public OrderDetailResponseDto getOrderDetail(GetOrderDetailRequestDto requestDto) {
-        return orderMapper.toDto(
-            orderRepository.findById(requestDto.orderId())
-                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다.")));
+    @Transactional(readOnly = true)
+    public OrderDetailResponseDto getOrderDetail(GetOrderDetailRequestDto requestDto,
+        UserDetailsImpl userDetails) {
+        User viewer = userDetails.getUser();
+        Order order = findById(requestDto.orderId());
+
+        switch (viewer.getRole()) {
+            case CUSTOMER -> {
+                // 본인 주문만
+                Long ownerUserId = order.getUser().getUserId();
+                Long viewerUserId = viewer.getUserId();
+                if (!ownerUserId.equals(viewerUserId)) {
+                    throw new AccessDeniedException("CUSTOMER는 본인의 주문만 조회할 수 있습니다.");
+                }
+            }
+            case OWNER -> {
+                // 본인 가게 주문만
+                Long storeOwnerId = order.getStore().getUser().getUserId();
+                Long viewerUserId = viewer.getUserId();
+                if (!storeOwnerId.equals(viewerUserId)) {
+                    throw new AccessDeniedException("OWNER는 본인 가게의 주문만 조회할 수 있습니다.");
+                }
+            }
+            case MANAGER, MASTER -> {
+                // 모두 가능: 추가 검증 없음
+            }
+            default -> {
+                throw new AccessDeniedException("해당 역할은 주문 조회 권한이 없습니다.");
+            }
+        }
+        return orderMapper.toDto(order);
     }
 
     //주문 목록 조회
+    @Transactional(readOnly = true)
     public OrdersResponseDto getOrders(GetOrdersRequestDto requestDto,
         UserDetailsImpl userDetails) {
 
