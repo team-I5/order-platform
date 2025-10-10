@@ -187,7 +187,7 @@ public class StoreService {
             default -> throw new RuntimeException("권한이 없습니다.");
         }
 
-        return storeMapper.toStoreDetailResponseDto(store);
+        return storeMapper.toStoreDetailResponseDto(store, role);
     }
 
     // 존재하는 음식점인지 확인
