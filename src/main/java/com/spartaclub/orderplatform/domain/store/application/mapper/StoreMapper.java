@@ -7,6 +7,8 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.response.Store
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.user.domain.entity.UserRole;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -50,5 +52,5 @@ public interface StoreMapper {
     @Mapping(target = "rejectReason", expression = "java(role == UserRole.CUSTOMER ? null : store.getRejectReason())")
     @Mapping(source = "averageRating", target = "averageRating")
     @Mapping(source = "reviewCount", target = "reviewCount")
-    StoreDetailResponseDto toStoreDetailResponseDto(Store store);
+    StoreDetailResponseDto toStoreDetailResponseDto(Store store, @Context UserRole role);
 }
