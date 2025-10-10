@@ -17,10 +17,11 @@ import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.user.domain.entity.User;
-import jakarta.transaction.Transactional;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -63,7 +65,7 @@ public class OrderService {
             OrderProduct orderProduct = OrderProduct.builder()
                 .product(product)
                 .quantity(orderItem.quantity())
-                .unitPrice(Long.valueOf(product.getPrice()))   // Product 필드 수정되면 수정하기
+                .unitPrice(product.getPrice())
                 .productName(product.getProductName())
                 .build();
 
@@ -84,8 +86,6 @@ public class OrderService {
         order.setStore(store);
 
         orderRepository.save(order);
-
-        // TODO: Payment 생성 및 결제 요청
 
         return new PlaceOrderResponseDto(order.getOrderId());
     }
@@ -108,13 +108,12 @@ public class OrderService {
 
         Page<Order> page = orderRepository.findByUser_UserId(
             userDetails.getUser().getUserId(),
-            pageable);  // TODO: userId 수정 필요
+            pageable);
 
         List<OrderDetailResponseDto> ordersList = page.stream()
             .map(orderMapper::toDto)
             .collect(Collectors.toList());
 
-        //TODO: Pageable Mapper 만들기
         OrdersResponseDto.PageableDto meta = orderMapper.toPageableDto(page);
 
         return new OrdersResponseDto(ordersList, meta);
@@ -146,5 +145,10 @@ public class OrderService {
         }
 
         return orders.isEmpty() ? Sort.by(defaultDir, defaultProperty) : Sort.by(orders);
+    }
+
+    public Order findById(UUID orderId) {
+        return orderRepository.findById(orderId)
+            .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다: " + orderId));
     }
 }
