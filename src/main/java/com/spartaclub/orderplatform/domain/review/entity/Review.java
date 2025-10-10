@@ -2,18 +2,26 @@ package com.spartaclub.orderplatform.domain.review.entity;
 
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
-import com.spartaclub.orderplatform.domain.store.entity.Store;
+import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import com.spartaclub.orderplatform.user.domain.entity.User;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
-
-import java.util.UUID;
 
 /*
  * Review Entity Class
@@ -29,6 +37,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
+
     @Id // primary key
     @GeneratedValue(strategy = GenerationType.UUID) // UUID 자동 생성
     private UUID reviewId;              // 리뷰 ID

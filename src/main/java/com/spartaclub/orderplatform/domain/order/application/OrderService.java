@@ -13,8 +13,8 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequ
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
-import com.spartaclub.orderplatform.domain.store.entity.Store;
-import com.spartaclub.orderplatform.domain.store.repository.StoreRepository;
+import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.transaction.Transactional;
