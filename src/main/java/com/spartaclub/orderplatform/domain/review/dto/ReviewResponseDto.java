@@ -30,7 +30,8 @@ public class ReviewResponseDto {
     private Integer rating;
     // 리뷰내용
     private String contents;
-
+    // 평점
+    
     // 리뷰 수정 메서드
     public void updateReview(ReviewUpdateRequestDto reviewUpdateRequestDto) {
         this.rating = reviewUpdateRequestDto.getRating();

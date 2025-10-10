@@ -15,7 +15,6 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
  */
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ReviewMapper {
-    // RequestDto → Entity 변환
     /*
      * 외래키
      * 고객ID userId
@@ -23,6 +22,7 @@ public interface ReviewMapper {
      * 주문ID orderId
      * 메뉴ID product_id
      */
+    // RequestDto → Entity 변환
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "store", ignore = true)
     @Mapping(target = "order", ignore = true)

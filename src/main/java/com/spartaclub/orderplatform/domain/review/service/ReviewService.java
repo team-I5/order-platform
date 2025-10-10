@@ -32,11 +32,13 @@ public class ReviewService {
 
     // 리뷰 등록 로직(create)
     public ReviewResponseDto createReview(ReviewCreateRequestDto reviewCreateRequestDto) {
-        // 1. requestDto → entity 전환
+        // 1. 주문별 중복 검증
+        validateDuplicateData(reviewCreateRequestDto);
+        // 2. requestDto → entity 전환
         Review review = reviewMapper.toReviewEntity(reviewCreateRequestDto);
-        // 2. 저장
+        // 3. 저장
         Review saveReview = reviewRepository.save(review);
-        // 3. entity → responseDto 전환
+        // 4. entity → responseDto 전환
         return reviewMapper.toReviewDto(saveReview);
     }
 
@@ -45,9 +47,11 @@ public class ReviewService {
     public ReviewResponseDto updateReview(UUID reviewId, ReviewUpdateRequestDto reviewUpdateRequestDto) {
         // 1. reviewId로 해당 리뷰 DB 존재 확인
         Review review = findReview(reviewId);
-        // 2. entity → responseDto 변환 뒤 반환
+        // 2. JPA 변경 감지(dirty checking)으로 자동 저장
+        // @Transactional안에서 entity transaction에 의해 et.commit()이 호출될 때 DB반영
+        // 3. entity → responseDto 변환 뒤 반환
         ReviewResponseDto responseDto = reviewMapper.toReviewDto(review);
-        // 3. 반환 한 곳에서 리뷰 정보 수정
+        // 4. 반환 한 곳에서 리뷰 정보 수정
         responseDto.updateReview(reviewUpdateRequestDto);
         return responseDto;
     }
