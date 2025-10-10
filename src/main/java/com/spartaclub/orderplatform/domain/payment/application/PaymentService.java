@@ -9,12 +9,22 @@ import com.spartaclub.orderplatform.domain.payment.infrastructure.pg.TossPayment
 import com.spartaclub.orderplatform.domain.payment.infrastructure.repository.PaymentRepository;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.CancelPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.ConfirmPaymentRequestDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.GetPaymentsListRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentResponseDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.PaymentDetailResponseDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.PaymentsListResponseDto;
+import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -152,5 +162,52 @@ public class PaymentService {
             throw new RuntimeException("Redirect URL 파싱 중 오류 발생: " + e.getMessage(), e);
         }
         return resultParts;
+    }
+
+    //결제 전체 조회
+    public PaymentsListResponseDto getPayments(GetPaymentsListRequestDto requestDto, User user) {
+        //페이징 객체 생성
+        PageRequest pageable = PageRequest.of(requestDto.page() - 1, requestDto.size(),
+            parseSort(requestDto.sort()));
+
+        //조회
+        Page<Payment> paymentPage = paymentRepository.findAll(pageable);
+
+        //매핑
+        List<PaymentDetailResponseDto> payments = paymentPage.stream()
+            .map(paymentMapper::toDto)
+            .collect(Collectors.toList());
+
+        PaymentsListResponseDto.PageableDto pageableDto = paymentMapper.toPageableDto(paymentPage);
+
+        return new PaymentsListResponseDto(payments, pageableDto);
+    }
+
+    //페이지네이션 Sort 객체 생성
+    private Sort parseSort(List<String> sortParams) {
+        //기본값
+        String defaultProperty = "createdAt";
+        Sort.Direction defaultDir = Sort.Direction.DESC;
+        // 정렬 허용 필드
+        Set<String> allowedProperties = Set.of("createdAt", "paymentAmount");
+
+        List<Sort.Order> orders = new ArrayList<>();
+
+        for (String param : sortParams) {
+            if (param == null || param.isBlank()) {
+                continue;
+            }
+
+            String[] parts = param.split(",");
+            String property = parts[0].trim();
+            Sort.Direction direction = (parts.length > 1 && "asc".equalsIgnoreCase(parts[1].trim()))
+                ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+            if (allowedProperties.contains(property)) {
+                orders.add(new Sort.Order(direction, property));
+            }
+        }
+
+        return orders.isEmpty() ? Sort.by(defaultDir, defaultProperty) : Sort.by(orders);
     }
 }
