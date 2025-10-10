@@ -129,21 +129,31 @@ public class OrderService {
     @Transactional(readOnly = true)
     public OrdersResponseDto getOrders(GetOrdersRequestDto requestDto,
         UserDetailsImpl userDetails) {
+        User viewer = userDetails.getUser();
 
         Pageable pageable = PageRequest.of(
             requestDto.page() - 1,
             requestDto.size(),
             parseSort(requestDto.sort()));
 
-        Page<Order> page = orderRepository.findByUser_UserId(
-            userDetails.getUser().getUserId(),
-            pageable);
+        Page<Order> orders = switch (viewer.getRole()) {
+            //본인 주문만
+            case CUSTOMER -> orderRepository.findByUser_UserId(
+                viewer.getUserId(), pageable);
+            //본인 가게만
+            case OWNER -> orderRepository.findByStore_User_UserId(
+                viewer.getUserId(), pageable);
 
-        List<OrderDetailResponseDto> ordersList = page.stream()
+            case MASTER, MANAGER -> orderRepository.findAll(pageable);
+
+            default -> throw new AccessDeniedException("주문 목록 조회 권한이 없습니다.");
+        };
+
+        List<OrderDetailResponseDto> ordersList = orders.getContent().stream()
             .map(orderMapper::toDto)
             .collect(Collectors.toList());
 
-        OrdersResponseDto.PageableDto meta = orderMapper.toPageableDto(page);
+        OrdersResponseDto.PageableDto meta = orderMapper.toPageableDto(orders);
 
         return new OrdersResponseDto(ordersList, meta);
     }
