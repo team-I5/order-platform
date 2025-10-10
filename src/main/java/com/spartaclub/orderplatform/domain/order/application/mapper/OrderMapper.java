@@ -41,6 +41,11 @@ public interface OrderMapper {
     @Mapping(target = "totalPrice", expression = "java(op.getUnitPrice() * op.getQuantity())")
     OrderDetailResponseDto.ProductsListItem toItem(OrderProduct op);
 
+    // Order -> OrderSummaryDto
+    @Mapping(source = "user.userId", target = "userId")
+    @Mapping(source = "store.storeId", target = "storeId")
+    OrdersResponseDto.OrderSummaryDto toSummaryDto(Order order);
+
     // Page -> PageableDto
     default OrdersResponseDto.PageableDto toPageableDto(Page<?> page) {
         return new OrdersResponseDto.PageableDto(

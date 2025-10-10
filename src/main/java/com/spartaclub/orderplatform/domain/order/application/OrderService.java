@@ -8,6 +8,7 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrderDetail
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto.OrderSummaryDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto.OrderItemRequest;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
@@ -149,8 +150,8 @@ public class OrderService {
             default -> throw new AccessDeniedException("주문 목록 조회 권한이 없습니다.");
         };
 
-        List<OrderDetailResponseDto> ordersList = orders.getContent().stream()
-            .map(orderMapper::toDto)
+        List<OrderSummaryDto> ordersList = orders.getContent().stream()
+            .map(orderMapper::toSummaryDto)
             .collect(Collectors.toList());
 
         OrdersResponseDto.PageableDto meta = orderMapper.toPageableDto(orders);
