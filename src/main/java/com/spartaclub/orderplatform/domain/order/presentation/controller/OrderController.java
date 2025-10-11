@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.order.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.order.application.OrderService;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.CancelOrderResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
@@ -58,5 +59,14 @@ public class OrderController {
         @Valid GetOrdersRequestDto requestDto) {
         return ResponseEntity.ok(
             ApiResponse.success(orderService.getOrders(requestDto, userDetails)));
+    }
+
+    @PostMapping("/{orderId}/cancel")
+    public ResponseEntity<ApiResponse<CancelOrderResponseDto>> cancelOrder(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID orderId
+    ) {
+        CancelOrderResponseDto response = orderService.cancelOrder(userDetails, orderId);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

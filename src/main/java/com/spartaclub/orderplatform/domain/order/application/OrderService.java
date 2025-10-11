@@ -3,7 +3,9 @@ package com.spartaclub.orderplatform.domain.order.application;
 import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
+import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.CancelOrderResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
@@ -156,6 +158,21 @@ public class OrderService {
         OrdersResponseDto.PageableDto meta = orderMapper.toPageableDto(orders);
 
         return new OrdersResponseDto(ordersList, meta);
+    }
+
+    //주문 취소
+    @Transactional
+    public CancelOrderResponseDto cancelOrder(UserDetailsImpl userDetails, UUID orderId) {
+        User user = userDetails.getUser();
+        Order order = findById(orderId);
+
+        //취소 가능 여부 체크
+        order.checkCancelable();
+
+        //상태 변경
+        order.changeStatus(OrderStatus.CANCELED);
+
+        return new CancelOrderResponseDto(orderId, OrderStatus.CANCELED);
     }
 
     //페이지네이션 Sort 객체 생성
