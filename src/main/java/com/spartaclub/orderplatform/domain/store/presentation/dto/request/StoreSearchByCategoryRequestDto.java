@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort.Direction;
 public class StoreSearchByCategoryRequestDto {
 
     private CategoryType categoryType;
+
     private int page = 0;
     private int size = 10;
     private Sort.Direction sortDirection = Direction.DESC;

@@ -49,6 +49,7 @@ public class StoreService {
         // 이미 나에게 존재하는 가게 이름인지 확인
         boolean existStoreName = storeRepository
             .existsByUserAndStoreName(user, dto.getStoreName());
+        
         if (existStoreName) {
             throw new IllegalArgumentException("이미 같은 이름의 음식점이 존재합니다.");
         }

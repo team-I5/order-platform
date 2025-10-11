@@ -56,7 +56,6 @@ public class StoreOwnerController {
             .body(ApiResponse.success(storeService.reapplyStore(user, storeId, dto)));
     }
 
-
     // Owner의 음식점 기본 정보 수정 API
     @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/{storeId}")
