@@ -197,6 +197,18 @@ public class OrderService {
         return OrderStatusResponseDto.ofRejected(orderId);
     }
 
+    //주문 배달 완료
+    @Transactional
+    public OrderStatusResponseDto completeDelivery(UserDetailsImpl userDetails, UUID orderId) {
+        Order order = findById(orderId);
+
+        //상태 검증 및 변경
+        order.checkDeliverable();
+        order.changeStatus(OrderStatus.DELIVERED);
+
+        return OrderStatusResponseDto.ofDelivered(orderId);
+    }
+
     //페이지네이션 Sort 객체 생성
     private Sort parseSort(List<String> sortParams) {
         //기본값
@@ -229,6 +241,4 @@ public class OrderService {
         return orderRepository.findById(orderId)
             .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다: " + orderId));
     }
-
-
 }

@@ -90,4 +90,14 @@ public class OrderController {
         OrderStatusResponseDto response = orderService.rejectOrder(userDetails, orderId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @PostMapping("/{orderId}/complete-delivery")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ApiResponse<OrderStatusResponseDto>> completeDelivery(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID orderId
+    ) {
+        OrderStatusResponseDto response = orderService.completeDelivery(userDetails, orderId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }

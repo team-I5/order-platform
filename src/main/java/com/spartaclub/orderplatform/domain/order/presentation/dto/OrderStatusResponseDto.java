@@ -22,4 +22,8 @@ public record OrderStatusResponseDto(
     public static OrderStatusResponseDto ofRejected(UUID orderId) {
         return new OrderStatusResponseDto(orderId, OrderStatus.REJECTED);
     }
+
+    public static OrderStatusResponseDto ofDelivered(UUID orderId) {
+        return new OrderStatusResponseDto(orderId, OrderStatus.DELIVERED);
+    }
 }

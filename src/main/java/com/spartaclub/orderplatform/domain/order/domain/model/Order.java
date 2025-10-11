@@ -156,10 +156,20 @@ public class Order extends BaseEntity {
         }
     }
 
+    //주문 거부 가능 여부
     public void checkRejectable() {
         if (this.status != OrderStatus.PAYMENT_PENDING && this.status != OrderStatus.PAID) {
             throw new IllegalStateException(
                 "결제 대기 또는 결제 완료 상태의 주문만 거절할 수 있습니다. (현재 상태: " + this.status + ")"
+            );
+        }
+    }
+
+    //주문 배달 완료 처리 가능 여부
+    public void checkDeliverable() {
+        if (this.status != OrderStatus.ACCEPTED) {
+            throw new IllegalStateException(
+                "승인 상태의 주문만 배달 완료할 수 있습니다. (현재 상태: " + this.status + ")"
             );
         }
     }
