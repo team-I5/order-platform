@@ -285,11 +285,22 @@ public class StoreService {
         }
     }
 
-    // 존재하는 카테고리인지 확인
+    // 존재하는 카테고리인지, 이미 등록된 카테고리인지 확인
     private void checkCategory(StoreCategoryRequestDto dto, Store store) {
         for (UUID categoryId : dto.getCategoryIds()) {
             Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리 입니다."));
+
+            boolean exist = store.getStoreCategories().stream()
+                .anyMatch(storeCategory ->
+                    storeCategory.getCategory().getCategoryId().equals(categoryId)
+                        && !storeCategory.isDeleted()
+                );
+
+            if (exist) {
+                throw new IllegalArgumentException("이미 등록된 카테고리 입니다." + category.getType().name());
+            }
+
             store.addCategory(category);
         }
     }
