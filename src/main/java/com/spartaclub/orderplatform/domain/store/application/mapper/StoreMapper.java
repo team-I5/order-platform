@@ -65,13 +65,6 @@ public interface StoreMapper {
             .map(storeCategory -> storeCategory.getCategory().getType().name()).toList();
     }
 
-    @Mapping(target = "categories", expression = """
-        java(
-            store.getStoreCategories().stream()
-                .filter(storeCategory -> storeCategory.getCategory() != null && !storeCategory.isDeleted())
-                .map(StoreCategory::getCategory)
-                .filter(category -> !category.isDeleted())
-                .toList()
-            )""")
+    @Mapping(target = "categories", ignore = true)
     StoreSearchByCategoryResponseDto toStoreSearchByCategoryResponseDto(Store store);
 }

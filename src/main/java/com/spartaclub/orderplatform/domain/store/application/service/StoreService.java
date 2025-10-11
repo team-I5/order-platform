@@ -9,6 +9,7 @@ import com.spartaclub.orderplatform.domain.category.entity.Category;
 import com.spartaclub.orderplatform.domain.category.repository.CategoryRepository;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;
 import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.RejectStoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreCategoryRequestDto;
@@ -23,6 +24,7 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.response.Store
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import com.spartaclub.orderplatform.user.domain.entity.UserRole;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -268,7 +270,25 @@ public class StoreService {
             default -> throw new RuntimeException("권한이 없습니다.");
         }
 
-        return stores.map(storeMapper::toStoreSearchByCategoryResponseDto);
+        return stores.map(store -> {
+            StoreSearchByCategoryResponseDto responseDto
+                = storeMapper.toStoreSearchByCategoryResponseDto(store);
+
+            List<Category> categories = store.getStoreCategories().stream()
+                .filter(storeCategory ->
+                    storeCategory.getCategory() != null && !storeCategory.isDeleted()
+                )
+                .map(StoreCategory::getCategory)
+                .filter(category -> !category.isDeleted())
+                .toList();
+
+            return new StoreSearchByCategoryResponseDto(
+                responseDto.getStoreName(),
+                responseDto.getAverageRating(),
+                responseDto.getReviewCount(),
+                categories
+            );
+        });
     }
 
     // 존재하는 음식점인지 확인
