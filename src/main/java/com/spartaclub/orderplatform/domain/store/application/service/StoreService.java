@@ -143,9 +143,7 @@ public class StoreService {
      *      - manager/master: 전체 음식점, 승인 상태별 / 음식점 주인별
      */
     @Transactional(readOnly = true)
-    public Page<StoreSearchResponseDto> searchStore(
-        StoreSearchRequestDto dto, User user
-    ) {
+    public Page<StoreSearchResponseDto> searchStore(StoreSearchRequestDto dto, User user) {
         dto.validatePageSize();
 
         Pageable pageable = PageRequest.of(
@@ -246,6 +244,7 @@ public class StoreService {
     }
 
     // 음식점 카테고리별 목록 조회
+    @Transactional(readOnly = true)
     public Page<StoreSearchByCategoryResponseDto> searchStoreByCategory(
         StoreSearchByCategoryRequestDto dto, User user
     ) {
@@ -270,25 +269,28 @@ public class StoreService {
             default -> throw new RuntimeException("권한이 없습니다.");
         }
 
-        return stores.map(store -> {
-            StoreSearchByCategoryResponseDto responseDto
-                = storeMapper.toStoreSearchByCategoryResponseDto(store);
+        return stores.map(this::getStoreSearchByCategoryResponseDto);
+    }
 
-            List<Category> categories = store.getStoreCategories().stream()
-                .filter(storeCategory ->
-                    storeCategory.getCategory() != null && !storeCategory.isDeleted()
-                )
-                .map(StoreCategory::getCategory)
-                .filter(category -> !category.isDeleted())
-                .toList();
+    // mapper에서 분리한 로직 - 유효한 카테고리만 포함한 dto 변환
+    private StoreSearchByCategoryResponseDto getStoreSearchByCategoryResponseDto(Store store) {
+        StoreSearchByCategoryResponseDto responseDto
+            = storeMapper.toStoreSearchByCategoryResponseDto(store);
 
-            return new StoreSearchByCategoryResponseDto(
-                responseDto.getStoreName(),
-                responseDto.getAverageRating(),
-                responseDto.getReviewCount(),
-                categories
-            );
-        });
+        List<Category> categories = store.getStoreCategories().stream()
+            .filter(storeCategory ->
+                storeCategory.getCategory() != null && !storeCategory.isDeleted()
+            )
+            .map(StoreCategory::getCategory)
+            .filter(category -> !category.isDeleted())
+            .toList();
+
+        return new StoreSearchByCategoryResponseDto(
+            responseDto.getStoreName(),
+            responseDto.getAverageRating(),
+            responseDto.getReviewCount(),
+            categories
+        );
     }
 
     // 존재하는 음식점인지 확인
