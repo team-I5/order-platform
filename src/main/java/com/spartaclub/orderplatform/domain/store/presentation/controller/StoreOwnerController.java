@@ -1,7 +1,9 @@
 package com.spartaclub.orderplatform.domain.store.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.store.application.service.StoreService;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreCategoryRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
@@ -54,7 +56,6 @@ public class StoreOwnerController {
             .body(ApiResponse.success(storeService.reapplyStore(user, storeId, dto)));
     }
 
-
     // Owner의 음식점 기본 정보 수정 API
     @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/{storeId}")
@@ -78,6 +79,45 @@ public class StoreOwnerController {
     ) {
         User user = userDetails.getUser();
         storeService.deleteStore(user, storeId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success());
+    }
+
+    // Owner의 음식점 카테고리 등록
+    @PreAuthorize("hasRole('OWNER')")
+    @PostMapping("/{storeId}/categories")
+    public ResponseEntity<ApiResponse<StoreCategoryResponseDto>> addCategoryToStore(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID storeId,
+        @Valid @RequestBody StoreCategoryRequestDto dto
+    ) {
+        User user = userDetails.getUser();
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(ApiResponse.success(storeService.addCategoryToStore(storeId, user, dto)));
+    }
+
+    // Owner의 음식점 카테고리 수정
+    @PreAuthorize("hasRole('OWNER')")
+    @PutMapping("/{storeId}/categories")
+    public ResponseEntity<ApiResponse<StoreCategoryResponseDto>> updateCategoryToStore(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID storeId,
+        @Valid @RequestBody StoreCategoryRequestDto dto
+    ) {
+        User user = userDetails.getUser();
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(ApiResponse.success(storeService.updateCategoryToStore(storeId, user, dto)));
+    }
+
+    // Owner의 음식점 카테고리 삭제
+    @PreAuthorize("hasRole('OWNER')")
+    @DeleteMapping("/{storeId}/categories")
+    public ResponseEntity<ApiResponse<Void>> deleteCategoryFromStore(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID storeId,
+        @Valid @RequestBody StoreCategoryRequestDto dto
+    ) {
+        User user = userDetails.getUser();
+        storeService.deleteCategoryFromStore(storeId, user, dto);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success());
     }
 }

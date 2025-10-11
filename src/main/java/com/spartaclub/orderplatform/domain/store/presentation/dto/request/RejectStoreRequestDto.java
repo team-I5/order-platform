@@ -14,5 +14,4 @@ public class RejectStoreRequestDto {
     @NotBlank(message = "음식점 승인 거절 사유는 필수 입력 사항입니다.")
     @Size(max = 250, message = "승인 거절 사유는 250자 이내로 작성해주세요.")
     private String rejectReason;
-
 }
