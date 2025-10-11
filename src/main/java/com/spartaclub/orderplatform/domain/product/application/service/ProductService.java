@@ -1,5 +1,6 @@
 package com.spartaclub.orderplatform.domain.product.application.service;
 
+import com.spartaclub.orderplatform.domain.ai.application.service.AiService;
 import com.spartaclub.orderplatform.domain.product.application.mapper.ProductMapper;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
@@ -34,6 +35,7 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final StoreRepository storeRepository;
 //    private final AddressRepository addressRepository;
+    private final AiService aiService;
 
     // 상품 등록 서비스 로직
     @Transactional
@@ -51,8 +53,11 @@ public class ProductService {
         // 4. 저장
         Product savedProduct = productRepository.save(product);
 
+        // 5. 캐시에 AI 응답이 있으면 로그 저장
+        aiService.saveAiLogsIfNeeded(0L, savedProduct.getProductId(), savedProduct.getCreatedId(), productCreateRequestDto.getProductDescription());
 
-        // 5. entity → dto 변환 후 반환
+
+        // 6. entity → dto 변환 후 반환
         return productMapper.toDto(savedProduct);
     }
 
@@ -143,6 +148,7 @@ public class ProductService {
 
         // 3. entity -> dto 후 반환
 //    }
+
 
     // --- 상품 공통 조회 메소드 ---
     private Product findProductOrThrow(UUID productId) {

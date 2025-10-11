@@ -1,22 +1,19 @@
 package com.spartaclub.orderplatform.domain.product.presentation.controller;
 
+import com.spartaclub.orderplatform.domain.product.application.service.ProductService;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
-import com.spartaclub.orderplatform.domain.product.application.service.ProductService;
-import com.spartaclub.orderplatform.domain.store.entity.Store;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -97,7 +94,4 @@ public class ProductController {
 //        Page<Store> stores = productService.getStoreListByProductNameAndAddressId(keyword, addressId, pageable);
 //
 //    }
-
-    // 상품 설명 AI 요청 API
-
 }
