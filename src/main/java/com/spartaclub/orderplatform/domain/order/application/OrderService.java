@@ -185,6 +185,18 @@ public class OrderService {
         return OrderStatusResponseDto.ofAccepted(orderId);
     }
 
+    //주문 거부
+    @Transactional
+    public OrderStatusResponseDto rejectOrder(UserDetailsImpl userDetails, UUID orderId) {
+        Order order = findById(orderId);
+
+        //상태 검증 및 변경
+        order.checkRejectable();
+        order.changeStatus(OrderStatus.REJECTED);
+
+        return OrderStatusResponseDto.ofRejected(orderId);
+    }
+
     //페이지네이션 Sort 객체 생성
     private Sort parseSort(List<String> sortParams) {
         //기본값

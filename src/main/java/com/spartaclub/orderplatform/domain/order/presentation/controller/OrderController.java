@@ -80,4 +80,14 @@ public class OrderController {
         OrderStatusResponseDto response = orderService.acceptOrder(userDetails, orderId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @PostMapping("/{orderId}/reject")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ApiResponse<OrderStatusResponseDto>> rejectOrder(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID orderId
+    ) {
+        OrderStatusResponseDto response = orderService.rejectOrder(userDetails, orderId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }
