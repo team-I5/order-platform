@@ -1,7 +1,6 @@
 package com.spartaclub.orderplatform.domain.order.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.order.application.OrderService;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrderDetailRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
@@ -10,11 +9,13 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResp
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,9 +47,9 @@ public class OrderController {
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OrderDetailResponseDto>> getOrderDetail(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Valid GetOrderDetailRequestDto requestDto) {
+        @PathVariable UUID orderId) {
         return ResponseEntity.ok(
-            ApiResponse.success(orderService.getOrderDetail(requestDto, userDetails)));
+            ApiResponse.success(orderService.getOrderDetail(orderId, userDetails)));
     }
 
     @GetMapping("")

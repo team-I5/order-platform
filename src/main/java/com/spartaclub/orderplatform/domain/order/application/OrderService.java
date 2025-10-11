@@ -4,7 +4,6 @@ import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrderDetailRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
@@ -94,10 +93,10 @@ public class OrderService {
 
     //주문 상세 조회
     @Transactional(readOnly = true)
-    public OrderDetailResponseDto getOrderDetail(GetOrderDetailRequestDto requestDto,
+    public OrderDetailResponseDto getOrderDetail(UUID orderId,
         UserDetailsImpl userDetails) {
         User viewer = userDetails.getUser();
-        Order order = findById(requestDto.orderId());
+        Order order = findById(orderId);
 
         switch (viewer.getRole()) {
             case CUSTOMER -> {
