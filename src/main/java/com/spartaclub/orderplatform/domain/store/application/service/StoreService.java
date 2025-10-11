@@ -5,15 +5,21 @@ import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus
 import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.REJECTED;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
+import com.spartaclub.orderplatform.domain.category.entity.Category;
+import com.spartaclub.orderplatform.domain.category.repository.CategoryRepository;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.RejectStoreRequestDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreCategoryRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByCategoryRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.RejectStoreResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import com.spartaclub.orderplatform.user.domain.entity.UserRole;
@@ -31,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class StoreService {
 
     private final StoreRepository storeRepository;
+    private final CategoryRepository categoryRepository;
 
     private final StoreMapper storeMapper;
 
@@ -98,7 +105,7 @@ public class StoreService {
         }
 
         store.delete();
-        store.softDelete(user.getUserId());
+        store.storeSoftDelete(user.getUserId());
     }
 
     // Manager의 음식점 승인
@@ -129,13 +136,13 @@ public class StoreService {
     /*
      *  음식점 목록 조회
      *    Role별로 목록 내용 다름
-     *      - customer: 승인된 음식점
+     *      - customer: 삭제되지 않은 승인된 음식점
      *      - owner: 자신의 음식점
      *      - manager/master: 전체 음식점, 승인 상태별 / 음식점 주인별
      */
     @Transactional(readOnly = true)
     public Page<StoreSearchResponseDto> searchStore(
-        StoreSearchRequestDto dto, UserRole role, User user
+        StoreSearchRequestDto dto, User user
     ) {
         dto.validatePageSize();
 
@@ -144,29 +151,15 @@ public class StoreService {
             Sort.by(DESC, "createdAt")
         );
 
-        Page<Store> stores;
-
-        switch (role) {
-            case CUSTOMER -> stores = storeRepository.findByStatus(APPROVED, pageable);
-            case OWNER -> stores = storeRepository.findByUser(user, pageable);
-            case MANAGER, MASTER -> {
-                if (dto.getStatus() != null && user != null) {
-                    stores = storeRepository.findByStatusAndUser_UserId(dto.getStatus(),
-                        user.getUserId(), pageable);
-                } else if (dto.getStatus() != null) {
-                    stores = storeRepository.findByStatus(dto.getStatus(), pageable);
-                } else if (user != null) {
-                    stores = storeRepository.findByUser_UserId(user.getUserId(), pageable);
-                } else {
-                    stores = storeRepository.findAll(pageable);
-                }
-            }
-            default -> stores = Page.empty();
-        }
-        return stores.map(storeMapper::toStoreSearchResponseDto);
+        return switch (user.getRole()) {
+            case CUSTOMER -> searchStoreForCustomer(pageable);
+            case OWNER -> searchStoreForOwner(user, pageable);
+            case MANAGER, MASTER -> searchStoreForAdmin(dto, pageable);
+        };
     }
 
     // 음식점 상세 조회
+    @Transactional(readOnly = true)
     public StoreDetailResponseDto searchStoreDetail(UUID storeId, User user, UserRole role) {
         Store store = getStore(storeId);
 
@@ -190,6 +183,94 @@ public class StoreService {
         return storeMapper.toStoreDetailResponseDto(store, role);
     }
 
+    // 음식점 카테고리 등록
+    @Transactional
+    public StoreCategoryResponseDto addCategoryToStore(
+        UUID storeId, User user, StoreCategoryRequestDto dto
+    ) {
+        Store store = getStore(storeId);
+
+        if (!store.getUser().getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("본인의 음식점의 카테고리만 등록할 수 있습니다.");
+        }
+
+        if (store.getStatus() != APPROVED) {
+            throw new IllegalArgumentException("승인된 가게만 카테고리를 등록할 수 있습니다.");
+        }
+
+        checkCategory(dto, store);
+
+        return storeMapper.toStoreCategoryResponseDto(store);
+    }
+
+    // 음식점 카테고리 수정
+    @Transactional
+    public StoreCategoryResponseDto updateCategoryToStore(
+        UUID storeId, User user, StoreCategoryRequestDto dto
+    ) {
+        Store store = getStore(storeId);
+
+        if (!store.getUser().getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("본인의 음식점의 카테고리만 수정할 수 있습니다.");
+        }
+
+        // 기존 관계들은 soft delete 처리
+        store.getStoreCategories().forEach(storeCategory -> {
+            if (storeCategory.getDeletedId() != null) {
+                storeCategory.scSoftDelete(user.getUserId());
+                storeCategory.delete();
+            }
+        });
+
+        checkCategory(dto, store);
+
+        return storeMapper.toStoreCategoryResponseDto(store);
+    }
+
+    // 음식점 카테고리 제거
+    @Transactional
+    public void deleteCategoryFromStore(UUID storeId, User user, StoreCategoryRequestDto dto) {
+        Store store = getStore(storeId);
+
+        if (!store.getUser().getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("본인의 음식점의 카테고리만 삭제할 수 있습니다.");
+        }
+
+        for (UUID categoryId : dto.getCategoryIds()) {
+            Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
+            store.removeCategory(user.getUserId(), category);
+        }
+    }
+
+    // 음식점 카테고리별 목록 조회
+    public Page<StoreSearchByCategoryResponseDto> searchStoreByCategory(
+        StoreSearchByCategoryRequestDto dto, User user
+    ) {
+        dto.validatePageSize();
+
+        Pageable pageable = PageRequest.of(
+            dto.getPage(), dto.getSize(),
+            Sort.by(DESC, "createdAt")
+        );
+
+        Page<Store> stores;
+
+        switch (user.getRole()) {
+            case CUSTOMER -> stores = storeRepository
+                .findApprovedStoreByCategory(dto.getCategoryType(), pageable);
+            case OWNER -> stores = storeRepository
+                .findOwnerApprovedStoreByCategory(
+                    dto.getCategoryType(), user.getUserId(), pageable
+                );
+            case MANAGER, MASTER -> stores = storeRepository
+                .findAllStoreByCategory(dto.getCategoryType(), pageable);
+            default -> throw new RuntimeException("권한이 없습니다.");
+        }
+
+        return stores.map(storeMapper::toStoreSearchByCategoryResponseDto);
+    }
+
     // 존재하는 음식점인지 확인
     private Store getStore(UUID storeId) {
         return storeRepository.findById(storeId)
@@ -201,6 +282,47 @@ public class StoreService {
         if (store.getStatus() != PENDING) {
             throw new IllegalArgumentException(
                 "승인 대기 상태의 가게만 승인 상태를 변경할 수 있습니다.");
+        }
+    }
+
+    // 존재하는 카테고리인지 확인
+    private void checkCategory(StoreCategoryRequestDto dto, Store store) {
+        for (UUID categoryId : dto.getCategoryIds()) {
+            Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리 입니다."));
+            store.addCategory(category);
+        }
+    }
+
+    // Customer의 음식점 목록 조회 - 승인 상태, 삭제 여부 확인
+    private Page<StoreSearchResponseDto> searchStoreForCustomer(Pageable pageable) {
+        return storeRepository.findByStatusAndDeletedAtIsNull(APPROVED, pageable)
+            .map(storeMapper::toStoreSearchResponseDto);
+    }
+
+    // Owner의 음식점 목록 조회 - 본인 소유 음식점인지 확인
+    private Page<StoreSearchResponseDto> searchStoreForOwner(User user, Pageable pageable) {
+        return storeRepository.findByUser(user, pageable)
+            .map(storeMapper::toStoreSearchResponseDto);
+    }
+
+    // Manager, Master의 음식점 목록 조회 - 상태별, owner별, 전체 조회
+    private Page<StoreSearchResponseDto> searchStoreForAdmin(
+        StoreSearchRequestDto dto, Pageable pageable
+    ) {
+        if (dto.getStatus() != null && dto.getOwnerId() != null) {
+            return storeRepository
+                .findByStatusAndUser_UserId(dto.getStatus(), dto.getOwnerId(), pageable)
+                .map(storeMapper::toStoreSearchResponseDto);
+        } else if (dto.getStatus() != null) {
+            return storeRepository.findByStatus(dto.getStatus(), pageable)
+                .map(storeMapper::toStoreSearchResponseDto);
+        } else if (dto.getOwnerId() != null) {
+            return storeRepository.findByUser_UserId(dto.getOwnerId(), pageable)
+                .map(storeMapper::toStoreSearchResponseDto);
+        } else {
+            return storeRepository.findAll(pageable)
+                .map(storeMapper::toStoreSearchResponseDto);
         }
     }
 }
