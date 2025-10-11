@@ -12,7 +12,7 @@ import org.springframework.data.domain.Sort.Direction;
 @NoArgsConstructor
 public class StoreSearchRequestDto {
 
-    private String storeName;
+    private Long ownerId;
     private StoreStatus status;
 
     private int page = 0;
