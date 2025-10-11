@@ -4,23 +4,21 @@ import com.spartaclub.orderplatform.user.application.mapper.AddressMapper;
 import com.spartaclub.orderplatform.user.domain.entity.Address;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import com.spartaclub.orderplatform.user.infrastructure.repository.AddressRepository;
-import com.spartaclub.orderplatform.user.presentation.dto.AddressCreateRequestDto;
-import com.spartaclub.orderplatform.user.presentation.dto.AddressCreateResponseDto;
-import com.spartaclub.orderplatform.user.presentation.dto.AddressListPageResponseDto;
-import com.spartaclub.orderplatform.user.presentation.dto.AddressListResponseDto;
+import com.spartaclub.orderplatform.user.presentation.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * 주소 비즈니스 로직 서비스
  * 주소 등록, 조회, 수정, 삭제 등의 비즈니스 로직 처리
  *
  * @author 전우선
- * @date 2025-10-10(금)
+ * @date 2025-10-11(토)
  */
 @Service
 @RequiredArgsConstructor
@@ -147,5 +145,149 @@ public class AddressService {
 
         // 5. Mapper를 통한 응답 DTO 생성
         return addressMapper.toPageResponse(addressList, totalCount, defaultAddress);
+    }
+
+    /**
+     * 주소 수정
+     * 기존 주소 정보를 수정하고 소유자 검증 및 기본 주소 관리 수행
+     *
+     * @param addressId  수정할 주소 ID
+     * @param requestDto 주소 수정 요청 데이터
+     * @param user       주소를 수정하는 사용자
+     * @return 수정된 주소 정보
+     * @throws RuntimeException 주소를 찾을 수 없거나 권한이 없는 경우
+     */
+    @Transactional
+    public AddressUpdateResponseDto updateAddress(UUID addressId, AddressUpdateRequestDto requestDto, User user) {
+
+        // 1. 주소 조회 및 소유자 검증
+        Address address = findAddressAndValidateOwner(addressId, user);
+
+        // 2. 삭제된 주소 수정 불가 검증
+        validateNotDeleted(address);
+
+        // 3. 주소명 중복 체크 (본인 제외)
+        validateDuplicateAddressNameForUpdate(requestDto.getAddressName(), user, addressId);
+
+        // 4. 기본 주소 변경 처리
+        handleDefaultAddressForUpdate(requestDto, user, address);
+
+        // 5. 주소 정보 업데이트
+        updateAddressFields(address, requestDto);
+
+        // 6. 데이터베이스 저장
+        Address savedAddress = addressRepository.save(address);
+
+        // 7. 응답 DTO 생성
+        return addressMapper.toUpdateResponse(savedAddress);
+    }
+
+    /**
+     * 주소 조회 및 소유자 검증
+     *
+     * @param addressId 주소 ID
+     * @param user      사용자
+     * @return 조회된 주소
+     * @throws RuntimeException 주소를 찾을 수 없거나 소유자가 아닌 경우
+     */
+    private Address findAddressAndValidateOwner(UUID addressId, User user) {
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new RuntimeException("주소를 찾을 수 없습니다."));
+
+        if (!address.getUser().getUserId().equals(user.getUserId())) {
+            throw new RuntimeException("해당 주소에 접근할 권한이 없습니다.");
+        }
+
+        return address;
+    }
+
+    /**
+     * 삭제된 주소 수정 불가 검증
+     *
+     * @param address 주소
+     * @throws RuntimeException 삭제된 주소인 경우
+     */
+    private void validateNotDeleted(Address address) {
+        if (address.getDeletedAt() != null) {
+            throw new RuntimeException("삭제된 주소는 수정할 수 없습니다.");
+        }
+    }
+
+    /**
+     * 주소명 중복 체크 (수정용)
+     * 본인 주소 제외하고 동일한 주소명이 있는지 확인
+     *
+     * @param addressName 확인할 주소명
+     * @param user        사용자
+     * @param excludeId   제외할 주소 ID (본인)
+     * @throws RuntimeException 중복 주소명 발견 시
+     */
+    private void validateDuplicateAddressNameForUpdate(String addressName, User user, UUID excludeId) {
+        Optional<Address> existingAddress = addressRepository
+                .findByUserAndAddressNameAndDeletedAtIsNull(user, addressName);
+
+        if (existingAddress.isPresent() && !existingAddress.get().getAddressId().equals(excludeId)) {
+            throw new RuntimeException("동일한 주소명이 이미 존재합니다.");
+        }
+    }
+
+    /**
+     * 기본 주소 변경 처리 (수정용)
+     *
+     * @param requestDto 수정 요청 데이터
+     * @param user       사용자
+     * @param address    수정할 주소
+     * @throws RuntimeException 기본 주소 해제 불가한 경우
+     */
+    private void handleDefaultAddressForUpdate(AddressUpdateRequestDto requestDto, User user, Address address) {
+        boolean newDefaultValue = Boolean.TRUE.equals(requestDto.getDefaultAddress());
+        boolean currentDefaultValue = Boolean.TRUE.equals(address.getDefaultAddress());
+
+        // 기본 주소로 설정하는 경우
+        if (newDefaultValue && !currentDefaultValue) {
+            // 기존 기본 주소 해제
+            Optional<Address> existingDefaultAddress = addressRepository
+                    .findByUserAndDefaultAddressTrueAndDeletedAtIsNull(user);
+
+            if (existingDefaultAddress.isPresent()) {
+                Address currentDefault = existingDefaultAddress.get();
+                currentDefault.setDefaultAddress(false);
+                addressRepository.save(currentDefault);
+            }
+        }
+        // 기본 주소를 해제하는 경우
+        else if (!newDefaultValue && currentDefaultValue) {
+            // 다른 기본 주소가 있는지 확인
+            long activeAddressCount = addressRepository.countByUserAndDeletedAtIsNull(user);
+            if (activeAddressCount <= 1) {
+                throw new RuntimeException("마지막 주소는 기본 주소를 해제할 수 없습니다.");
+            }
+
+            // 다른 주소를 기본 주소로 설정
+            List<Address> otherAddresses = addressRepository
+                    .findByUserAndDeletedAtIsNullAndAddressIdNot(user, address.getAddressId());
+
+            if (!otherAddresses.isEmpty()) {
+                Address newDefaultAddress = otherAddresses.get(0);
+                newDefaultAddress.setDefaultAddress(true);
+                addressRepository.save(newDefaultAddress);
+            }
+        }
+    }
+
+    /**
+     * 주소 필드 업데이트
+     *
+     * @param address    업데이트할 주소
+     * @param requestDto 수정 요청 데이터
+     */
+    private void updateAddressFields(Address address, AddressUpdateRequestDto requestDto) {
+        address.setAddressName(requestDto.getAddressName());
+        address.setName(requestDto.getName());
+        address.setPhoneNumber(requestDto.getPhoneNumber());
+        address.setPostCode(requestDto.getPostCode());
+        address.setRoadNameAddress(requestDto.getRoadNameAddress());
+        address.setDetailedAddress(requestDto.getDetailedAddress());
+        address.setDefaultAddress(requestDto.getDefaultAddress());
     }
 }
