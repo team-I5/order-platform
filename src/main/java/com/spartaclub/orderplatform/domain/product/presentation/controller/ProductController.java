@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+import static com.spartaclub.orderplatform.global.application.security.SecurityUtils.getCurrentUserId;
+
 /**
  * 상품 Controller
  *

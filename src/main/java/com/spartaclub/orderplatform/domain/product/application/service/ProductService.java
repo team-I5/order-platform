@@ -5,9 +5,11 @@ import com.spartaclub.orderplatform.domain.product.application.mapper.ProductMap
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
-import com.spartaclub.orderplatform.domain.store.entity.Store;
-import com.spartaclub.orderplatform.domain.store.repository.StoreRepository;
+import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,10 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * 상품 Service
@@ -39,7 +37,8 @@ public class ProductService {
 
     // 상품 등록 서비스 로직
     @Transactional
-    public ProductResponseDto createProduct(@Valid ProductCreateRequestDto productCreateRequestDto) {
+    public ProductResponseDto createProduct(
+        @Valid ProductCreateRequestDto productCreateRequestDto) {
         // 1. storeId로 Store 조회
 //        Store store = storeRepository.findById(productRequestDto.getStoreId())
 //                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다."));
@@ -56,14 +55,14 @@ public class ProductService {
         // 5. 캐시에 AI 응답이 있으면 로그 저장
         aiService.saveAiLogsIfNeeded(0L, savedProduct.getProductId(), savedProduct.getCreatedId(), productCreateRequestDto.getProductDescription());
 
-
         // 6. entity → dto 변환 후 반환
         return productMapper.toDto(savedProduct);
     }
 
     // 상품 수정 서비스 로직
     @Transactional
-    public ProductResponseDto updateProduct(UUID productId, @Valid ProductUpdateRequestDto productUpdateRequestDto) {
+    public ProductResponseDto updateProduct(UUID productId,
+        @Valid ProductUpdateRequestDto productUpdateRequestDto) {
         // 1. productId로 상품 조회
         Product product = findProductOrThrow(productId);
 
@@ -80,7 +79,7 @@ public class ProductService {
     // 상품 삭제 서비스 로직
     @Transactional
     public void deleteProduct(
-            UUID productId
+        UUID productId
 //            Long userId
     ) {
         // 1. productId로 상품 조회
@@ -97,8 +96,8 @@ public class ProductService {
 
         // 2. 페이지 객체에서 삼품 리스트만 추출
         List<ProductResponseDto> productList = productPage.getContent().stream()
-                .map(productMapper::toDto)
-                .collect(Collectors.toList());
+            .map(productMapper::toDto)
+            .collect(Collectors.toList());
 
         // 3. 페이지 메타 데이터 -> dto 변환
         PageMetaDto pageMetaDto = productMapper.toPageDto(productPage);
@@ -153,7 +152,7 @@ public class ProductService {
     // --- 상품 공통 조회 메소드 ---
     private Product findProductOrThrow(UUID productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
     }
 
     // 사용자 배송지에서 도로명 주소만 추출하는 메소드
