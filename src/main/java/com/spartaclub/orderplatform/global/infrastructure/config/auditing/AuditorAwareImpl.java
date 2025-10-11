@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+import static com.spartaclub.orderplatform.global.application.security.SecurityUtils.getCurrentUserId;
+
 
 /**
  * 엔티티의 @CreatedBy, @LastModifiedBy 같은 작성자/수정자 정보를 채워주기 위해 현재 사용자의 ID를 알려주는 것.
@@ -15,7 +17,7 @@ import java.util.Optional;
  * 해당 ID 값이 엔티티 필드에 자동으로 들어감.
  *
  * @author 류형선
- * @date 2025-09-30(화)
+ * @date 2025-10-11(토)
  *
  **/
 @Component("auditorProvider")
@@ -24,18 +26,8 @@ public class AuditorAwareImpl implements AuditorAware<Long> {
     @Override
     @NonNull
     public Optional<Long> getCurrentAuditor() {
-        // 여기에 현재 로그인한 사용자 ID를 반환
-        // 보안 적용 전에는 테스트용으로 고정값 반환
-        // 예: SecurityContextHolder에서 가져오기
-        // Long userId = getCurrentUserIdFromSecurityContext();
-        return Optional.of(0L); // 예: 0L = 시스템/익명
+        Long userId = getCurrentUserId();
+        return Optional.ofNullable(userId);
     }
 
-//    private Long getCurrentUserIdFromSecurityContext() {
-//        // 실제 구현: Spring Security 사용 시
-//        // Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        // CustomUserDetails user = (CustomUserDetails) auth.getPrincipal();
-//        // return user.getId();
-//        return 1L; // 예시: 테스트용
-//    }
 }
