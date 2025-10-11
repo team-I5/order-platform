@@ -16,7 +16,7 @@ import java.util.UUID;
  * 주소 데이터 접근을 위한 JPA 레포지토리
  *
  * @author 전우선
- * @date 2025-10-09(목)
+ * @date 2025-10-11(토)
  */
 @Repository
 public interface AddressRepository extends JpaRepository<Address, UUID> {
@@ -42,4 +42,10 @@ public interface AddressRepository extends JpaRepository<Address, UUID> {
 
     // 특정 주소 조회 (소유자 및 삭제 여부 확인)
     Optional<Address> findByAddressIdAndUserAndDeletedAtIsNull(UUID addressId, User user);
+
+    // 주소명으로 주소 조회 (중복 체크용)
+    Optional<Address> findByUserAndAddressNameAndDeletedAtIsNull(User user, String addressName);
+
+    // 특정 주소 ID를 제외한 사용자의 활성 주소 목록 조회
+    List<Address> findByUserAndDeletedAtIsNullAndAddressIdNot(User user, UUID excludeAddressId);
 }
