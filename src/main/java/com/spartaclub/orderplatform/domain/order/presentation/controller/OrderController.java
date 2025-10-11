@@ -1,9 +1,9 @@
 package com.spartaclub.orderplatform.domain.order.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.order.application.OrderService;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.CancelOrderResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderStatusResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
@@ -14,6 +14,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,11 +63,21 @@ public class OrderController {
     }
 
     @PostMapping("/{orderId}/cancel")
-    public ResponseEntity<ApiResponse<CancelOrderResponseDto>> cancelOrder(
+    public ResponseEntity<ApiResponse<OrderStatusResponseDto>> cancelOrder(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable UUID orderId
     ) {
-        CancelOrderResponseDto response = orderService.cancelOrder(userDetails, orderId);
+        OrderStatusResponseDto response = orderService.cancelOrder(userDetails, orderId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/{orderId}/accept")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ApiResponse<OrderStatusResponseDto>> acceptOrder(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable UUID orderId
+    ) {
+        OrderStatusResponseDto response = orderService.acceptOrder(userDetails, orderId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

@@ -146,4 +146,13 @@ public class Order extends BaseEntity {
             );
         }
     }
+
+    //주문 승인 가능 여부 검증
+    public void checkAcceptable() {
+        if (this.status != OrderStatus.PAID) {
+            throw new IllegalStateException(
+                "결제 완료 상태의 주문만 승인할 수 있습니다. (현재 상태: " + this.status + ")"
+            );
+        }
+    }
 }

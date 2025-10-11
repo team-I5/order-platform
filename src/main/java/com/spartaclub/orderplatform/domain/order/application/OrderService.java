@@ -5,9 +5,9 @@ import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.CancelOrderResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderStatusResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto.OrderSummaryDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
@@ -162,17 +162,27 @@ public class OrderService {
 
     //주문 취소
     @Transactional
-    public CancelOrderResponseDto cancelOrder(UserDetailsImpl userDetails, UUID orderId) {
+    public OrderStatusResponseDto cancelOrder(UserDetailsImpl userDetails, UUID orderId) {
         User user = userDetails.getUser();
         Order order = findById(orderId);
 
-        //취소 가능 여부 체크
+        //상태 검증 및 변경, 5분 이내의 주문만 취소 가능
         order.checkCancelable();
-
-        //상태 변경
         order.changeStatus(OrderStatus.CANCELED);
 
-        return new CancelOrderResponseDto(orderId, OrderStatus.CANCELED);
+        return OrderStatusResponseDto.ofCanceled(orderId);
+    }
+
+    //주문 승인
+    @Transactional
+    public OrderStatusResponseDto acceptOrder(UserDetailsImpl userDetails, UUID orderId) {
+        Order order = findById(orderId);
+
+        //상태 검증 및 변경
+        order.checkAcceptable();
+        order.changeStatus(OrderStatus.ACCEPTED);
+
+        return OrderStatusResponseDto.ofAccepted(orderId);
     }
 
     //페이지네이션 Sort 객체 생성
@@ -207,4 +217,6 @@ public class OrderService {
         return orderRepository.findById(orderId)
             .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다: " + orderId));
     }
+
+
 }
