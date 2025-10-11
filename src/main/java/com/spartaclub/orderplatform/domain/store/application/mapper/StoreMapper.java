@@ -3,11 +3,14 @@ package com.spartaclub.orderplatform.domain.store.application.mapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.RejectStoreResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import com.spartaclub.orderplatform.user.domain.entity.UserRole;
+import java.util.List;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -31,7 +34,7 @@ public interface StoreMapper {
 
     @Mapping(target = "storeId", ignore = true)
     @Mapping(target = "user", source = "user")
-    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "storeCategories", ignore = true)
     @Mapping(target = "orders", ignore = true)
     @Mapping(target = "products", ignore = true)
     @Mapping(target = "reviews", ignore = true)
@@ -53,4 +56,22 @@ public interface StoreMapper {
     @Mapping(source = "averageRating", target = "averageRating")
     @Mapping(source = "reviewCount", target = "reviewCount")
     StoreDetailResponseDto toStoreDetailResponseDto(Store store, @Context UserRole role);
+
+    @Mapping(target = "categories", expression = "java(mapCategories(store))")
+    StoreCategoryResponseDto toStoreCategoryResponseDto(Store store);
+
+    default List<String> mapCategories(Store store) {
+        return store.getStoreCategories().stream()
+            .map(storeCategory -> storeCategory.getCategory().getType().name()).toList();
+    }
+
+    @Mapping(target = "categories", expression = """
+        java(
+            store.getStoreCategories().stream()
+                .filter(storeCategory -> storeCategory.getCategory() != null && !storeCategory.isDeleted())
+                .map(StoreCategory::getCategory)
+                .filter(category -> !category.isDeleted())
+                .toList()
+            )""")
+    StoreSearchByCategoryResponseDto toStoreSearchByCategoryResponseDto(Store store);
 }
