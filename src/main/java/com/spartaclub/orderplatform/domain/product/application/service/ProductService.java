@@ -5,7 +5,12 @@ import com.spartaclub.orderplatform.domain.product.application.mapper.ProductMap
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
+import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
+import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
+import com.spartaclub.orderplatform.user.domain.entity.Address;
+import com.spartaclub.orderplatform.user.infrastructure.repository.AddressRepository;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -22,7 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
  * 상품 Service
  *
  * @author 류형선
- * @date 2025-10-02(목)
+ * @date 2025-10-11(토)
  */
 @Service
 @RequiredArgsConstructor
@@ -32,22 +37,24 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final StoreRepository storeRepository;
-//    private final AddressRepository addressRepository;
+    private final StoreMapper storeMapper;
+    private final AddressRepository addressRepository;
     private final AiService aiService;
 
     // 상품 등록 서비스 로직
     @Transactional
     public ProductResponseDto createProduct(
-        @Valid ProductCreateRequestDto productCreateRequestDto) {
+        @Valid ProductCreateRequestDto productCreateRequestDto
+    ) {
         // 1. storeId로 Store 조회
-//        Store store = storeRepository.findById(productRequestDto.getStoreId())
-//                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다."));
+        Store store = storeRepository.findById(productCreateRequestDto.getStoreId())
+                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다."));
 
         // 2. dto → entity 변환
         Product product = productMapper.toEntity(productCreateRequestDto);
 
         // 3. store 객체 연결
-//        product.setStore(store);
+        product.setStore(store);
 
         // 4. 저장
         Product savedProduct = productRepository.save(product);
@@ -62,7 +69,8 @@ public class ProductService {
     // 상품 수정 서비스 로직
     @Transactional
     public ProductResponseDto updateProduct(UUID productId,
-        @Valid ProductUpdateRequestDto productUpdateRequestDto) {
+        @Valid ProductUpdateRequestDto productUpdateRequestDto
+    ) {
         // 1. productId로 상품 조회
         Product product = findProductOrThrow(productId);
 
@@ -79,13 +87,13 @@ public class ProductService {
     // 상품 삭제 서비스 로직
     @Transactional
     public void deleteProduct(
-        UUID productId
-//            Long userId
+        UUID productId,
+        Long userId
     ) {
         // 1. productId로 상품 조회
         Product product = findProductOrThrow(productId);
 
-        product.deleteProduct(0L); // 도메인 메서드 호출, 회원 연결 전 하드코딩
+        product.deleteProduct(userId); // 도메인 메서드 호출, 회원 연결 전 하드코딩
         // @Transactional 안에서 dirty checking으로 자동 반영
     }
 
@@ -134,19 +142,20 @@ public class ProductService {
 
 
     // 검색 키워드와 사용자 배송지 정보로 상점 검색
-//    public Page<Store> getStoreListByProductNameAndAddressId(String keyword, UUID addressId, Pageable pageable) {
+    public Page<StoreSearchResponseDto> getStoreListByProductNameAndAddressId(String keyword, UUID addressId, Pageable pageable) {
         // 1. 사용자의 배송지 조회
-//        Address address = addressRepository.findByAddressId(addressId)
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "배송지가 존재하지 않습니다."));
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "배송지가 존재하지 않습니다."));
 
         // 2. 도로명 주소만 추출
-//        String roadName = extractRoadName(address.getRoadNameAddress());
+        String roadName = extractRoadName(address.getRoadNameAddress());
 
         // 3. 키워드로 찾은 상품과 연계된 가게 중 배송지 주소 근처인 가게 조회
-//        Page<Store> storePage = storeRepository.findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable);
+        Page<Store> storePage = storeRepository.findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable);
 
         // 3. entity -> dto 후 반환
-//    }
+        return storePage.map(storeMapper::toStoreSearchResponseDto);
+    }
 
 
     // --- 상품 공통 조회 메소드 ---

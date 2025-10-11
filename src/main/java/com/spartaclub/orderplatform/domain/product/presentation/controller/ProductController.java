@@ -5,9 +5,12 @@ import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponse
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
+import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,7 +25,7 @@ import static com.spartaclub.orderplatform.global.application.security.SecurityU
  * 상품 Controller
  *
  * @author 류형선
- * @date 2025-10-02(목)
+ * @date 2025-10-11(토)
  */
 @RestController
 @RequestMapping("/v1/products")
@@ -52,9 +55,9 @@ public class ProductController {
     @DeleteMapping("/{productId}")
     public ResponseEntity<ApiResponse<Void>> deleteProduct(
             @PathVariable UUID productId
-//            @AuthenticationPrincipal Long userId
     ) {
-        productService.deleteProduct(productId);
+        Long userId = getCurrentUserId();
+        productService.deleteProduct(productId, userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -85,15 +88,15 @@ public class ProductController {
     }
 
     // 상품 검색 API
-//    @GetMapping("search-by-product-Name")
-//    public ResponseEntity<ApiResponse<ProductResponseDto>> searchProductByProductName(
-//            @RequestParam String keyword,
-//            @RequestParam(required = false) UUID addressId,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size
-//    ) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        Page<Store> stores = productService.getStoreListByProductNameAndAddressId(keyword, addressId, pageable);
-//
-//    }
+    @GetMapping("search-by-product-Name")
+    public ResponseEntity<ApiResponse<Page<StoreSearchResponseDto>>> searchProductByProductName(
+            @RequestParam String keyword,
+            @RequestParam(required = false) UUID addressId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<StoreSearchResponseDto> stores = productService.getStoreListByProductNameAndAddressId(keyword, addressId, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(stores));
+    }
 }
