@@ -19,7 +19,7 @@ import java.util.UUID;
  * 주소 등록, 조회, 수정, 삭제 등의 REST API 엔드포인트 제공
  *
  * @author 전우선
- * @date 2025-10-11(토)
+ * @date 2025-10-12(일)
  */
 @RestController
 @RequestMapping("/v1/addresses")
@@ -93,6 +93,28 @@ public class AddressController {
 
         // 주소 수정
         AddressUpdateResponseDto responseDto = addressService.updateAddress(addressId, requestDto, user);
+
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
+    }
+
+    /**
+     * 주소 삭제 API (Soft Delete)
+     * 인증된 사용자의 기존 주소를 삭제
+     *
+     * @param userDetails 인증된 사용자 정보
+     * @param addressId   삭제할 주소 ID
+     * @return 삭제된 주소 정보
+     */
+    @DeleteMapping("/{addressId}")
+    public ResponseEntity<ApiResponse<AddressDeleteResponseDto>> deleteAddress(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable UUID addressId) {
+
+        // 인증된 사용자 정보 추출
+        User user = userDetails.getUser();
+
+        // 주소 삭제
+        AddressDeleteResponseDto responseDto = addressService.deleteAddress(addressId, user);
 
         return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
