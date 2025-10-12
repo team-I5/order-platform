@@ -12,7 +12,6 @@ import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -27,20 +26,16 @@ import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "p_stores")
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 public class Store extends BaseEntity {
 
     @Id
@@ -52,21 +47,17 @@ public class Store extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Builder.Default
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
 
-    @Builder.Default
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();
 
-    @Builder.Default
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;          // TODO 중간테이블 만들기
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StoreCategory> storeCategories = new ArrayList<>();
 
     @Column(nullable = false, length = 20)
     private String storeName;
@@ -126,7 +117,26 @@ public class Store extends BaseEntity {
     }
 
     // 음식점 삭제 처리
-    public void softDelete(Long userId) {
+    public void storeSoftDelete(Long userId) {
         this.deletedId = userId;
+    }
+
+    // 음식점에 카테고리 추가
+    public void addCategory(Category category) {
+        StoreCategory storeCategory = new StoreCategory(this, category);
+        storeCategories.add(storeCategory);
+    }
+
+    // 음식점에 카테고리 삭제
+    public void removeCategory(Long userId, Category category) {
+        this.storeCategories.stream()
+            .filter(storeCategory ->
+                storeCategory.getCategory().equals(category)
+                    && storeCategory.getDeletedId() != null)
+            .findFirst()
+            .ifPresent(storeCategory -> {
+                storeCategory.delete();
+                storeCategory.scSoftDelete(userId);
+            });
     }
 }
