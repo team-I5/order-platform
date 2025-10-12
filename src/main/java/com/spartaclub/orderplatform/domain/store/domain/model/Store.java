@@ -78,8 +78,8 @@ public class Store extends BaseEntity {
     @Column(length = 300)
     private String rejectReason;
 
-    private Double averageRating;
-    private Integer reviewCount;
+    private Double averageRating = 0.0;
+    private Integer reviewCount = 0;
 
     @CreatedBy
     @Column(updatable = false)
@@ -138,5 +138,11 @@ public class Store extends BaseEntity {
                 storeCategory.delete();
                 storeCategory.scSoftDelete(userId);
             });
+    }
+
+    // 음식점 리뷰 개수와 평점 업데이트
+    public void updateAverageRatingAndReviewCount(double averageRating, int reviewCount) {
+        this.averageRating = averageRating;
+        this.reviewCount = reviewCount;
     }
 }
