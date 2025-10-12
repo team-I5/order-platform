@@ -44,7 +44,8 @@ public class ProductService {
     // 상품 등록 서비스 로직
     @Transactional
     public ProductResponseDto createProduct(
-        @Valid ProductCreateRequestDto productCreateRequestDto
+        @Valid ProductCreateRequestDto productCreateRequestDto,
+        Long userId
     ) {
         // 1. storeId로 Store 조회
         Store store = storeRepository.findById(productCreateRequestDto.getStoreId())
@@ -60,7 +61,7 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
 
         // 5. 캐시에 AI 응답이 있으면 로그 저장
-        aiService.saveAiLogsIfNeeded(0L, savedProduct.getProductId(), savedProduct.getCreatedId(), productCreateRequestDto.getProductDescription());
+        aiService.saveAiLogsIfNeeded(userId, savedProduct.getProductId(), savedProduct.getCreatedId(), productCreateRequestDto.getProductDescription());
 
         // 6. entity → dto 변환 후 반환
         return productMapper.toDto(savedProduct);
@@ -99,10 +100,10 @@ public class ProductService {
 
     // 상품 목록 조회 서비스 로직
     public PageResponseDto<ProductResponseDto> getProductList(UUID storeId, Pageable pageable) {
-        // 1. storeId로 상품 리스트 페이지 객체로 조회
-        Page<Product> productPage = productRepository.findByStore_StoreId(storeId, pageable);
+        // 1. storeId로 상품 리스트 페이지 객체로 조회( isHidden이 false 이고, deletedAt이 NULL인 상품만 조회)
+        Page<Product> productPage = productRepository.findByStore_StoreIdAndIsHiddenFalseAndDeletedAtIsNull(storeId, pageable);
 
-        // 2. 페이지 객체에서 삼품 리스트만 추출
+        // 2. 페이지 객체에서 상품 리스트만 추출
         List<ProductResponseDto> productList = productPage.getContent().stream()
             .map(productMapper::toDto)
             .collect(Collectors.toList());

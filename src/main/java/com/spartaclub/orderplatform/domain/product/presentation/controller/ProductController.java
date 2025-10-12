@@ -5,7 +5,6 @@ import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponse
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
-import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -37,7 +36,8 @@ public class ProductController {
     // 상품 등록 API
     @PostMapping
     public ResponseEntity<ApiResponse<ProductResponseDto>> createProduct(@Valid @RequestBody ProductCreateRequestDto productCreateRequestDto) {
-        ProductResponseDto responseDto = productService.createProduct(productCreateRequestDto);
+        Long userId = getCurrentUserId();
+        ProductResponseDto responseDto = productService.createProduct(productCreateRequestDto, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
     }
 
@@ -88,7 +88,7 @@ public class ProductController {
     }
 
     // 상품 검색 API
-    @GetMapping("search-by-product-Name")
+    @GetMapping("/search-by-product-Name")
     public ResponseEntity<ApiResponse<Page<StoreSearchResponseDto>>> searchProductByProductName(
             @RequestParam String keyword,
             @RequestParam(required = false) UUID addressId,

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.spartaclub.orderplatform.global.application.security.SecurityUtils.getCurrentUserId;
+
 @RestController
 @RequestMapping("/v1/products/ai")
 @RequiredArgsConstructor
@@ -20,7 +22,8 @@ public class AiController {
     public ResponseEntity<ApiResponse<String>> generateDescription(
             @RequestParam String prompt
     ) {
-        String generateDescription = aiService.generateAiResponse(prompt, 0L);
-        return ResponseEntity.ok(ApiResponse.success(generateDescription)); // 캐시 key 반환
+        Long userId = getCurrentUserId();
+        String generateDescription = aiService.generateAiResponse(prompt, userId);
+        return ResponseEntity.ok(ApiResponse.success(generateDescription));
     }
 }
