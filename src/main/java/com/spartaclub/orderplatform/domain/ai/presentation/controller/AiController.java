@@ -3,6 +3,7 @@ package com.spartaclub.orderplatform.domain.ai.presentation.controller;
 import com.spartaclub.orderplatform.domain.ai.application.service.AiService;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +24,7 @@ public class AiController {
             @RequestParam String prompt
     ) {
         Long userId = getCurrentUserId();
-        String generateDescription = aiService.generateAiResponse(prompt, userId);
-        return ResponseEntity.ok(ApiResponse.success(generateDescription));
+        String generatedText = aiService.generateAiResponse(prompt, userId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(generatedText));
     }
 }

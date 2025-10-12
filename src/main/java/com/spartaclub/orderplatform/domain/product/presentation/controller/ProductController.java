@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -34,6 +35,7 @@ public class ProductController {
     private final ProductService productService;
 
     // 상품 등록 API
+    @PreAuthorize("hasRole('OWNER')")
     @PostMapping
     public ResponseEntity<ApiResponse<ProductResponseDto>> createProduct(@Valid @RequestBody ProductCreateRequestDto productCreateRequestDto) {
         Long userId = getCurrentUserId();
@@ -42,6 +44,7 @@ public class ProductController {
     }
 
     // 상품 수정 API
+    @PreAuthorize("hasRole('OWNER')")
     @PutMapping("/{productId}")
     public ResponseEntity<ApiResponse<ProductResponseDto>> updateProduct(
             @PathVariable UUID productId,
@@ -52,6 +55,7 @@ public class ProductController {
     }
 
     // 상품 삭제 API, 회원 연결 시 서비스 로직에 id 추가
+    @PreAuthorize("hasRole('OWNER')")
     @DeleteMapping("/{productId}")
     public ResponseEntity<ApiResponse<Void>> deleteProduct(
             @PathVariable UUID productId
@@ -59,6 +63,14 @@ public class ProductController {
         Long userId = getCurrentUserId();
         productService.deleteProduct(productId, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    // 상품 공개/숨김 설정 API
+    @PreAuthorize("hasRole('OWNER')")
+    @PatchMapping("/{productId}/visibility")
+    public ResponseEntity<ApiResponse<ProductResponseDto>> updateProductVisibility(@PathVariable UUID productId) {
+        ProductResponseDto requestDto = productService.updateProductVisibility(productId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(requestDto));
     }
 
     // 상품 목록 조회 API
@@ -80,12 +92,6 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(requestDto));
     }
 
-    // 상품 공개/숨김 설정 API
-    @PatchMapping("/{productId}/visibility")
-    public ResponseEntity<ApiResponse<ProductResponseDto>> updateProductVisibility(@PathVariable UUID productId) {
-        ProductResponseDto requestDto = productService.updateProductVisibility(productId);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(requestDto));
-    }
 
     // 상품 검색 API
     @GetMapping("/search-by-product-Name")

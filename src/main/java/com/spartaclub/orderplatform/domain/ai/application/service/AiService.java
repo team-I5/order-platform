@@ -1,43 +1,60 @@
 package com.spartaclub.orderplatform.domain.ai.application.service;
 
+import com.google.genai.types.Part;
 import com.spartaclub.orderplatform.domain.ai.domain.entity.AiLog;
 import com.spartaclub.orderplatform.domain.ai.infrastructure.repository.AiLogRepository;
 import com.spartaclub.orderplatform.domain.ai.presentation.dto.AiResponseDto;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.google.genai.Client;
+import com.google.genai.types.GenerateContentResponse;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+import static java.lang.Thread.sleep;
 
 @Service
-@RequiredArgsConstructor
+@Slf4j
 public class AiService {
 
     private final AiCacheService aiCacheService;
     private final AiLogRepository aiLogRepository;
+    private final Client geminiClient;
+
+    public AiService(
+            @Value("${google.gemini.api-key}") String apiKey,
+            AiCacheService aiCacheService,
+            AiLogRepository aiLogRepository
+    ) {
+        this.geminiClient = Client.builder()
+                .apiKey(apiKey)
+                .build();
+        this.aiCacheService = aiCacheService;
+        this.aiLogRepository = aiLogRepository;
+    }
+
 
     /**
      * AI 응답 생성 후 캐시에 추가
      */
     public String generateAiResponse(String prompt, Long userId) {
-        // 1. AI에 응답 생성 요청
+        // AI 응답 생성
         String generated = callExternalAi(prompt);
 
-        // 2. 캐시 불러오기
+        // 캐시에 저장
         List<AiResponseDto> responses = aiCacheService.getCachedResponses(userId);
-
-        // 3. 불러온 리스트에 응답 생성
         responses.add(AiResponseDto.builder()
                 .prompt(prompt)
                 .generatedText(generated)
                 .isUsed(false)
                 .build());
-
-        // 4. 캐시에 임시 저장
         aiCacheService.updateCachedResponses(userId, responses);
 
-        // 5. 상품 설명만 반환
         return generated;
     }
 
@@ -75,8 +92,25 @@ public class AiService {
         aiCacheService.evictCache(userId);
     }
 
+    // gemini api 호출
     private String callExternalAi(String prompt) {
-        // TODO: 실제 AI API 호출
-        return "AI가 생성한 설명: " + prompt;
+        try {
+            String promptWithLimit = "3줄 이내로 답변해주세요.\n" + prompt;
+
+            GenerateContentResponse response =
+                    geminiClient.models.generateContent("gemini-2.5-flash-lite", promptWithLimit, null);
+
+            return response.candidates().stream()
+                    .findFirst()
+                    .flatMap(c -> c.get(0).content())
+                    .flatMap(content -> content.parts().stream()
+                            .findFirst()
+                            .flatMap(part -> part.stream().findFirst().flatMap(Part::text))
+                    ).orElse("AI 응답 없음");
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+            return "AI 호출 중 오류 발생: " + e.getMessage();
+        }
+
     }
 }
