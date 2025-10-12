@@ -1,6 +1,6 @@
 package com.spartaclub.orderplatform.domain.store.presentation.dto.request;
 
-import com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus;
+import com.spartaclub.orderplatform.domain.category.entity.CategoryType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,10 +10,9 @@ import org.springframework.data.domain.Sort.Direction;
 @Getter
 @Setter
 @NoArgsConstructor
-public class StoreSearchRequestDto {
+public class StoreSearchByCategoryRequestDto {
 
-    private Long ownerId;
-    private StoreStatus status;
+    private CategoryType categoryType;
 
     private int page = 0;
     private int size = 10;
