@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.review.dto;
+package com.spartaclub.orderplatform.domain.review.presentation.dto.request;
 
 /*
  * 리뷰 등록 요청 DTO 클래스

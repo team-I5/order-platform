@@ -1,35 +1,25 @@
 package com.spartaclub.orderplatform.domain.store.domain.model;
 
-import static jakarta.persistence.EnumType.STRING;
-
-import com.spartaclub.orderplatform.domain.category.entity.Category;
+import com.spartaclub.orderplatform.domain.category.domain.model.Category;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
-import com.spartaclub.orderplatform.domain.review.entity.Review;
+import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import com.spartaclub.orderplatform.user.domain.entity.User;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static jakarta.persistence.EnumType.STRING;
 
 @Entity
 @Table(name = "p_stores")
@@ -130,13 +120,13 @@ public class Store extends BaseEntity {
     // 음식점에 카테고리 삭제
     public void removeCategory(Long userId, Category category) {
         this.storeCategories.stream()
-            .filter(storeCategory ->
-                storeCategory.getCategory().equals(category)
-                    && storeCategory.getDeletedId() != null)
-            .findFirst()
-            .ifPresent(storeCategory -> {
-                storeCategory.delete();
-                storeCategory.scSoftDelete(userId);
-            });
+                .filter(storeCategory ->
+                        storeCategory.getCategory().equals(category)
+                                && storeCategory.getDeletedId() != null)
+                .findFirst()
+                .ifPresent(storeCategory -> {
+                    storeCategory.delete();
+                    storeCategory.scSoftDelete(userId);
+                });
     }
 }

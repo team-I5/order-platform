@@ -1,6 +1,6 @@
-package com.spartaclub.orderplatform.domain.category.controller;
+package com.spartaclub.orderplatform.domain.category.presentation.controller;
 
-import com.spartaclub.orderplatform.domain.category.service.CategoryService;
+import com.spartaclub.orderplatform.domain.category.application.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

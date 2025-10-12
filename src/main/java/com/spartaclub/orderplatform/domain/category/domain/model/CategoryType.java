@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.category.entity;
+package com.spartaclub.orderplatform.domain.category.domain.model;
 
 /* 카테고리 종류 enum class
  * 음식점이 해당 할 수 있는 종류 정의

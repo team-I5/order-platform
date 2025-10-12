@@ -1,6 +1,6 @@
-package com.spartaclub.orderplatform.domain.category.service;
+package com.spartaclub.orderplatform.domain.category.application.service;
 
-import com.spartaclub.orderplatform.domain.category.repository.CategoryRepository;
+import com.spartaclub.orderplatform.domain.category.infrastructure.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

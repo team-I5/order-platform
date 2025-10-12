@@ -1,5 +1,6 @@
-package com.spartaclub.orderplatform.domain.review.dto;
+package com.spartaclub.orderplatform.domain.review.presentation.dto.response;
 
+import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewUpdateRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -31,20 +32,10 @@ public class ReviewResponseDto {
     // 리뷰내용
     private String contents;
     // 평점
-    
+
     // 리뷰 수정 메서드
     public void updateReview(ReviewUpdateRequestDto reviewUpdateRequestDto) {
         this.rating = reviewUpdateRequestDto.getRating();
         this.contents = reviewUpdateRequestDto.getContents();
     }
-
-    /*
-     * 리뷰 작성 응답 생성 메서드
-     *
-     * @param reviewId 작성된 리뷰 ID
-     * @return 리뷰 작성 응답 메시지
-     */
-//    public static ReviewResponseDto write(UUID reviewId) {
-//        return new ReviewResponseDto("리뷰가 작성되었습니다.", reviewId);
-//    }
 }

@@ -1,6 +1,6 @@
-package com.spartaclub.orderplatform.domain.category.repository;
+package com.spartaclub.orderplatform.domain.category.infrastructure.repository;
 
-import com.spartaclub.orderplatform.domain.category.entity.Category;
+import com.spartaclub.orderplatform.domain.category.domain.model.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.category.entity;
+package com.spartaclub.orderplatform.domain.category.domain.model;
 
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.*;

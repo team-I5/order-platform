@@ -1,27 +1,19 @@
-package com.spartaclub.orderplatform.domain.review.entity;
+package com.spartaclub.orderplatform.domain.review.domain.model;
 
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import com.spartaclub.orderplatform.user.domain.entity.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import java.util.UUID;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
+
+import java.util.UUID;
 
 /*
  * Review Entity Class
@@ -33,15 +25,14 @@ import org.springframework.data.annotation.LastModifiedBy;
 @Entity
 @Table(name = "p_reviews")
 @Getter
-// 외부에서 접근해 리뷰 객체 생성할 수 있게 애너테이션 추가
-@AllArgsConstructor
+@AllArgsConstructor // 외부에서 접근해 리뷰 객체 생성할 수 있게 애너테이션 추가
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+// JPA 엔티티에서 사용;외부에서 직접 객체 생성하는 것을 막아줍니다.
 public class Review extends BaseEntity {
-
     @Id // primary key
     @GeneratedValue(strategy = GenerationType.UUID) // UUID 자동 생성
     private UUID reviewId;              // 리뷰 ID
-
+    @Column(nullable = false) // Null 값 허용 안함
     private Integer rating;             // 리뷰 별점
     // Null 값 허용 안함. 길이 1000자 까지
     @Column(nullable = false, length = 1000)

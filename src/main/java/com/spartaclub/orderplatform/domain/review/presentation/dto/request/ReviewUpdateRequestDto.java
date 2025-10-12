@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.review.dto;
+package com.spartaclub.orderplatform.domain.review.presentation.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

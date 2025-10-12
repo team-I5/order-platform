@@ -1,11 +1,11 @@
-package com.spartaclub.orderplatform.domain.review.mapper;
+package com.spartaclub.orderplatform.domain.review.application.mapper;
 
-import com.spartaclub.orderplatform.domain.review.dto.ReviewCreateRequestDto;
-import com.spartaclub.orderplatform.domain.review.dto.ReviewResponseDto;
-import com.spartaclub.orderplatform.domain.review.entity.Review;
+import com.spartaclub.orderplatform.domain.review.domain.model.Review;
+import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewCreateRequestDto;
+import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewResponseDto;
+import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewSearchResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
 /*
  * 리뷰 Entity ↔ Dto 맵핑
@@ -13,7 +13,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
  * @author 이준성
  * @date 2025-10-07(화)
  */
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring")
 public interface ReviewMapper {
     /*
      * 외래키
@@ -41,4 +41,11 @@ public interface ReviewMapper {
     @Mapping(target = "orderId", source = "order.orderId")
     @Mapping(target = "productId", source = "product.productId")
     ReviewResponseDto toReviewDto(Review review);
+
+
+    @Mapping(target = "rating", source = "rating")
+    @Mapping(target = "contents", source = "contents")
+    ReviewSearchResponseDto toReviewSearchResponseDto(Review review);
+
+
 }
