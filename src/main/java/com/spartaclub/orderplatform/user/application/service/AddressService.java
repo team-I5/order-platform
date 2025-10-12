@@ -18,7 +18,7 @@ import java.util.UUID;
  * 주소 등록, 조회, 수정, 삭제 등의 비즈니스 로직 처리
  *
  * @author 전우선
- * @date 2025-10-11(토)
+ * @date 2025-10-12(일)
  */
 @Service
 @RequiredArgsConstructor
@@ -265,7 +265,7 @@ public class AddressService {
 
             // 다른 주소를 기본 주소로 설정
             List<Address> otherAddresses = addressRepository
-                    .findByUserAndDeletedAtIsNullAndAddressIdNot(user, address.getAddressId());
+                    .findByUserAndDeletedAtIsNullAndAddressIdNotOrderByCreatedAtDesc(user, address.getAddressId());
 
             if (!otherAddresses.isEmpty()) {
                 Address newDefaultAddress = otherAddresses.get(0);
@@ -289,5 +289,99 @@ public class AddressService {
         address.setRoadNameAddress(requestDto.getRoadNameAddress());
         address.setDetailedAddress(requestDto.getDetailedAddress());
         address.setDefaultAddress(requestDto.getDefaultAddress());
+    }
+
+    /**
+     * 주소 삭제 (Soft Delete)
+     * 기존 주소를 소프트 삭제하고 기본 주소 보호 및 최소 주소 보장 로직 수행
+     *
+     * @param addressId 삭제할 주소 ID
+     * @param user      주소를 삭제하는 사용자
+     * @return 삭제된 주소 정보
+     * @throws RuntimeException 삭제 불가능한 경우
+     */
+    @Transactional
+    public AddressDeleteResponseDto deleteAddress(UUID addressId, User user) {
+
+        // 1. 주소 조회 및 소유자 검증
+        Address address = findAddressAndValidateOwner(addressId, user);
+
+        // 2. 이미 삭제된 주소 체크
+        validateNotAlreadyDeleted(address);
+
+        // 3. 마지막 주소 삭제 방지
+        validateNotLastAddress(user);
+
+        // 4. 기본 주소인 경우 다른 주소를 기본으로 설정
+        handleDefaultAddressForDelete(address, user);
+
+        // 5. Soft Delete 실행
+        performSoftDelete(address);
+
+        // 6. 응답 DTO 생성
+        return addressMapper.toDeleteResponse(address);
+    }
+
+    /**
+     * 이미 삭제된 주소 체크
+     *
+     * @param address 주소
+     * @throws RuntimeException 이미 삭제된 주소인 경우
+     */
+    private void validateNotAlreadyDeleted(Address address) {
+        if (address.getDeletedAt() != null) {
+            throw new RuntimeException("이미 삭제된 주소입니다.");
+        }
+    }
+
+    /**
+     * 마지막 주소 삭제 방지
+     * 사용자는 최소 1개의 활성 주소를 보유해야 함
+     *
+     * @param user 사용자
+     * @throws RuntimeException 마지막 주소인 경우
+     */
+    private void validateNotLastAddress(User user) {
+        long activeAddressCount = addressRepository.countByUserAndDeletedAtIsNull(user);
+        if (activeAddressCount <= 1) {
+            throw new RuntimeException("마지막 주소는 삭제할 수 없습니다.");
+        }
+    }
+
+    /**
+     * 기본 주소 삭제 시 다른 주소를 자동으로 기본 주소로 설정
+     * 기본 주소가 아닌 경우 아무 작업 안 함
+     *
+     * @param address 삭제할 주소
+     * @param user    사용자
+     */
+    private void handleDefaultAddressForDelete(Address address, User user) {
+        // 기본 주소가 아닌 경우 처리 불필요
+        if (!Boolean.TRUE.equals(address.getDefaultAddress())) {
+            return;
+        }
+
+        // 삭제할 주소를 제외한 다른 활성 주소 목록 조회 (최신순)
+        List<Address> otherAddresses = addressRepository
+                .findByUserAndDeletedAtIsNullAndAddressIdNotOrderByCreatedAtDesc(user, address.getAddressId());
+
+        // 다른 주소 중 가장 최근에 생성된 주소를 기본 주소로 설정
+        if (!otherAddresses.isEmpty()) {
+            Address newDefaultAddress = otherAddresses.get(0); // 이미 createdAt 최신순으로 정렬됨
+            newDefaultAddress.setDefaultAddress(true);
+            addressRepository.save(newDefaultAddress);
+        }
+        // 다른 주소가 없는 경우는 validateNotLastAddress에서 이미 차단됨
+    }
+
+    /**
+     * Soft Delete 실행
+     * BaseEntity의 delete() 메서드 사용
+     *
+     * @param address 삭제할 주소
+     */
+    private void performSoftDelete(Address address) {
+        address.delete();
+        addressRepository.save(address);
     }
 }
