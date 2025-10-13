@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OrderRepository extends JpaRepository<Order, UUID>,
+public interface OrderJpaRepository extends JpaRepository<Order, UUID>,
     JpaSpecificationExecutor<Order> {
 
     @EntityGraph(attributePaths = {"store", "user"})
