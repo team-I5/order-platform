@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.order.presentation.dto;
+package com.spartaclub.orderplatform.domain.order.presentation.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;

@@ -1,13 +1,13 @@
 package com.spartaclub.orderplatform.domain.payment.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.payment.application.PaymentService;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.CancelPaymentRequestDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.ConfirmPaymentRequestDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.GetPaymentsListRequestDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentRequestDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentResponseDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.PaymentDetailResponseDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.PaymentsListResponseDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.CancelPaymentRequestDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.ConfirmPaymentRequestDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.GetPaymentsListRequestDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.InitPaymentRequestDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.InitPaymentResponseDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentDetailResponseDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentsListResponseDto;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;

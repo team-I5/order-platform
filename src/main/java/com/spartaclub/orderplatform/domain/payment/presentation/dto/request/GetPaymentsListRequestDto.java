@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.payment.presentation.dto;
+package com.spartaclub.orderplatform.domain.payment.presentation.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus;

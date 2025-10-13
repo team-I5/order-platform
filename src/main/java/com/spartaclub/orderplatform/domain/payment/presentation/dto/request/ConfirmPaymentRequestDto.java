@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.payment.presentation.dto;
+package com.spartaclub.orderplatform.domain.payment.presentation.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

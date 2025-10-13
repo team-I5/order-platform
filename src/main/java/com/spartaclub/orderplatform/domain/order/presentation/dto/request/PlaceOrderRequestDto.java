@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.order.presentation.dto;
+package com.spartaclub.orderplatform.domain.order.presentation.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

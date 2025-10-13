@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.payment.presentation.dto;
+package com.spartaclub.orderplatform.domain.payment.presentation.dto.response;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.payment.presentation.dto;
+package com.spartaclub.orderplatform.domain.payment.presentation.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

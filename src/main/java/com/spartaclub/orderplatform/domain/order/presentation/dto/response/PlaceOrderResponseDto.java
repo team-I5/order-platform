@@ -1,4 +1,4 @@
-package com.spartaclub.orderplatform.domain.order.presentation.dto;
+package com.spartaclub.orderplatform.domain.order.presentation.dto.response;
 
 import java.util.UUID;
 
