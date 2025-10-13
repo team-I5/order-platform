@@ -1,11 +1,13 @@
 package com.spartaclub.orderplatform.domain.order.application;
 
+import com.spartaclub.orderplatform.domain.order.application.dto.query.OrderQuery;
 import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
-import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
-import com.spartaclub.orderplatform.domain.order.infrastructure.repository.spec.OrderSpecs;
+import com.spartaclub.orderplatform.domain.order.domain.repository.OrderRepository;
+import com.spartaclub.orderplatform.domain.order.domain.repository.ProductReaderRepository;
+import com.spartaclub.orderplatform.domain.order.domain.repository.StoreReaderRepository;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.request.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.request.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.request.PlaceOrderRequestDto.OrderItemRequest;
@@ -15,9 +17,7 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.response.Order
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrdersResponseDto.OrderSummaryDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.PlaceOrderResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
-import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,7 +31,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,15 +41,15 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
-    private final ProductRepository productRepository;
-    private final StoreRepository storeRepository;
+    private final ProductReaderRepository productRepository;
+    private final StoreReaderRepository storeReaderRepository;
 
     //주문 생성
     @Transactional
     public PlaceOrderResponseDto placeOrder(PlaceOrderRequestDto placeOrderRequestDto, User user) {
         List<OrderItemRequest> products = placeOrderRequestDto.items(); // 주문 상품 리스트
 
-        Store store = storeRepository.findById(placeOrderRequestDto.storeId())
+        Store store = storeReaderRepository.findById(placeOrderRequestDto.storeId())
             .orElseThrow(() -> new IllegalArgumentException(
                 "음식점을 찾을 수 없습니다: " + placeOrderRequestDto.storeId()));
 
@@ -140,12 +139,9 @@ public class OrderService {
             requestDto.size(),
             parseSort(requestDto.sort()));
 
-        Specification<Order> spec = (root, query, cb) -> cb.conjunction(); // 초기값
-        spec = spec
-            .and(OrderSpecs.visibleFor(viewer))
-            .and(OrderSpecs.statusIn(requestDto.status()));
-
-        Page<Order> orders = orderRepository.findAll(spec, pageable);
+        //조회
+        OrderQuery orderQuery = new OrderQuery(requestDto.status(), viewer);
+        Page<Order> orders = orderRepository.findAll(orderQuery, pageable);
 
         List<OrderSummaryDto> ordersList = orders.getContent().stream()
             .map(orderMapper::toSummaryDto)
