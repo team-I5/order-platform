@@ -46,6 +46,7 @@ public class OrderController {
             .body(ApiResponse.success(responseDto));
     }
 
+    //주문 상세 조회
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OrderDetailResponseDto>> getOrderDetail(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -54,6 +55,7 @@ public class OrderController {
             ApiResponse.success(orderService.getOrderDetail(orderId, userDetails)));
     }
 
+    //주문 목록 조회
     @GetMapping("")
     public ResponseEntity<ApiResponse<OrdersResponseDto>> getOrders(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -62,6 +64,7 @@ public class OrderController {
             ApiResponse.success(orderService.getOrders(requestDto, userDetails)));
     }
 
+    //주문 취소
     @PostMapping("/{orderId}/cancel")
     public ResponseEntity<ApiResponse<OrderStatusResponseDto>> cancelOrder(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -71,6 +74,7 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    //주문 승인
     @PostMapping("/{orderId}/accept")
     @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<ApiResponse<OrderStatusResponseDto>> acceptOrder(
@@ -81,6 +85,7 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    //주문 거부
     @PostMapping("/{orderId}/reject")
     @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<ApiResponse<OrderStatusResponseDto>> rejectOrder(
@@ -91,6 +96,7 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    //주문 배달 완료
     @PostMapping("/{orderId}/complete-delivery")
     @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<ApiResponse<OrderStatusResponseDto>> completeDelivery(

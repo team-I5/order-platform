@@ -5,15 +5,23 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import com.spartaclub.orderplatform.user.domain.entity.User;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
-
-import java.util.UUID;
 
 /*
  * Review Entity Class
@@ -29,6 +37,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 // JPA 엔티티에서 사용;외부에서 직접 객체 생성하는 것을 막아줍니다.
 public class Review extends BaseEntity {
+
     @Id // primary key
     @GeneratedValue(strategy = GenerationType.UUID) // UUID 자동 생성
     private UUID reviewId;              // 리뷰 ID
@@ -60,11 +69,15 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "productId")
     private Product product;
 
+    // 리뷰 수정 메서드
+    public void updateReview(Integer rating, String contents) {
+        this.rating = rating;
+        this.contents = contents;
+    }
+
     // 리뷰 삭제 메서드(soft delete)
     public void deleteReview(Long userId) {
         this.deletedId = userId;
         delete();
     }
-
-
 }

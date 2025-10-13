@@ -1,6 +1,5 @@
 package com.spartaclub.orderplatform.domain.review.presentation.dto.response;
 
-import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewUpdateRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -33,9 +32,4 @@ public class ReviewResponseDto {
     private String contents;
     // 평점
 
-    // 리뷰 수정 메서드
-    public void updateReview(ReviewUpdateRequestDto reviewUpdateRequestDto) {
-        this.rating = reviewUpdateRequestDto.getRating();
-        this.contents = reviewUpdateRequestDto.getContents();
-    }
 }

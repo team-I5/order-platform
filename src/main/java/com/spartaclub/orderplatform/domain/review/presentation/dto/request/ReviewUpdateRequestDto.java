@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 // 값 수정 반영 위해 모든 필드 파라미터 생성자 적용
 @AllArgsConstructor
 public class ReviewUpdateRequestDto {
+
     // 별점
     @NotNull(message = "서비스를 평가해주세요.")
     private Integer rating;

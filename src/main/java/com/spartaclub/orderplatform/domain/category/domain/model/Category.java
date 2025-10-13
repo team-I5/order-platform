@@ -1,12 +1,17 @@
 package com.spartaclub.orderplatform.domain.category.domain.model;
 
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 /*
  * Category Entity Class
@@ -20,6 +25,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Category extends BaseEntity {
+
     @Id // primary key
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID categoryId;        // 카테고리 ID

@@ -5,6 +5,7 @@ import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
+import com.spartaclub.orderplatform.domain.order.infrastructure.repository.spec.OrderSpecs;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderStatusResponseDto;
@@ -30,6 +31,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -138,18 +140,12 @@ public class OrderService {
             requestDto.size(),
             parseSort(requestDto.sort()));
 
-        Page<Order> orders = switch (viewer.getRole()) {
-            //본인 주문만
-            case CUSTOMER -> orderRepository.findByUser_UserId(
-                viewer.getUserId(), pageable);
-            //본인 가게만
-            case OWNER -> orderRepository.findByStore_User_UserId(
-                viewer.getUserId(), pageable);
+        Specification<Order> spec = (root, query, cb) -> cb.conjunction(); // 초기값
+        spec = spec
+            .and(OrderSpecs.visibleFor(viewer))
+            .and(OrderSpecs.statusIn(requestDto.status()));
 
-            case MASTER, MANAGER -> orderRepository.findAll(pageable);
-
-            default -> throw new AccessDeniedException("주문 목록 조회 권한이 없습니다.");
-        };
+        Page<Order> orders = orderRepository.findAll(spec, pageable);
 
         List<OrderSummaryDto> ordersList = orders.getContent().stream()
             .map(orderMapper::toSummaryDto)

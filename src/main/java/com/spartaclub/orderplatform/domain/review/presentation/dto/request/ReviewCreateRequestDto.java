@@ -9,14 +9,14 @@ package com.spartaclub.orderplatform.domain.review.presentation.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
 public class ReviewCreateRequestDto {
+
     // 주문 Id for 중복체크
     @NotNull(message = "중복 체크를 위한 주문 ID 필요합니다.")
     private UUID orderId;

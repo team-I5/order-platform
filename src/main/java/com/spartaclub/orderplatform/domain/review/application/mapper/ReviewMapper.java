@@ -15,6 +15,7 @@ import org.mapstruct.Mapping;
  */
 @Mapper(componentModel = "spring")
 public interface ReviewMapper {
+
     /*
      * 외래키
      * 고객ID userId
