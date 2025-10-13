@@ -4,7 +4,9 @@ import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.UUID;
 
 /*
@@ -30,4 +32,14 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     // 중복 검사 메서드 - Spring Data JPA가 메서드 이름으로 자동 쿼리 생성
     boolean existsByOrder_OrderIdAndDeletedAtIsNull(UUID orderId);              // 주문 리뷰 중복 체크
+
+    // 평점과 리뷰 개수 가져와는 쿼리 추가
+    @Query("""
+               SELECT s.storeId, COALESCE(ROUND(AVG(r.rating), 1), 0), COUNT(r)
+               FROM Store s
+               LEFT JOIN Review r
+                       ON r.store = s AND r.deletedAt IS NULL
+               GROUP BY s.storeId
+            """)
+    List<Object[]> findReviewCountAndAverageForAllStores();
 }
