@@ -3,13 +3,15 @@ package com.spartaclub.orderplatform;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider") // Spring Data JPA Auditing 기능 활성화
 public class OrderPlatformApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(OrderPlatformApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(OrderPlatformApplication.class, args);
+    }
 
 }
