@@ -1,15 +1,11 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
-import com.spartaclub.orderplatform.user.domain.entity.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 /**
- * 회원정보 수정 응답 DTO
- * 회원정보 수정 성공 시 클라이언트에게 반환되는 데이터 전송 객체
+ * 회원정보 수정 응답 DTO 회원정보 수정 성공 시 클라이언트에게 반환되는 데이터 전송 객체
  *
  * @author 전우선
  * @date 2025-10-03(금)

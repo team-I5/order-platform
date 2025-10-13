@@ -1,14 +1,16 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
 import com.spartaclub.orderplatform.user.domain.entity.UserRole;
-import lombok.*;
+import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
-
 /**
- * 회원 전체 조회 요청 DTO
- * 관리자용 회원 목록 조회 시 검색/필터링/정렬 조건을 담는 클래스
+ * 회원 전체 조회 요청 DTO 관리자용 회원 목록 조회 시 검색/필터링/정렬 조건을 담는 클래스
  *
  * @author 전우선
  * @date 2025-10-08(수)

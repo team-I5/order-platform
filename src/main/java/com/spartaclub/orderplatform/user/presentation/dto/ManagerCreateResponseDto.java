@@ -1,12 +1,14 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
-import lombok.*;
-
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * 관리자 계정 생성 응답 DTO
- * MASTER가 MANAGER 계정 생성 시 반환되는 정보
+ * 관리자 계정 생성 응답 DTO MASTER가 MANAGER 계정 생성 시 반환되는 정보
  *
  * @author 전우선
  * @date 2025-10-08(수)
@@ -36,6 +38,7 @@ public class ManagerCreateResponseDto {
     @AllArgsConstructor
     @Builder
     public static class UserInfo {
+
         private Long userId;
         private String username;
         private String email;

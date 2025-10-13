@@ -1,15 +1,23 @@
 package com.spartaclub.orderplatform.user.domain.entity;
 
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.util.UUID;
-
 /**
- * 주소 엔티티 클래스
- * 사용자의 배송지 주소 정보 관리
+ * 주소 엔티티 클래스 사용자의 배송지 주소 정보 관리
  *
  * @author 전우선
  * @date 2025-10-09(목)

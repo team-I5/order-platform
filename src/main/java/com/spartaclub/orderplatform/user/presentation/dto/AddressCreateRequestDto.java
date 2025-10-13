@@ -3,11 +3,14 @@ package com.spartaclub.orderplatform.user.presentation.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * 주소 등록 요청 DTO
- * 새로운 주소 등록 시 사용되는 요청 데이터
+ * 주소 등록 요청 DTO 새로운 주소 등록 시 사용되는 요청 데이터
  *
  * @author 전우선
  * @date 2025-10-09(목)

@@ -6,8 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * 토큰 갱신 요청 DTO
- * 클라이언트에서 리프레시 토큰을 통해 액세스 토큰 갱신 요청 시 사용
+ * 토큰 갱신 요청 DTO 클라이언트에서 리프레시 토큰을 통해 액세스 토큰 갱신 요청 시 사용
  *
  * @author 전우선
  * @date 2025-10-03(금)

@@ -1,21 +1,22 @@
 package com.spartaclub.orderplatform.global.application.jwt;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
+import java.util.Base64;
+import java.util.Date;
+import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.util.Base64;
-import java.util.Date;
-
 /**
- * JWT 토큰 유틸리티 클래스
- * JWT 토큰 생성, 검증, 파싱 등의 기능을 제공
- * 실시간 권한 체크를 위한 토큰 처리 로직 포함
+ * JWT 토큰 유틸리티 클래스 JWT 토큰 생성, 검증, 파싱 등의 기능을 제공 실시간 권한 체크를 위한 토큰 처리 로직 포함
  *
  * @author 전우선
  * @date 2025-10-02(목)
@@ -45,8 +46,7 @@ public class JwtUtil {
     private SecretKey key;
 
     /**
-     * 빈 초기화 후 실행되는 메서드
-     * Base64로 인코딩된 비밀키를 디코딩하여 SecretKey 객체 생성
+     * 빈 초기화 후 실행되는 메서드 Base64로 인코딩된 비밀키를 디코딩하여 SecretKey 객체 생성
      */
     @PostConstruct
     public void init() {
@@ -55,8 +55,7 @@ public class JwtUtil {
     }
 
     /**
-     * 액세스 토큰 생성
-     * 사용자 인증 및 API 접근에 사용되는 JWT 토큰 생성
+     * 액세스 토큰 생성 사용자 인증 및 API 접근에 사용되는 JWT 토큰 생성
      *
      * @param userId 사용자 ID (토큰 subject로 사용)
      * @param email  사용자 이메일 (토큰 claim으로 포함)
@@ -68,19 +67,18 @@ public class JwtUtil {
         Date expiration = new Date(now.getTime() + accessTokenExpiration); // 만료 시간 계산
 
         return Jwts.builder()
-                .subject(String.valueOf(userId)) // 사용자 ID를 subject로 설정
-                .claim("email", email) // 이메일 정보 포함
-                .claim("role", role) // 권한 정보 포함 (실시간 권한 체크용)
-                .claim("type", "access") // 토큰 타입 지정
-                .issuedAt(now) // 발급 시간
-                .expiration(expiration) // 만료 시간
-                .signWith(key) // 비밀키로 서명
-                .compact(); // 최종 토큰 문자열 생성
+            .subject(String.valueOf(userId)) // 사용자 ID를 subject로 설정
+            .claim("email", email) // 이메일 정보 포함
+            .claim("role", role) // 권한 정보 포함 (실시간 권한 체크용)
+            .claim("type", "access") // 토큰 타입 지정
+            .issuedAt(now) // 발급 시간
+            .expiration(expiration) // 만료 시간
+            .signWith(key) // 비밀키로 서명
+            .compact(); // 최종 토큰 문자열 생성
     }
 
     /**
-     * 리프레시 토큰 생성
-     * 액세스 토큰 갱신에 사용되는 JWT 토큰 생성
+     * 리프레시 토큰 생성 액세스 토큰 갱신에 사용되는 JWT 토큰 생성
      *
      * @param userId 사용자 ID
      * @return 생성된 리프레시 토큰 문자열
@@ -90,17 +88,16 @@ public class JwtUtil {
         Date expiration = new Date(now.getTime() + refreshTokenExpiration); // 만료 시간 계산
 
         return Jwts.builder()
-                .subject(String.valueOf(userId)) // 사용자 ID를 subject로 설정
-                .claim("type", "refresh") // 토큰 타입 지정
-                .issuedAt(now) // 발급 시간
-                .expiration(expiration) // 만료 시간
-                .signWith(key) // 비밀키로 서명
-                .compact(); // 최종 토큰 문자열 생성
+            .subject(String.valueOf(userId)) // 사용자 ID를 subject로 설정
+            .claim("type", "refresh") // 토큰 타입 지정
+            .issuedAt(now) // 발급 시간
+            .expiration(expiration) // 만료 시간
+            .signWith(key) // 비밀키로 서명
+            .compact(); // 최종 토큰 문자열 생성
     }
 
     /**
-     * Authorization 헤더에서 JWT 토큰 추출
-     * "Bearer " 접두사를 제거하고 실제 토큰 문자열만 반환
+     * Authorization 헤더에서 JWT 토큰 추출 "Bearer " 접두사를 제거하고 실제 토큰 문자열만 반환
      *
      * @param header Authorization 헤더 값
      * @return 추출된 JWT 토큰 문자열 (Bearer 접두사 제거)
@@ -113,8 +110,7 @@ public class JwtUtil {
     }
 
     /**
-     * JWT 토큰에서 Claims 정보 추출
-     * 토큰을 파싱하여 포함된 모든 클레임 정보를 반환
+     * JWT 토큰에서 Claims 정보 추출 토큰을 파싱하여 포함된 모든 클레임 정보를 반환
      *
      * @param token JWT 토큰 문자열
      * @return 토큰에 포함된 Claims 객체
@@ -126,10 +122,10 @@ public class JwtUtil {
     public Claims getClaimsFromToken(String token) {
         try {
             return Jwts.parser()
-                    .verifyWith(key) // 비밀키로 서명 검증
-                    .build()
-                    .parseSignedClaims(token) // 서명된 토큰 파싱
-                    .getPayload(); // 페이로드(Claims) 반환
+                .verifyWith(key) // 비밀키로 서명 검증
+                .build()
+                .parseSignedClaims(token) // 서명된 토큰 파싱
+                .getPayload(); // 페이로드(Claims) 반환
         } catch (ExpiredJwtException e) {
             log.warn("만료된 JWT 토큰입니다.");
             throw e;
@@ -168,8 +164,7 @@ public class JwtUtil {
     }
 
     /**
-     * JWT 토큰에서 권한 정보 추출
-     * 실시간 권한 체크에 사용
+     * JWT 토큰에서 권한 정보 추출 실시간 권한 체크에 사용
      *
      * @param token JWT 토큰 문자열
      * @return 토큰에 포함된 사용자 권한
@@ -180,8 +175,7 @@ public class JwtUtil {
     }
 
     /**
-     * JWT 토큰에서 토큰 타입 추출
-     * access/refresh 토큰 구분에 사용
+     * JWT 토큰에서 토큰 타입 추출 access/refresh 토큰 구분에 사용
      *
      * @param token JWT 토큰 문자열
      * @return 토큰 타입 (access 또는 refresh)
@@ -207,8 +201,7 @@ public class JwtUtil {
     }
 
     /**
-     * JWT 토큰 유효성 검증
-     * 토큰의 서명, 형식, 만료 등을 종합적으로 검증
+     * JWT 토큰 유효성 검증 토큰의 서명, 형식, 만료 등을 종합적으로 검증
      *
      * @param token JWT 토큰 문자열
      * @return 토큰이 유효하면 true, 아니면 false
@@ -243,8 +236,7 @@ public class JwtUtil {
     }
 
     /**
-     * 액세스 토큰 만료 시간 반환 (초 단위)
-     * API 응답에서 expiresIn 필드로 사용
+     * 액세스 토큰 만료 시간 반환 (초 단위) API 응답에서 expiresIn 필드로 사용
      *
      * @return 액세스 토큰 만료 시간 (초)
      */
@@ -253,8 +245,7 @@ public class JwtUtil {
     }
 
     /**
-     * 리프레시 토큰 만료 시간 반환 (밀리초 단위)
-     * 리프레시 토큰 엔티티 생성 시 사용
+     * 리프레시 토큰 만료 시간 반환 (밀리초 단위) 리프레시 토큰 엔티티 생성 시 사용
      *
      * @return 리프레시 토큰 만료 시간 (밀리초)
      */

@@ -1,16 +1,12 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 /**
- * 회원정보 조회 응답 DTO
- * 사용자 프로필 정보를 클라이언트에게 반환하는 데이터 전송 객체
- * 민감정보(비밀번호, 삭제일)는 제외하고 필요한 정보만 포함
+ * 회원정보 조회 응답 DTO 사용자 프로필 정보를 클라이언트에게 반환하는 데이터 전송 객체 민감정보(비밀번호, 삭제일)는 제외하고 필요한 정보만 포함
  *
  * @author 전우선
  * @date 2025-10-03(금)

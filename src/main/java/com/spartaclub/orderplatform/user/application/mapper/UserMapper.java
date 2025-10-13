@@ -1,14 +1,20 @@
 package com.spartaclub.orderplatform.user.application.mapper;
 
 import com.spartaclub.orderplatform.user.domain.entity.User;
-import com.spartaclub.orderplatform.user.presentation.dto.*;
+import com.spartaclub.orderplatform.user.presentation.dto.ManagerCreateRequestDto;
+import com.spartaclub.orderplatform.user.presentation.dto.ManagerCreateResponseDto;
+import com.spartaclub.orderplatform.user.presentation.dto.UserInfoDto;
+import com.spartaclub.orderplatform.user.presentation.dto.UserListPageResponseDto;
+import com.spartaclub.orderplatform.user.presentation.dto.UserListResponseDto;
+import com.spartaclub.orderplatform.user.presentation.dto.UserProfileResponseDto;
+import com.spartaclub.orderplatform.user.presentation.dto.UserSignupRequestDto;
+import com.spartaclub.orderplatform.user.presentation.dto.UserUpdateResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
 
 /**
- * User 엔티티와 DTO 간의 매핑을 처리하는 MapStruct 매퍼 인터페이스
- * 컴파일 타임에 구현체가 자동 생성됨
+ * User 엔티티와 DTO 간의 매핑을 처리하는 MapStruct 매퍼 인터페이스 컴파일 타임에 구현체가 자동 생성됨
  *
  * @author 전우선
  * @date 2025-10-09(목)
@@ -17,8 +23,7 @@ import org.springframework.data.domain.Page;
 public interface UserMapper {
 
     /**
-     * 회원가입 요청 DTO를 User 엔티티로 변환
-     * password는 별도 암호화 처리 필요
+     * 회원가입 요청 DTO를 User 엔티티로 변환 password는 별도 암호화 처리 필요
      */
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "userId", ignore = true)
@@ -55,8 +60,7 @@ public interface UserMapper {
     UserListResponseDto toListResponse(User user);
 
     /**
-     * 관리자 생성 요청 DTO를 User 엔티티로 변환
-     * password는 별도 암호화 처리 필요
+     * 관리자 생성 요청 DTO를 User 엔티티로 변환 password는 별도 암호화 처리 필요
      */
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "userId", ignore = true)
@@ -79,40 +83,40 @@ public interface UserMapper {
      */
     default UserListPageResponseDto.PageableInfo toPageableInfo(Page<User> userPage) {
         return UserListPageResponseDto.PageableInfo.builder()
-                .page(userPage.getNumber())
-                .size(userPage.getSize())
-                .totalElements(userPage.getTotalElements())
-                .totalPages(userPage.getTotalPages())
-                .first(userPage.isFirst())
-                .last(userPage.isLast())
-                .build();
+            .page(userPage.getNumber())
+            .size(userPage.getSize())
+            .totalElements(userPage.getTotalElements())
+            .totalPages(userPage.getTotalPages())
+            .first(userPage.isFirst())
+            .last(userPage.isLast())
+            .build();
     }
 
     /**
      * 통계 정보를 SummaryInfo DTO로 변환
      */
     default UserListPageResponseDto.SummaryInfo toSummaryInfo(
-            long totalUsers, long activeUsers, long deletedUsers,
-            java.util.Map<String, Long> roleDistribution) {
+        long totalUsers, long activeUsers, long deletedUsers,
+        java.util.Map<String, Long> roleDistribution) {
         return UserListPageResponseDto.SummaryInfo.builder()
-                .totalUsers(totalUsers)
-                .activeUsers(activeUsers)
-                .deletedUsers(deletedUsers)
-                .roleDistribution(roleDistribution)
-                .build();
+            .totalUsers(totalUsers)
+            .activeUsers(activeUsers)
+            .deletedUsers(deletedUsers)
+            .roleDistribution(roleDistribution)
+            .build();
     }
 
     /**
      * 전체 페이지 응답 DTO를 생성
      */
     default UserListPageResponseDto toPageResponse(
-            java.util.List<UserListResponseDto> userList,
-            Page<User> userPage,
-            UserListPageResponseDto.SummaryInfo summaryInfo) {
+        java.util.List<UserListResponseDto> userList,
+        Page<User> userPage,
+        UserListPageResponseDto.SummaryInfo summaryInfo) {
         return UserListPageResponseDto.builder()
-                .content(userList)
-                .pageable(toPageableInfo(userPage))
-                .summary(summaryInfo)
-                .build();
+            .content(userList)
+            .pageable(toPageableInfo(userPage))
+            .summary(summaryInfo)
+            .build();
     }
 }

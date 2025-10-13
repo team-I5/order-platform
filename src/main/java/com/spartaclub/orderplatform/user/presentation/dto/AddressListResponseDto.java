@@ -1,13 +1,15 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * 주소 목록 응답 DTO
- * 주소 목록 조회 시 개별 주소 정보를 담는 클래스
+ * 주소 목록 응답 DTO 주소 목록 조회 시 개별 주소 정보를 담는 클래스
  *
  * @author 전우선
  * @date 2025-10-10(금)

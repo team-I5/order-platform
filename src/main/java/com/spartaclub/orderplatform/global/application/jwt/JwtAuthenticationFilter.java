@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,12 +17,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-
 /**
- * JWT 인증 필터
- * 모든 HTTP 요청에서 JWT 토큰을 검증하고 Spring Security 인증 컨텍스트를 설정
- * 실시간 권한 체크를 위해 매 요청마다 DB에서 최신 사용자 정보 조회
+ * JWT 인증 필터 모든 HTTP 요청에서 JWT 토큰을 검증하고 Spring Security 인증 컨텍스트를 설정 실시간 권한 체크를 위해 매 요청마다 DB에서 최신 사용자
+ * 정보 조회
  *
  * @author 전우선
  * @date 2025-10-04(토)
@@ -36,9 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsServiceImpl userDetailsService;
 
     /**
-     * 모든 HTTP 요청에서 실행되는 필터 메서드
-     * JWT 토큰 검증 및 Spring Security 인증 컨텍스트 설정
-     * 실시간 권한 체크를 통한 보안 강화
+     * 모든 HTTP 요청에서 실행되는 필터 메서드 JWT 토큰 검증 및 Spring Security 인증 컨텍스트 설정 실시간 권한 체크를 통한 보안 강화
      *
      * @param request     HTTP 요청 객체
      * @param response    HTTP 응답 객체
@@ -47,8 +43,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @throws IOException      입출력 예외
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+        FilterChain filterChain)
+        throws ServletException, IOException {
 
         // 1. 요청 헤더에서 JWT 토큰 추출
         String token = resolveToken(request);
@@ -74,11 +71,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // 5. 토큰의 권한과 현재 DB의 권한 비교
                     String tokenRole = jwtUtil.getRoleFromToken(token);
-                    String currentRole = userDetails.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+                    String currentRole = userDetails.getAuthorities().iterator().next()
+                        .getAuthority().replace("ROLE_", "");
 
                     // 6. 권한이 변경된 경우 접근 차단
                     if (!tokenRole.equals(currentRole)) {
-                        log.warn("토큰의 권한({})과 현재 권한({})이 다릅니다. 사용자 ID: {}", tokenRole, currentRole, userId);
+                        log.warn("토큰의 권한({})과 현재 권한({})이 다릅니다. 사용자 ID: {}", tokenRole, currentRole,
+                            userId);
                         filterChain.doFilter(request, response);
                         return;
                     }
@@ -92,7 +91,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // 8. Spring Security 인증 객체 생성
                     Authentication authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities()
+                        userDetails, null, userDetails.getAuthorities()
                     );
 
                     // 9. Security Context에 인증 정보 설정
@@ -114,8 +113,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * HTTP 요청에서 JWT 토큰 추출
-     * Authorization 헤더에서 Bearer 토큰을 찾아 반환
+     * HTTP 요청에서 JWT 토큰 추출 Authorization 헤더에서 Bearer 토큰을 찾아 반환
      *
      * @param request HTTP 요청 객체
      * @return 추출된 JWT 토큰 문자열 (Bearer 접두사 제거됨)

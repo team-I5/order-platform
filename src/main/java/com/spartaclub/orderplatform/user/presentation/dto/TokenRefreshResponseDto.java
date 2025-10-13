@@ -1,14 +1,11 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
-import com.spartaclub.orderplatform.user.domain.entity.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * 토큰 갱신 응답 DTO
- * 토큰 갱신 성공 시 클라이언트에게 반환되는 데이터 전송 객체
- * 새로운 JWT 토큰 정보와 사용자 기본 정보 포함
+ * 토큰 갱신 응답 DTO 토큰 갱신 성공 시 클라이언트에게 반환되는 데이터 전송 객체 새로운 JWT 토큰 정보와 사용자 기본 정보 포함
  *
  * @author 전우선
  * @date 2025-10-03(금)
@@ -45,7 +42,8 @@ public class TokenRefreshResponseDto {
      * @param expiresIn    액세스 토큰 만료 시간(초)
      * @param userInfo     사용자 정보 DTO
      */
-    public TokenRefreshResponseDto(String accessToken, String refreshToken, long expiresIn, UserInfoDto userInfo) {
+    public TokenRefreshResponseDto(String accessToken, String refreshToken, long expiresIn,
+        UserInfoDto userInfo) {
         this.message = "토큰이 갱신되었습니다.";
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;

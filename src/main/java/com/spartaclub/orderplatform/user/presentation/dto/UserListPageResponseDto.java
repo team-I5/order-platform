@@ -1,13 +1,15 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
-import lombok.*;
-
 import java.util.List;
 import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * 회원 전체 조회 페이지 응답 DTO
- * 페이징 정보와 통계 정보를 포함한 완전한 응답 클래스
+ * 회원 전체 조회 페이지 응답 DTO 페이징 정보와 통계 정보를 포함한 완전한 응답 클래스
  *
  * @author 전우선
  * @date 2025-10-08(수)
@@ -37,6 +39,7 @@ public class UserListPageResponseDto {
     @AllArgsConstructor
     @Builder
     public static class PageableInfo {
+
         private int page;
         private int size;
         private long totalElements;
@@ -54,6 +57,7 @@ public class UserListPageResponseDto {
     @AllArgsConstructor
     @Builder
     public static class SummaryInfo {
+
         private long totalUsers;
         private long activeUsers;
         private long deletedUsers;

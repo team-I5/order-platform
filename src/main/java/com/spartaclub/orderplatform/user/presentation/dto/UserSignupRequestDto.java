@@ -1,14 +1,18 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
 import com.spartaclub.orderplatform.user.domain.entity.UserRole;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * 회원가입 요청 DTO 클래스
- * 클라이언트로부터 받은 회원가입 데이터를 검증하고 전달
+ * 회원가입 요청 DTO 클래스 클라이언트로부터 받은 회원가입 데이터를 검증하고 전달
  *
  * @author 전우선
  * @date 2025-10-02(목)
@@ -32,7 +36,7 @@ public class UserSignupRequestDto {
     @Size(min = 8, max = 15, message = "비밀번호는 8-15자 이내여야 합니다.")
     // 영대소문자, 숫자, 특수문자 모두 포함 필수
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
-            message = "비밀번호는 영대소문자, 숫자, 특수문자를 모두 포함해야 합니다.")
+        message = "비밀번호는 영대소문자, 숫자, 특수문자를 모두 포함해야 합니다.")
     private String password;
 
     @NotBlank(message = "닉네임은 필수입니다.")
@@ -50,9 +54,7 @@ public class UserSignupRequestDto {
     private String businessNumber; // OWNER 권한 시 필수
 
     /**
-     * 권한별 사업자번호 유효성 검증
-     * OWNER 권한 선택 시 사업자번호 필수
-     * CUSTOMER 권한 선택 시 사업자번호 입력 불가
+     * 권한별 사업자번호 유효성 검증 OWNER 권한 선택 시 사업자번호 필수 CUSTOMER 권한 선택 시 사업자번호 입력 불가
      *
      * @return 유효성 검증 결과
      */
@@ -67,8 +69,7 @@ public class UserSignupRequestDto {
     }
 
     /**
-     * 관리자 권한 선택 방지 검증
-     * MANAGER, MASTER 권한은 일반 회원가입에서 선택 불가
+     * 관리자 권한 선택 방지 검증 MANAGER, MASTER 권한은 일반 회원가입에서 선택 불가
      *
      * @return 유효성 검증 결과
      */

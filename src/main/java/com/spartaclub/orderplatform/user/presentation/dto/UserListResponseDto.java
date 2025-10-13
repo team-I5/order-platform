@@ -1,12 +1,14 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
-import lombok.*;
-
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * 회원 목록 응답 DTO
- * 관리자용 회원 목록에 포함될 개별 회원 정보 클래스
+ * 회원 목록 응답 DTO 관리자용 회원 목록에 포함될 개별 회원 정보 클래스
  *
  * @author 전우선
  * @date 2025-10-08(수)

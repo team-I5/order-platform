@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * 회원정보 수정 요청 DTO
- * 선택적 필드 수정을 위한 데이터 전송 객체
- * 제공된 필드만 수정하고, null인 필드는 기존값 유지
+ * 회원정보 수정 요청 DTO 선택적 필드 수정을 위한 데이터 전송 객체 제공된 필드만 수정하고, null인 필드는 기존값 유지
  *
  * @author 전우선
  * @date 2025-10-03(금)
@@ -42,7 +40,7 @@ public class UserUpdateRequestDto {
     // 새 비밀번호 (선택적 수정)
     @Size(min = 8, max = 15, message = "비밀번호는 8-15자 이내여야 합니다.")
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
-            message = "비밀번호는 영대소문자, 숫자, 특수문자를 모두 포함해야 합니다.")
+        message = "비밀번호는 영대소문자, 숫자, 특수문자를 모두 포함해야 합니다.")
     private String newPassword;
 
     /**

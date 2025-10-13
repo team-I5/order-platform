@@ -1,13 +1,15 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
-import lombok.*;
-
 import java.util.List;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * 주소 목록 페이지 응답 DTO
- * 주소 목록과 통계 정보를 포함한 완전한 응답 클래스
+ * 주소 목록 페이지 응답 DTO 주소 목록과 통계 정보를 포함한 완전한 응답 클래스
  *
  * @author 전우선
  * @date 2025-10-10(금)
@@ -37,6 +39,7 @@ public class AddressListPageResponseDto {
     @AllArgsConstructor
     @Builder
     public static class DefaultAddressInfo {
+
         private UUID addressId;
         private String addressName;
     }

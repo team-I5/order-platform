@@ -1,12 +1,14 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
-import lombok.*;
-
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * 주소 등록 응답 DTO
- * 주소 등록 완료 시 반환되는 데이터
+ * 주소 등록 응답 DTO 주소 등록 완료 시 반환되는 데이터
  *
  * @author 전우선
  * @date 2025-10-09(목)

@@ -1,14 +1,12 @@
 package com.spartaclub.orderplatform.user.presentation.dto;
 
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 /**
- * 회원 탈퇴 응답 DTO
- * 회원 탈퇴 완료 시 클라이언트에게 반환되는 데이터 전송 객체
+ * 회원 탈퇴 응답 DTO 회원 탈퇴 완료 시 클라이언트에게 반환되는 데이터 전송 객체
  *
  * @author 전우선
  * @date 2025-10-05(일)
