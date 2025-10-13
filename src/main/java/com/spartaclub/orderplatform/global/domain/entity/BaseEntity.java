@@ -3,12 +3,11 @@ package com.spartaclub.orderplatform.global.domain.entity; // 전역 엔티티 �
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 /**
  * 모든 엔티티의 공통 필드를 관리하는 베이스 엔티티 클래스

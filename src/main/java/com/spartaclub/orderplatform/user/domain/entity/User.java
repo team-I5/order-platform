@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * 회원 엔티티 클래스 회원가입, 로그인, 사용자 관리 기능을 위한 사용자 정보 저장
@@ -26,7 +25,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "p_users")
 @Getter
-@Setter
 @NoArgsConstructor
 public class User extends BaseEntity {
 
@@ -47,7 +45,6 @@ public class User extends BaseEntity {
     @Column(name = "nickname", nullable = false, unique = true, length = 10)
     private String nickname;
 
-
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private UserRole role;
@@ -60,4 +57,12 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Address> addresses = new ArrayList<>();
+
+    public void setPassword(String encoddedPassword) {
+        password = encoddedPassword;
+    }
+
+    public void updateNickname(String newNickname) {
+        nickname = newNickname;
+    }
 }

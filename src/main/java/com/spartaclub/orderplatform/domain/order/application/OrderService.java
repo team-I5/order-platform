@@ -4,7 +4,7 @@ import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
-import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
+import com.spartaclub.orderplatform.domain.order.domain.repository.OrderRepository;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.spec.OrderSpecs;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
@@ -20,7 +20,6 @@ import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.user.domain.entity.User;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -145,7 +144,7 @@ public class OrderService {
             .and(OrderSpecs.visibleFor(viewer))
             .and(OrderSpecs.statusIn(requestDto.status()));
 
-        Page<Order> orders = orderRepository.findAll(spec, pageable);
+        Page<Order> orders = orderRepository.findAll(requestDto.page() - 1, requestDto.size());
 
         List<OrderSummaryDto> ordersList = orders.getContent().stream()
             .map(orderMapper::toSummaryDto)
@@ -234,7 +233,6 @@ public class OrderService {
     }
 
     public Order findById(UUID orderId) {
-        return orderRepository.findById(orderId)
-            .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다: " + orderId));
+        return orderRepository.findById(orderId);
     }
 }

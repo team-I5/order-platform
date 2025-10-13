@@ -1,7 +1,7 @@
 package com.spartaclub.orderplatform.domain.payment.application.listener;
 
 import com.spartaclub.orderplatform.domain.order.domain.event.PaymentRequestedEvent;
-import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
+import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderJpaRepository;
 import com.spartaclub.orderplatform.domain.payment.application.PaymentService;
 import com.spartaclub.orderplatform.domain.payment.infrastructure.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class PaymentEventHandler {
 
     private final PaymentService paymentService;
-    private final OrderRepository orderRepository;
+    private final OrderJpaRepository orderRepository;
     private final PaymentRepository paymentRepository;
 
     // 주문 생성 커밋 이후 결제 요청
