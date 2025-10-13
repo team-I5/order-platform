@@ -1,17 +1,18 @@
 package com.spartaclub.orderplatform.domain.store.application.service;
 
-import com.spartaclub.orderplatform.domain.review.repository.ReviewRepository;
+import com.spartaclub.orderplatform.domain.review.infrastructure.repository.ReviewRepository;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class StoreReviewScheduler {
         List<UUID> storeIds = reviews.stream().map(r -> (UUID) r[0]).toList();
 
         Map<UUID, Store> storeMap = storeRepository.findAllById(storeIds).stream()
-            .collect(Collectors.toMap(Store::getStoreId, Function.identity()));
+                .collect(Collectors.toMap(Store::getStoreId, Function.identity()));
 
         for (Object[] review : reviews) {
             UUID storeId = (UUID) review[0];
