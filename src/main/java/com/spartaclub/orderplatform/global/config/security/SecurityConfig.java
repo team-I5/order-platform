@@ -1,8 +1,10 @@
-package com.spartaclub.orderplatform.global.infrastructure.config.security;
+package com.spartaclub.orderplatform.global.config.security;
 
-import com.spartaclub.orderplatform.global.application.jwt.JwtAuthenticationFilter;
-import com.spartaclub.orderplatform.global.application.jwt.JwtUtil;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsServiceImpl;
+import com.spartaclub.orderplatform.global.auth.handler.RestAccessDeniedHandler;
+import com.spartaclub.orderplatform.global.auth.handler.RestAuthenticationEntryPoint;
+import com.spartaclub.orderplatform.global.auth.jwt.JwtAuthenticationFilter;
+import com.spartaclub.orderplatform.global.auth.jwt.JwtUtil;
+import com.spartaclub.orderplatform.global.auth.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,7 +42,11 @@ public class SecurityConfig {
      * @throws Exception 보안 설정 중 발생할 수 있는 예외
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(
+        HttpSecurity http,
+        RestAuthenticationEntryPoint entryPoint,
+        RestAccessDeniedHandler accessDeniedHandler
+    ) throws Exception {
         http
             // CSRF(Cross-Site Request Forgery) 보호 기능을 비활성화
             // JWT 토큰 기반 인증에서는 CSRF 보호가 불필요
@@ -74,6 +80,12 @@ public class SecurityConfig {
 
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
+            )
+
+            // 인증/인가 실패 핸들러 연결
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(entryPoint)        // 401
+                .accessDeniedHandler(accessDeniedHandler)    // 403
             )
 
             // JWT 인증 필터를 UsernamePasswordAuthenticationFilter 앞에 추가

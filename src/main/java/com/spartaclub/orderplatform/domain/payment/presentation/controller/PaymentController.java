@@ -8,7 +8,7 @@ import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.Init
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.InitPaymentResponseDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentDetailResponseDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentsListResponseDto;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
 import java.util.UUID;

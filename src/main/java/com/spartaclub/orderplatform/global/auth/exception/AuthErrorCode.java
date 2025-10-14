@@ -1,5 +1,6 @@
-package com.spartaclub.orderplatform.global.exception;
+package com.spartaclub.orderplatform.global.auth.exception;
 
+import com.spartaclub.orderplatform.global.exception.ErrorCode;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 

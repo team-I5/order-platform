@@ -6,7 +6,7 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreS
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import java.util.UUID;

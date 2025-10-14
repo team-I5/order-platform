@@ -7,7 +7,7 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.response.Order
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrderStatusResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrdersResponseDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.PlaceOrderResponseDto;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
 import java.util.UUID;

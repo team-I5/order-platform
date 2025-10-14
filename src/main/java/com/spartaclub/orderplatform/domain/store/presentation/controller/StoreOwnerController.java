@@ -5,7 +5,7 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreC
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.validation.Valid;

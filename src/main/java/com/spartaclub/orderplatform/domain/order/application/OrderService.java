@@ -19,8 +19,8 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.response.Order
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.PlaceOrderResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
-import com.spartaclub.orderplatform.global.exception.AuthErrorCode;
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
+import com.spartaclub.orderplatform.global.auth.exception.AuthErrorCode;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import java.util.ArrayList;
