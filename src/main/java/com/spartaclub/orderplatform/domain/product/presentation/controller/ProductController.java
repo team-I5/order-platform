@@ -105,4 +105,6 @@ public class ProductController {
         Page<StoreSearchResponseDto> stores = productService.getStoreListByProductNameAndAddressId(keyword, addressId, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(stores));
     }
+
+    // Todo 상품 별 리뷰 조회
 }

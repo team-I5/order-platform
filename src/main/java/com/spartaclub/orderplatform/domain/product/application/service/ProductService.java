@@ -5,13 +5,14 @@ import com.spartaclub.orderplatform.domain.product.application.mapper.ProductMap
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.Address;
 import com.spartaclub.orderplatform.user.infrastructure.repository.AddressRepository;
-import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ public class ProductService {
     // 상품 등록 서비스 로직
     @Transactional
     public ProductResponseDto createProduct(
-        @Valid ProductCreateRequestDto productCreateRequestDto,
+        ProductCreateRequestDto productCreateRequestDto,
         Long userId
     ) {
         // 1. storeId로 Store 조회
@@ -70,7 +71,7 @@ public class ProductService {
     // 상품 수정 서비스 로직
     @Transactional
     public ProductResponseDto updateProduct(UUID productId,
-        @Valid ProductUpdateRequestDto productUpdateRequestDto
+                                            ProductUpdateRequestDto productUpdateRequestDto
     ) {
         // 1. productId로 상품 조회
         Product product = findProductOrThrow(productId);
@@ -88,8 +89,8 @@ public class ProductService {
     // 상품 삭제 서비스 로직
     @Transactional
     public void deleteProduct(
-        UUID productId,
-        Long userId
+            Long userId,
+            UUID productId
     ) {
         // 1. productId로 상품 조회
         Product product = findProductOrThrow(productId);

@@ -376,7 +376,7 @@ public class UserService {
         }
 
         // 3. 소프트 삭제 처리 (deletedAt 설정)
-        user.delete(); // BaseEntity의 delete() 메서드 사용
+        user.delete(); // BaseEntity의 deleteProductOptionGroup() 메서드 사용
 
         // 4. 관련 토큰 무효화 (모든 리프레시 토큰 삭제)
         refreshTokenRepository.deleteByUser(user);

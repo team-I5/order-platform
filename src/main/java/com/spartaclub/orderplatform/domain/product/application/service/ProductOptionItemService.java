@@ -1,0 +1,71 @@
+package com.spartaclub.orderplatform.domain.product.application.service;
+
+import com.spartaclub.orderplatform.domain.product.application.mapper.ProductOptionItemMapper;
+import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionItemRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionItemResponseDto;
+import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionItem;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionItemRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class ProductOptionItemService {
+
+    private final ProductOptionGroupRepository productOptionGroupRepository;
+    private final ProductOptionItemRepository productOptionItemRepository;
+    private final ProductOptionItemMapper productOptionItemMapper;
+
+    @Transactional
+    public ProductOptionItemResponseDto createProductOptionItem(ProductOptionItemRequestDto productOptionItemRequestDto) {
+        // 1. 옵션 그룹 조회
+        ProductOptionGroup productOptionGroup = productOptionGroupRepository.findById(productOptionItemRequestDto.getProductOptionGroupId())
+                .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
+
+        // 2. 아이템 엔티티 생성
+        ProductOptionItem item = productOptionItemMapper.toEntity(productOptionItemRequestDto);
+
+        // 3. 그룹의 아이템 리스트에 추가
+        productOptionGroup.getOptionItems().add(item);
+
+        // 4. CascadeType.ALL이므로 productOptionGroup 저장 시 item 자동 persist
+        ProductOptionGroup savedGroup = productOptionGroupRepository.save(productOptionGroup);
+
+        // 5. 저장된 아이템 중 마지막 추가된 것을 반환
+        ProductOptionItem savedItem = savedGroup.getOptionItems()
+                .get(savedGroup.getOptionItems().size() - 1);
+
+        return productOptionItemMapper.toResponseDto(savedItem);
+    }
+
+    @Transactional
+    public ProductOptionItemResponseDto updateProductOptionItem(UUID productOptionItemId, ProductOptionItemRequestDto productOptionItemRequestDto) {
+        // 1. 상품 옵션 조회
+        ProductOptionItem optionItem = productOptionItemRepository.findById(productOptionItemId)
+                .orElseThrow(() -> new IllegalArgumentException("옵션 아이템을 찾을 수 없습니다."));
+
+        // 2. 상품 옵션 수정
+        optionItem.updateOptionItem(productOptionItemRequestDto);
+
+        // 3. DB 변경 자동 감지
+
+        // 4. Dto 변환 후 반환
+        return productOptionItemMapper.toResponseDto(optionItem);
+    }
+
+    @Transactional
+    public void deleteProductOptionItem(Long userId, UUID productOptionItemId) {
+        // 1. 상품 옵션 조회
+        ProductOptionItem optionItem = productOptionItemRepository.findById(productOptionItemId)
+                .orElseThrow(() -> new IllegalArgumentException("옵션 아이템을 찾을 수 없습니다."));
+
+        optionItem.deleteItem(userId);
+    }
+
+}

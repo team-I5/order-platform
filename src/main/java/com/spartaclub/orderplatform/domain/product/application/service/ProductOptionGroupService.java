@@ -1,0 +1,60 @@
+package com.spartaclub.orderplatform.domain.product.application.service;
+
+import com.spartaclub.orderplatform.domain.product.application.mapper.ProductOptionGroupMapper;
+import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupResponseDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class ProductOptionGroupService {
+
+    private final ProductOptionGroupRepository groupRepository;
+    private final ProductOptionGroupMapper productOptionGroupMapper;
+
+    @Transactional
+    public ProductOptionGroupResponseDto createProductOptionGroup(ProductOptionGroupRequestDto productOptionGroupRequestDto) {
+        // 1. Product와 매핑
+
+        // 2. Dto -> Entity
+        ProductOptionGroup group = productOptionGroupMapper.toEntity(productOptionGroupRequestDto);
+
+        // 3. DB 저장
+        ProductOptionGroup saved = groupRepository.save(group);
+
+        // 4. -> Dto 후 반환
+        return productOptionGroupMapper.toResponseDto(saved);
+    }
+
+    @Transactional
+    public ProductOptionGroupResponseDto updateProductOptionGroup(UUID productOptionGroupId, ProductOptionGroupRequestDto productOptionGroupRequestDto) {
+        // 1️. 수정할 옵션 그룹 조회
+        ProductOptionGroup productOptionGroup = groupRepository.findById(productOptionGroupId)
+                .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
+
+        // 2️. 수정 대상 필드 변경
+        productOptionGroup.updateOptionGroupInfo(productOptionGroupRequestDto);
+
+        // 3️. 변경 감지는 @Transactional 덕분에 자동 반영됨 (save 필요 없음)
+
+        // 4. Entity -> Dto 변환 후 반환
+        return productOptionGroupMapper.toResponseDto(productOptionGroup);
+    }
+
+
+    @Transactional
+    public void deleteProductOptionGroup(Long userId, UUID productOptionGroupId) {
+        ProductOptionGroup group = groupRepository.findById(productOptionGroupId)
+                .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
+
+        group.deleteOptionGroup(userId);
+    }
+
+}

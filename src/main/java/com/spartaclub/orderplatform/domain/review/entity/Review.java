@@ -69,7 +69,7 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "productId")
     private Product product;
 
-    // 리뷰 삭제 메서드(soft delete)
+    // 리뷰 삭제 메서드(soft deleteProductOptionGroup)
     public void deleteReview(Long userId) {
         this.deletedId = userId;
         delete();

@@ -215,7 +215,7 @@ public class StoreService {
             throw new IllegalArgumentException("본인의 음식점의 카테고리만 수정할 수 있습니다.");
         }
 
-        // 기존 관계들은 soft delete 처리
+        // 기존 관계들은 soft deleteProductOptionGroup 처리
         store.getStoreCategories().forEach(storeCategory -> {
             if (storeCategory.getDeletedId() != null) {
                 storeCategory.scSoftDelete(user.getUserId());

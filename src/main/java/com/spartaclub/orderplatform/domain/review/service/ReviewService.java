@@ -30,7 +30,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewMapper reviewMapper;
 
-    // 리뷰 등록 로직(create)
+    // 리뷰 등록 로직(createProductOptionGroup)
     public ReviewResponseDto createReview(ReviewCreateRequestDto reviewCreateRequestDto) {
         // 1. requestDto → entity 전환
         Review review = reviewMapper.toReviewEntity(reviewCreateRequestDto);
@@ -52,7 +52,7 @@ public class ReviewService {
         return responseDto;
     }
 
-    // 리뷰 삭제 로직(delete)
+    // 리뷰 삭제 로직(deleteProductOptionGroup)
     @Transactional
     public void deleteReview(UUID reviewId) {
         // 1. reviewId로 해당 리뷰 DB 존재 확인

@@ -1,18 +1,15 @@
 package com.spartaclub.orderplatform.domain.product.domain.entity;
 
+import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
+import com.spartaclub.orderplatform.domain.review.entity.Review;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.Valid;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.*;
@@ -55,13 +52,25 @@ public class Product extends BaseEntity {
     @Builder.Default
     private Boolean isHidden = false;
 
-
     // 소속 가게
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
+    // 상품 주문 중간 테이블
+    @OneToMany(mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @Builder.Default
+    private List<OrderProduct> orderProducts = new ArrayList<>();
+
+    // 메뉴 리뷰
+    @OneToMany(mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
 
     // 생성자 ID
     @CreatedBy
@@ -82,7 +91,7 @@ public class Product extends BaseEntity {
         this.productDescription = productUpdateRequestDto.getProductDescription();
     }
 
-    // 상품 삭제 메소드 (soft delete)
+    // 상품 삭제 메소드 (soft deleteProductOptionGroup)
     public void deleteProduct(Long userId) {
         this.isHidden = true;
         this.deletedId = userId;
