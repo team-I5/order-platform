@@ -35,6 +35,7 @@ public class Category extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID categoryId;        // 카테고리 ID
 
+    // Enum에 요소가 추가되어야 하는 상황에 적용해보려고 CategoryConverter 고민했었음.
     //    @Convert(converter = CategoryConverter.class)
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
@@ -43,9 +44,6 @@ public class Category extends BaseEntity {
     public Category(CategoryType type) {
         this.type = type;
     }
-
-    // 카테고리 엔티티에서 가게 목록을 가지고 있을 필요가 있는지?
-//    private UUID storeId;
 
     // 외래 키 관계 설정 StoreyCategory → Category
     @OneToMany(mappedBy = "category", orphanRemoval = true)

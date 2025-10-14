@@ -5,16 +5,18 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/*
+ * 카테고리 응답 Dto
+ *
+ * @author 이준성
+ * @date 2025-10-14
+ */
 @Getter
-//@NoArgsConstructor
 @AllArgsConstructor
 public class CategoryResponseDto {
 
-    //    // 카테고리 ID
+    // 카테고리 ID
     private UUID categoryId;
-    // 가게 ID
-//    private UUID storeId;
     // 카테고리명
     private CategoryType type;
-
 }

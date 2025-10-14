@@ -7,6 +7,12 @@ import lombok.Setter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
+/*
+ * 카테고리 검색 요청 dto
+ *
+ * @author 이준성
+ * @date 2025-10-14
+ */
 @Getter
 @Setter
 @NoArgsConstructor

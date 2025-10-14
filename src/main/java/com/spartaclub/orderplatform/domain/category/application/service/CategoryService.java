@@ -42,12 +42,16 @@ public class CategoryService {
         if (!user.getRole().equals("MANAGER")) {
             throw new IllegalArgumentException("유효한 카테고리 등록자가 아닙니다.");
         }
-        // 가게 이름으로 해당 store행 도출 후 storeId 뽑아옴
-//        Store store = storeRepository.findByStore_StoreNameAndDeletedAtIsNull(dto.getStoreName());
-//        store.getStoreId();
-        // 객체 인스턴스를 통해 EnumType에 접근해 값 가져오기
-//        CategoryType type = CategoryType.getInstance(dto.getName());
-
+        /*
+         * ▶고민해본 요소들
+         * 가게 이름으로 해당 store행 도출 후 storeId 뽑아옴
+         * 음식점ID로 카테고리 요소를 가져와야 하는 상황이 생겼을 때 적용 고민
+        Store store = storeRepository.findByStore_StoreNameAndDeletedAtIsNull(dto.getStoreName());
+        store.getStoreId();
+         * 객체 인스턴스를 통해 EnumType에 접근해 값 가져오기
+         * 이 카테고리 유형으로 해당되는 모든 음식점ID 뽑아와야 하는 경우 적용 고민
+        CategoryType type = CategoryType.getInstance(dto.getName());
+        */
         // 2. requestDto → entity 전환
         Category category = categoryMapper.toCategoryEntity(dto);
         // 3. DB 저장 후 entity → responseDto 전환
@@ -58,14 +62,17 @@ public class CategoryService {
     // 카테고리 조회
     @Transactional(readOnly = true)
     public Page<CategoryResponseDto> searchCategory(CategorySearchRequestDto dto) {
+        // Pageable로 페이지 단위 처리 설정
         Pageable pageable = PageRequest.of(
             dto.getPage(), dto.getSize(),
             Sort.by(dto.getDirection(), "createdAt")
         );
+        // 카테고리 타입이 존재하면 카테고리 타입으로 조회
         if (dto.getCategoryType() != null) {
             return categoryRepository.findByTypeAndDeletedAtIsNull(
                     CategoryType.valueOf(dto.getCategoryType()), pageable)
                 .map(categoryMapper::toCategoryResponseDto);
+            // 카테고리 타입이 존재하지 않으면 전체 타입으로 조회
         } else {
             return categoryRepository.findAll(pageable)
                 .map(categoryMapper::toCategoryResponseDto);

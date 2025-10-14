@@ -27,6 +27,7 @@ public enum CategoryType {
         this.name = name;
     }
 
+    // 인스턴스로 해당되는 값만 가져오기
     public static CategoryType getInstance(String name) {
         return Arrays.stream(values())
             .filter(cat -> cat.getName().equalsIgnoreCase(name))
