@@ -1,13 +1,18 @@
 package com.spartaclub.orderplatform.domain.category.domain.model;
 
+import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -30,6 +35,29 @@ public class Category extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID categoryId;        // 카테고리 ID
 
-    @Enumerated(EnumType.STRING)
-    private CategoryType type;      // 카테고리 종류
+    //    @Convert(converter = CategoryConverter.class)
+    @Enumerated(value = EnumType.STRING)
+    @Column(nullable = false)
+    public CategoryType type;      // 카테고리 종류
+
+    public Category(CategoryType type) {
+        this.type = type;
+    }
+
+    // 카테고리 엔티티에서 가게 목록을 가지고 있을 필요가 있는지?
+//    private UUID storeId;
+
+    // 외래 키 관계 설정 StoreyCategory → Category
+    @OneToMany(mappedBy = "category", orphanRemoval = true)
+    private List<StoreCategory> storeCategories = new ArrayList<>();
+
+    // 카테고리 수정 메서드
+    public void updateReview(CategoryType type) {
+        this.type = type;
+    }
+
+    // 카테고리 삭제 메서드
+    public void deleteCategory() {
+        delete();
+    }
 }

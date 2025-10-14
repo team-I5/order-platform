@@ -31,9 +31,9 @@ import org.springframework.web.bind.annotation.RestController;
  * 리뷰 관련 API Endpoint 제공
  *
  * @author 이준성
- * @date 2025-10-02
+ * @date 2025-10-02(목)
  */
-@Slf4j(topic = "Review Controller")
+@Slf4j(topic = "Review Control")
 @RestController // @ResponseBody + @Controller
 @RequiredArgsConstructor // final 제어자가 붙은 필드에 대한 생성자 생성
 @RequestMapping("/v1/reviews")

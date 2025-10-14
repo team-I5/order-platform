@@ -5,8 +5,8 @@ import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus
 import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.REJECTED;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
-import com.spartaclub.orderplatform.domain.category.entity.Category;
-import com.spartaclub.orderplatform.domain.category.repository.CategoryRepository;
+import com.spartaclub.orderplatform.domain.category.domain.model.Category;
+import com.spartaclub.orderplatform.domain.category.infrastructure.repository.CategoryRepository;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;

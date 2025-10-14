@@ -1,8 +1,10 @@
 package com.spartaclub.orderplatform.domain.category.infrastructure.repository;
 
 import com.spartaclub.orderplatform.domain.category.domain.model.Category;
-import java.util.Optional;
+import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +17,6 @@ import org.springframework.stereotype.Repository;
 @Repository // spring 레포지토리 컴포넌트로 등록
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
-    // 조회 메서드들 - Spring Data JPA가 메서드 이름으로 자동 쿼리 생성
-    Optional<Category> findByType(String type);     // Enum 유형으로 조회
+    Page<Category> findByTypeAndDeletedAtIsNull(CategoryType type, Pageable pageable);
 
 }

@@ -123,8 +123,7 @@ public class ReviewService {
     // 존재하는 리뷰인지 확인
     @Transactional
     public Review findReview(UUID id) {
-        return reviewRepository
-            .findById(id)
+        return reviewRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 리뷰입니다."));
     }
 }
