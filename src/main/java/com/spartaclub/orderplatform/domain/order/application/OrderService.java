@@ -18,7 +18,9 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.response.Order
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrdersResponseDto.OrderSummaryDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.PlaceOrderResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
+import com.spartaclub.orderplatform.domain.product.exception.ProductErrorCode;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.auth.exception.AuthErrorCode;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
@@ -52,7 +54,13 @@ public class OrderService {
     public PlaceOrderResponseDto placeOrder(PlaceOrderRequestDto placeOrderRequestDto, User user) {
         List<OrderItemRequest> products = placeOrderRequestDto.items(); // 주문 상품 리스트
 
-        Store store = storeReaderRepository.findById(placeOrderRequestDto.storeId());
+        Store store = storeReaderRepository.findById(placeOrderRequestDto.storeId())
+            .orElseThrow(() -> {
+                log.warn("[Store] NOT_EXIST - storeId={}, userId={}",
+                    placeOrderRequestDto.storeId(),
+                    user.getUserId());
+                return new BusinessException(StoreErrorCode.NOT_EXIST);
+            });
 
         Long totalPrice = 0L;
         Integer productCount = 0;
@@ -60,7 +68,14 @@ public class OrderService {
 
         // 총 주문 금액, 상품 개수 집계, 주문-상품 엔티티 생성
         for (OrderItemRequest orderItem : products) {
-            Product product = productReaderRepository.findById(orderItem.productId());
+            Product product = productReaderRepository.findById(orderItem.productId())
+                .orElseThrow(() -> {
+                    log.warn("[Product] NOT_EXIST - productId={}, quantity={}, userId={}",
+                        orderItem.productId(),
+                        orderItem.quantity(),
+                        user.getUserId());
+                    return new BusinessException(ProductErrorCode.NOT_EXIST);
+                });
 
             totalPrice += orderItem.quantity() * product.getPrice();
             productCount += orderItem.quantity();
