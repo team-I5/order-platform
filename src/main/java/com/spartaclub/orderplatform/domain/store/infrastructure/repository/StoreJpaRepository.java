@@ -4,6 +4,7 @@ import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus;
 import com.spartaclub.orderplatform.user.domain.entity.User;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,10 +12,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.UUID;
-
 @Repository
-public interface StoreRepository extends JpaRepository<Store, UUID> {
+public interface StoreJpaRepository extends JpaRepository<Store, UUID> {
 
     boolean existsByUserAndStoreName(User owner, String storeName);
 
@@ -29,42 +28,42 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
     Page<Store> findByUser_UserId(Long userId, Pageable pageable);
 
     @Query("""
-               SELECT DISTINCT s
-               FROM Store s
-               JOIN s.storeCategories sc
-               JOIN sc.category c
-               WHERE c.type = :type
-               AND s.status = 'APPROVED'
-               AND s.deletedAt IS NULL
-               AND sc.deletedAt IS NULL
-               AND c.deletedAt IS NULL
-            """)
+           SELECT DISTINCT s
+           FROM Store s
+           JOIN s.storeCategories sc
+           JOIN sc.category c
+           WHERE c.type = :type
+           AND s.status = 'APPROVED'
+           AND s.deletedAt IS NULL
+           AND sc.deletedAt IS NULL
+           AND c.deletedAt IS NULL
+        """)
     Page<Store> findApprovedStoreByCategory(@Param("type") CategoryType type, Pageable pageable);
 
     @Query("""
-               SELECT DISTINCT s
-               FROM Store s
-               JOIN s.storeCategories sc
-               JOIN sc.category c
-               WHERE c.type = :type
-               AND s.status = 'APPROVED'
-               AND s.user.userId = :userId
-               AND s.deletedAt IS NULL
-               AND sc.deletedAt IS NULL
-               AND c.deletedAt IS NULL
-            """)
+           SELECT DISTINCT s
+           FROM Store s
+           JOIN s.storeCategories sc
+           JOIN sc.category c
+           WHERE c.type = :type
+           AND s.status = 'APPROVED'
+           AND s.user.userId = :userId
+           AND s.deletedAt IS NULL
+           AND sc.deletedAt IS NULL
+           AND c.deletedAt IS NULL
+        """)
     Page<Store> findOwnerApprovedStoreByCategory(@Param("type") CategoryType type,
-                                                 @Param("userId") Long userId, Pageable pageable);
+        @Param("userId") Long userId, Pageable pageable);
 
     @Query("""
-               SELECT DISTINCT s
-               FROM Store s
-               JOIN s.storeCategories sc
-               JOIN sc.category c
-               WHERE c.type = :type
-               AND s.status = 'APPROVED'
-               AND sc.deletedAt IS NULL
-               AND c.deletedAt IS NULL
-            """)
+           SELECT DISTINCT s
+           FROM Store s
+           JOIN s.storeCategories sc
+           JOIN sc.category c
+           WHERE c.type = :type
+           AND s.status = 'APPROVED'
+           AND sc.deletedAt IS NULL
+           AND c.deletedAt IS NULL
+        """)
     Page<Store> findAllStoreByCategory(@Param("type") CategoryType type, Pageable pageable);
 }
