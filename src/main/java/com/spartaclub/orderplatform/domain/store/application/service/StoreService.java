@@ -10,7 +10,7 @@ import com.spartaclub.orderplatform.domain.category.repository.CategoryRepositor
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;
-import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
+import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.RejectStoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreCategoryRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
@@ -296,8 +296,7 @@ public class StoreService {
 
     // 존재하는 음식점인지 확인
     private Store getStore(UUID storeId) {
-        return storeRepository.findById(storeId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 음식점 입니다."));
+        return storeRepository.findById(storeId);
     }
 
     // 승인 대기 상태 확인
