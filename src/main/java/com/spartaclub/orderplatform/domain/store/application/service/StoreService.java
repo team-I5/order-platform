@@ -296,7 +296,8 @@ public class StoreService {
 
     // 존재하는 음식점인지 확인
     private Store getStore(UUID storeId) {
-        return storeRepository.findById(storeId);
+        return storeRepository.findById(storeId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 음식점 입니다."));
     }
 
     // 승인 대기 상태 확인

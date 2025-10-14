@@ -6,6 +6,7 @@ import com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,7 @@ public interface StoreRepository {
 
     Page<Store> findAllStoreByCategory(CategoryType type, Pageable pageable);
 
-    Store findById(UUID storeId);
+    Optional<Store> findById(UUID storeId);
 
     Page<Store> findAll(Pageable pageable);
 

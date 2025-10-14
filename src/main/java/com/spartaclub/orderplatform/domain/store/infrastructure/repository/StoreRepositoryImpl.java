@@ -7,6 +7,7 @@ import com.spartaclub.orderplatform.domain.store.domain.repository.StoreReposito
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -69,9 +70,8 @@ public class StoreRepositoryImpl implements StoreRepository {
     }
 
     @Override
-    public Store findById(UUID storeId) {
-        return storeJpaRepository.findById(storeId)
-            .orElseThrow(() -> new IllegalArgumentException("음식점을 찾을 수 없습니다.: " + storeId));
+    public Optional<Store> findById(UUID storeId) {
+        return storeJpaRepository.findById(storeId);
     }
 
     @Override
