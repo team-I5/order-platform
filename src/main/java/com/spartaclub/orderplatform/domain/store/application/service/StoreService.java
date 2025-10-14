@@ -10,7 +10,7 @@ import com.spartaclub.orderplatform.domain.category.infrastructure.repository.Ca
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;
-import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
+import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.RejectStoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreCategoryRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
