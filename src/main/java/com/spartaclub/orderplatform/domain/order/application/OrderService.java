@@ -9,6 +9,8 @@ import com.spartaclub.orderplatform.domain.order.domain.repository.OrderReposito
 import com.spartaclub.orderplatform.domain.order.domain.repository.ProductReaderRepository;
 import com.spartaclub.orderplatform.domain.order.domain.repository.StoreReaderRepository;
 import com.spartaclub.orderplatform.domain.order.exception.OrderErrorCode;
+import com.spartaclub.orderplatform.domain.order.exception.ProductRefErrorCode;
+import com.spartaclub.orderplatform.domain.order.exception.StoreRefErrorCode;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.request.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.request.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.request.PlaceOrderRequestDto.OrderItemRequest;
@@ -18,9 +20,7 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.response.Order
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrdersResponseDto.OrderSummaryDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.PlaceOrderResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
-import com.spartaclub.orderplatform.domain.product.exception.ProductErrorCode;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
-import com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.auth.exception.AuthErrorCode;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
@@ -59,7 +59,7 @@ public class OrderService {
                 log.warn("[Store] NOT_EXIST - storeId={}, userId={}",
                     placeOrderRequestDto.storeId(),
                     user.getUserId());
-                return new BusinessException(StoreErrorCode.NOT_EXIST);
+                return new BusinessException(StoreRefErrorCode.NOT_EXIST);
             });
 
         Long totalPrice = 0L;
@@ -74,7 +74,7 @@ public class OrderService {
                         orderItem.productId(),
                         orderItem.quantity(),
                         user.getUserId());
-                    return new BusinessException(ProductErrorCode.NOT_EXIST);
+                    return new BusinessException(ProductRefErrorCode.NOT_EXIST);
                 });
 
             totalPrice += orderItem.quantity() * product.getPrice();
