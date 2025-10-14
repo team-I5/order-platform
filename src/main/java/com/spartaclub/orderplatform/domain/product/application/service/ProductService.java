@@ -8,7 +8,7 @@ import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponse
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
-import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
+import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
