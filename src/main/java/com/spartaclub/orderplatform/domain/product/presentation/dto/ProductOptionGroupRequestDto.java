@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Builder
 @Getter
 @AllArgsConstructor
@@ -17,5 +15,4 @@ public class ProductOptionGroupRequestDto {
     private OptionGroupTag tag;
     private Long minSelect;
     private Long maxSelect;
-    private List<ProductOptionItemRequestDto> optionItems;
 }

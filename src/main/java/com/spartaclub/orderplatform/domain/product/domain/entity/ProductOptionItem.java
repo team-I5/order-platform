@@ -18,8 +18,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_product_option_items")
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductOptionItem extends BaseEntity {
 
@@ -36,7 +34,6 @@ public class ProductOptionItem extends BaseEntity {
     @Column(nullable = false)
     private Long additionalPrice;
 
-    // 상품 그룹 연관 관계
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_option_group_id", nullable = false)
     private ProductOptionGroup productOptionGroup;
@@ -52,6 +49,15 @@ public class ProductOptionItem extends BaseEntity {
 
     // 삭제자 ID
     private Long deletedId;
+
+    // 정적 팩토리 메소드
+    public static ProductOptionItem create(ProductOptionGroup productOptionGroup, String optionName, Long additionalPrice) {
+        ProductOptionItem productOptionItem = new ProductOptionItem();
+        productOptionItem.productOptionGroup = productOptionGroup;
+        productOptionItem.optionName = optionName;
+        productOptionItem.additionalPrice = additionalPrice;
+        return productOptionItem;
+    }
 
     public void updateOptionItem(ProductOptionItemRequestDto productOptionItemRequestDto) {
         this.optionName = productOptionItemRequestDto.getOptionName();

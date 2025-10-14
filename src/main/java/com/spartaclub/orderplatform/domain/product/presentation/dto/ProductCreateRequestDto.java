@@ -29,7 +29,7 @@ public class ProductCreateRequestDto {
     // 상품 가격
     @NotNull(message = "가격은 필수입니다.")
     @Positive(message = "가격은 0보다 커야 합니다.")
-    private Integer price;
+    private Long price;
 
     // 상품 설명
     @Size(max = 500, message = "상품 설명은 최대 500자까지 입력할 수 있습니다.")

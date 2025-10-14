@@ -1,6 +1,5 @@
 package com.spartaclub.orderplatform.domain.product.domain.entity;
 
-import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
@@ -25,8 +24,6 @@ import org.springframework.data.annotation.LastModifiedBy;
 @Entity
 @Table(name = "p_products")
 @Getter
-@Builder(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
@@ -49,7 +46,6 @@ public class Product extends BaseEntity {
 
     // 상품 숨김 여부
     @Column(nullable = false)
-    @Builder.Default
     private Boolean isHidden = false;
 
     // 소속 가게
@@ -66,7 +62,6 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
     // 생성자 ID
@@ -80,6 +75,15 @@ public class Product extends BaseEntity {
 
     // 삭제자 ID
     private Long deletedId;
+
+    // 정적 팩토리 메소드
+    public static Product create(String productName, Long price, String description) {
+        Product product = new Product();
+        product.productName = productName;
+        product.price = price;
+        product.productDescription = description;
+        return product;
+    }
 
     // 상품 정보 수정 메소드
     public void updateProduct(@Valid ProductUpdateRequestDto productUpdateRequestDto) {
@@ -100,11 +104,9 @@ public class Product extends BaseEntity {
         this.isHidden = true;
     }
 
+    // 상품과 옵션그룹 매핑
     public void addOptionGroup(ProductOptionGroup productOptionGroup) {
-        ProductOptionMap map = ProductOptionMap.builder()
-                .product(this)
-                .productOptionGroup(productOptionGroup)
-                .build();
+        ProductOptionMap map = ProductOptionMap.create(this, productOptionGroup);
         productOptionGroupMaps.add(map);
     }
 }

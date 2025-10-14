@@ -29,19 +29,14 @@ public class ProductOptionItemService {
                 .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
 
         // 2. 아이템 엔티티 생성
-        ProductOptionItem item = productOptionItemMapper.toEntity(productOptionItemRequestDto);
+        ProductOptionItem item = productOptionItemMapper.toEntity(productOptionGroup, productOptionItemRequestDto);
 
         // 3. 그룹의 아이템 리스트에 추가
         productOptionGroup.getOptionItems().add(item);
 
-        // 4. CascadeType.ALL이므로 productOptionGroup 저장 시 item 자동 persist
-        ProductOptionGroup savedGroup = productOptionGroupRepository.save(productOptionGroup);
+        // 4. 옵션 group, item은 persist 상태에서 자동 저장
 
-        // 5. 저장된 아이템 중 마지막 추가된 것을 반환
-        ProductOptionItem savedItem = savedGroup.getOptionItems()
-                .get(savedGroup.getOptionItems().size() - 1);
-
-        return productOptionItemMapper.toResponseDto(savedItem);
+        return productOptionItemMapper.toResponseDto(item);
     }
 
     @Transactional

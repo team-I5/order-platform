@@ -13,7 +13,7 @@ import java.util.UUID;
 public class ProductDetailResponseDto {
     private UUID productId;
     private String productName;
-    private String description;
+    private String productDescription;
     private Long price;
-    private List<ProductOptionGroupResponseDto> optionGroups;
+    private List<ProductOptionGroupResponseDto> productOptionGroups;
 }

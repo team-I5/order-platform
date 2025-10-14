@@ -3,13 +3,13 @@ package com.spartaclub.orderplatform.domain.product.domain.entity;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupRequestDto;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 상품 옵션 그룹 Entity
@@ -17,8 +17,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_product_option_groups")
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductOptionGroup extends BaseEntity {
 
@@ -35,19 +33,16 @@ public class ProductOptionGroup extends BaseEntity {
     private OptionGroupTag tag;
 
     @Column(nullable = false)
-    @Builder.Default
     private Long minSelect = 0L;
 
     @Column(nullable = false)
-    @Builder.Default
     private Long maxSelect = Long.MAX_VALUE;
 
     @OneToMany(mappedBy = "productOptionGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductOptionMap> productOptionGroupMaps = new ArrayList<>();
 
     @OneToMany(mappedBy = "productOptionGroup", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<ProductOptionItem> optionItems = new ArrayList<>();
+    private Set<ProductOptionItem> optionItems = new HashSet<>();
 
     @CreatedBy
     @Column(updatable = false, nullable = false)
@@ -57,6 +52,16 @@ public class ProductOptionGroup extends BaseEntity {
     private Long modifiedId;
 
     private Long deletedId;
+
+    // 정적 팩토리 메소드
+    public static ProductOptionGroup create(String optionGroupName, OptionGroupTag tag, Long minSelect, Long maxSelect) {
+        ProductOptionGroup productOptionGroup = new ProductOptionGroup();
+        productOptionGroup.optionGroupName = optionGroupName;
+        productOptionGroup.tag = tag;
+        productOptionGroup.minSelect = minSelect;
+        productOptionGroup.maxSelect = maxSelect;
+        return productOptionGroup;
+    }
 
     public void updateOptionGroupInfo(ProductOptionGroupRequestDto requestDto) {
         this.optionGroupName = requestDto.getOptionGroupName();

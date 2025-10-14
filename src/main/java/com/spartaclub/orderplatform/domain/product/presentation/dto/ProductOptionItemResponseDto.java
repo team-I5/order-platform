@@ -12,7 +12,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductOptionItemResponseDto {
-    private UUID productOptionItemId;
     private String optionName;
     private Long additionalPrice;
 }

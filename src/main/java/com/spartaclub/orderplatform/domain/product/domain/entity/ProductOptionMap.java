@@ -11,9 +11,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_product_option_map")
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class ProductOptionMap extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,4 +31,12 @@ public class ProductOptionMap extends BaseEntity {
 
     @LastModifiedBy
     private Long modifiedId;
+
+    // 정적 팩토리 메소드
+    public static ProductOptionMap create(Product product, ProductOptionGroup productOptionGroup) {
+        ProductOptionMap map = new ProductOptionMap();
+        map.product = product;
+        map.productOptionGroup = productOptionGroup;
+        return map;
+    }
 }

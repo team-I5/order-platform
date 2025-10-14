@@ -72,7 +72,7 @@ public class ProductController {
 
     @PreAuthorize("hasRole('OWNER')")
     @PostMapping("/add-group-to-product")
-    public ResponseEntity<ApiResponse<Void>> addGroupToProduct(ProductAddOptionGroupsRequestDto productAddOptionGroupsRequestDto) {
+    public ResponseEntity<ApiResponse<Void>> addGroupToProduct(@RequestBody ProductAddOptionGroupsRequestDto productAddOptionGroupsRequestDto) {
         productService.addGroupToProduct(productAddOptionGroupsRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
     }

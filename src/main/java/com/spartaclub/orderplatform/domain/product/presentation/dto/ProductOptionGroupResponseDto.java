@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Builder
@@ -19,5 +20,5 @@ public class ProductOptionGroupResponseDto {
     private OptionGroupTag tag;
     private Long minSelect;
     private Long maxSelect;
-    private List<ProductOptionItemResponseDto> optionItems;
+    private Set<ProductOptionItemResponseDto> optionItems;
 }
