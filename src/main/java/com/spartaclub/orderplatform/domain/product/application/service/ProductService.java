@@ -3,6 +3,8 @@ package com.spartaclub.orderplatform.domain.product.application.service;
 import com.spartaclub.orderplatform.domain.ai.application.service.AiService;
 import com.spartaclub.orderplatform.domain.product.application.mapper.ProductMapper;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
+import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
@@ -41,6 +43,7 @@ public class ProductService {
     private final StoreMapper storeMapper;
     private final AddressRepository addressRepository;
     private final AiService aiService;
+    private final ProductOptionGroupRepository productOptionGroupRepository;
 
     // 상품 등록 서비스 로직
     @Transactional
@@ -117,12 +120,12 @@ public class ProductService {
     }
 
     // 상품 상세 조회 서비스 로직
-    public ProductResponseDto getProduct(UUID productId) {
+    public ProductDetailResponseDto getProduct(UUID productId) {
         // 1. productId로 상품 조회
-        Product product = findProductOrThrow(productId);
+        Product product = productRepository.findWithOptionGroupsAndItemsByProductId(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
 
-        // 2. Product Entity -> Dto 변환 후 반환
-        return productMapper.toDto(product);
+        return productMapper.toResponseDto(product);
     }
 
     // 상품 공개/숨김 수정 서비스 로직
@@ -157,6 +160,25 @@ public class ProductService {
 
         // 3. entity -> dto 후 반환
         return storePage.map(storeMapper::toStoreSearchResponseDto);
+    }
+
+
+    @Transactional
+    public void addGroupToProduct(ProductAddOptionGroupsRequestDto productAddOptionGroupsRequestDto) {
+        // 1. 상품 조회
+        Product product = findProductOrThrow(productAddOptionGroupsRequestDto.getProductId());
+
+        // 2. 상품 옵션 그룹들 조회
+        List<ProductOptionGroup> optionGroups = productAddOptionGroupsRequestDto.getProductOptionGroupIds().stream()
+                .map(productOptionGroupId -> productOptionGroupRepository.findById(productOptionGroupId)
+                        .orElseThrow(() -> new IllegalArgumentException("상품 옵션 그룹을 찾을 수 없습니다: " + productOptionGroupId)))
+                .toList();
+
+        // 3. 상품에 상품 옵션 그룹 매핑
+        optionGroups.forEach(product::addOptionGroup);
+
+        // 4. 저장
+        productRepository.save(product);
     }
 
 

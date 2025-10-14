@@ -18,14 +18,14 @@ public class ProductOptionGroupController {
     private final ProductOptionGroupService productOptionGroupService;
 
     @PostMapping
-    public ProductOptionGroupResponseDto createProductOptionGroup(@RequestBody ProductOptionGroupRequestDto dto) {
-        return productOptionGroupService.createProductOptionGroup(dto);
+    public ProductOptionGroupResponseDto createProductOptionGroup(@RequestBody ProductOptionGroupRequestDto productOptionGroupRequestDto) {
+        return productOptionGroupService.createProductOptionGroup(productOptionGroupRequestDto);
     }
 
 
     @PutMapping("/{productOptionGroupId}")
-    public ProductOptionGroupResponseDto updateProductOptionGroup(@PathVariable UUID productOptionGroupId, @RequestBody ProductOptionGroupRequestDto dto) {
-        return productOptionGroupService.updateProductOptionGroup(productOptionGroupId, dto);
+    public ProductOptionGroupResponseDto updateProductOptionGroup(@PathVariable UUID productOptionGroupId, @RequestBody ProductOptionGroupRequestDto productOptionGroupRequestDto) {
+        return productOptionGroupService.updateProductOptionGroup(productOptionGroupId, productOptionGroupRequestDto);
     }
 
     @DeleteMapping("/{productOptionGroupId}")

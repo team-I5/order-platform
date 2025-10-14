@@ -43,6 +43,9 @@ public class ProductOptionGroup extends BaseEntity {
     private Long maxSelect = Long.MAX_VALUE;
 
     @OneToMany(mappedBy = "productOptionGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductOptionMap> productOptionGroupMaps = new ArrayList<>();
+
+    @OneToMany(mappedBy = "productOptionGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ProductOptionItem> optionItems = new ArrayList<>();
 

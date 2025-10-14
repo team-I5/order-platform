@@ -21,8 +21,6 @@ public class ProductOptionGroupService {
 
     @Transactional
     public ProductOptionGroupResponseDto createProductOptionGroup(ProductOptionGroupRequestDto productOptionGroupRequestDto) {
-        // 1. Product와 매핑
-
         // 2. Dto -> Entity
         ProductOptionGroup group = productOptionGroupMapper.toEntity(productOptionGroupRequestDto);
 

@@ -1,10 +1,7 @@
 package com.spartaclub.orderplatform.domain.product.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.product.application.service.ProductService;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -61,8 +58,8 @@ public class ProductController {
             @PathVariable UUID productId
     ) {
         Long userId = getCurrentUserId();
-        productService.deleteProduct(productId, userId);
-        return ResponseEntity.noContent().build();
+        productService.deleteProduct(userId, productId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success(null));
     }
 
     // 상품 공개/숨김 설정 API
@@ -71,6 +68,13 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ProductResponseDto>> updateProductVisibility(@PathVariable UUID productId) {
         ProductResponseDto requestDto = productService.updateProductVisibility(productId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(requestDto));
+    }
+
+    @PreAuthorize("hasRole('OWNER')")
+    @PostMapping("/add-group-to-product")
+    public ResponseEntity<ApiResponse<Void>> addGroupToProduct(ProductAddOptionGroupsRequestDto productAddOptionGroupsRequestDto) {
+        productService.addGroupToProduct(productAddOptionGroupsRequestDto);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
     }
 
     // 상품 목록 조회 API
@@ -87,8 +91,8 @@ public class ProductController {
 
     // 상품 상세 조회 API
     @GetMapping("/{productId}")
-    public ResponseEntity<ApiResponse<ProductResponseDto>> getProductList(@PathVariable UUID productId) {
-        ProductResponseDto requestDto = productService.getProduct(productId);
+    public ResponseEntity<ApiResponse<ProductDetailResponseDto>> getProductList(@PathVariable UUID productId) {
+        ProductDetailResponseDto requestDto = productService.getProduct(productId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(requestDto));
     }
 

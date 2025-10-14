@@ -2,6 +2,7 @@ package com.spartaclub.orderplatform.domain.product.application.mapper;
 
 import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductDetailResponseDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import org.mapstruct.*;
@@ -29,6 +30,8 @@ public interface ProductMapper {
     // store.storeId → dto.storeId 로 매핑
     @Mapping(target = "storeId", source = "store.storeId")
     ProductResponseDto toDto(Product product);
+
+    ProductDetailResponseDto toResponseDto(Product product);
 
     // Page Entity -> dto 변환
     // Page 객체는 자옫 변환이 불가능해서 자동 구현 x

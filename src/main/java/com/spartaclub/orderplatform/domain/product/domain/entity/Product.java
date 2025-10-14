@@ -59,11 +59,8 @@ public class Product extends BaseEntity {
     private Store store;
 
     // 상품 주문 중간 테이블
-    @OneToMany(mappedBy = "product",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
-    @Builder.Default
-    private List<OrderProduct> orderProducts = new ArrayList<>();
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductOptionMap> productOptionGroupMaps = new ArrayList<>();
 
     // 메뉴 리뷰
     @OneToMany(mappedBy = "product",
@@ -103,5 +100,12 @@ public class Product extends BaseEntity {
         this.isHidden = true;
     }
 
+    public void addOptionGroup(ProductOptionGroup productOptionGroup) {
+        ProductOptionMap map = ProductOptionMap.builder()
+                .product(this)
+                .productOptionGroup(productOptionGroup)
+                .build();
+        productOptionGroupMaps.add(map);
+    }
 }
 
