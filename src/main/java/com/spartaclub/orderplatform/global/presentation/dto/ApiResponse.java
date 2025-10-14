@@ -1,5 +1,6 @@
 package com.spartaclub.orderplatform.global.presentation.dto;
 
+import com.spartaclub.orderplatform.global.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -16,26 +17,29 @@ public class ApiResponse<T> { // 제네릭 타입 T를 사용하여 다양한 �
     private boolean success; // API 호출 성공/실패 여부를 나타내는 불린 값
     private String message; // 클라이언트에게 전달할 응답 메시지 (성공/실패 메시지)
     private T data; // 실제 응답 데이터 (제네릭 타입으로 다양한 데이터 타입 지원, 없으면 null)
+    private String errorCode;
 
     /**
      * 성공 응답 생성 메서드 (데이터 포함) 데이터와 함께 성공 응답을 반환할 때 사용
      */
     public static <T> ApiResponse<T> success(T data) { // 데이터를 받아 성공 응답 생성하는 정적 메서드
-        return new ApiResponse<>(true, "성공", data); // success=true, 기본 성공 메시지, 전달받은 데이터로 객체 생성
+        return new ApiResponse<>(true, "성공", data,
+            null); // success=true, 기본 성공 메시지, 전달받은 데이터로 객체 생성
     }
 
     /**
      * 성공 응답 생성 메서드 (메시지만) 커스텀 성공 메시지만 전달하고 데이터는 없을 때 사용
      */
     public static <T> ApiResponse<T> success(String message) { // 메시지만 받아 성공 응답 생성하는 정적 메서드
-        return new ApiResponse<>(true, message, null); // success=true, 전달받은 메시지, data=null로 객체 생성
+        return new ApiResponse<>(true, message, null,
+            null); // success=true, 전달받은 메시지, data=null로 객체 생성
     }
 
     /**
      * 성공 응답 생성 메서드 (데이터 미포함) 데이터 없이 성공 응답을 반환할 때 사용
      */
     public static ApiResponse<Void> success() {
-        return new ApiResponse<>(true, null, null);
+        return new ApiResponse<>(true, null, null, null);
     }
 
     /**
@@ -43,6 +47,13 @@ public class ApiResponse<T> { // 제네릭 타입 T를 사용하여 다양한 �
      */
     public static <T> ApiResponse<T> error(String message) { // 에러 메시지를 받아 실패 응답 생성하는 정적 메서드
         return new ApiResponse<>(false, message,
-            null); // success=false, 전달받은 에러 메시지, data=null로 객체 생성
+            null, null); // success=false, 전달받은 에러 메시지, data=null로 객체 생성
+    }
+
+    /**
+     * 실패 응답 생성 메서드 에러 메시지와 에러 코드를 포함하여 실패 응답을 반환할 때 사용
+     */
+    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
+        return new ApiResponse<>(false, errorCode.getMessage(), null, errorCode.getCode());
     }
 }
