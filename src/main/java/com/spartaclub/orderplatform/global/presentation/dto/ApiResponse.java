@@ -1,5 +1,8 @@
 package com.spartaclub.orderplatform.global.presentation.dto;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.spartaclub.orderplatform.global.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +15,7 @@ import lombok.Getter;
  */
 @Getter // Lombok - 모든 필드에 대한 getter 메서드 자동 생성 (isSuccess(), getMessage(), getData())
 @AllArgsConstructor // Lombok - 모든 필드를 매개변수로 받는 생성자 자동 생성
+@JsonInclude(NON_EMPTY) // 응답 바디에 null/빈 문자열/빈 컬렉션 제외
 public class ApiResponse<T> { // 제네릭 타입 T를 사용하여 다양한 데이터 타입을 담을 수 있는 응답 클래스
 
     private boolean success; // API 호출 성공/실패 여부를 나타내는 불린 값
