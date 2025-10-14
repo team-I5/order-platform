@@ -50,8 +50,11 @@ public interface StoreJpaRepository extends JpaRepository<Store, UUID> {
                  AND sc.deletedAt IS NULL
                  AND c.deletedAt IS NULL
         """)
-    Page<Store> findOwnerApprovedStoreByCategory(@Param("type") CategoryType type,
-        @Param("userId") Long userId, Pageable pageable);
+    Page<Store> findOwnerApprovedStoreByCategory(
+        @Param("type") CategoryType type,
+        @Param("userId") Long userId,
+        Pageable pageable
+    );
 
     @Query("""
          SELECT DISTINCT s
@@ -65,14 +68,17 @@ public interface StoreJpaRepository extends JpaRepository<Store, UUID> {
         """)
     Page<Store> findAllStoreByCategory(@Param("type") CategoryType type, Pageable pageable);
 
-//    @Query("""
-//            SELECT s
-//            FROM Store s
-//            WHERE s.deletedAt IS NULL
-//                      AND s.status = :status
-//                      AND LOWER(s.storeName) LIKE LOWER(CONCAT('%', :storeName, '%'))
-//        """)
-//    Page<Store> findApprovedStoresByStoreName(@Param("storeName") String storeName,
-//        @Param("status") StoreStatus status, Pageable pageable);
+    @Query("""
+            SELECT s
+            FROM Store s
+            WHERE s.deletedAt IS NULL
+                      AND s.status = :status
+                      AND LOWER(s.storeName) LIKE LOWER(CONCAT('%', :storeName, '%'))
+        """)
+    Page<Store> findApprovedStoresByStoreName(
+        @Param("storeName") String storeName,
+        @Param("status") StoreStatus status,
+        Pageable pageable
+    );
 
 }
