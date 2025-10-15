@@ -61,7 +61,7 @@ public class Payment extends BaseEntity {
     public void validateApproval(String requestPgPaymentKey, String requestPgOrderId,
         Long requestAmount) {
         // 결제 상태 검증
-        if (this.status != PaymentStatus.AUTHORIZED) {
+        if (status.isNotAuthorized()) {
             log.warn("[Payment-Validate] 결제 승인 불가 상태 감지 - paymentId={}, currentStatus={}",
                 paymentId, status);
             throw new BusinessException(PaymentErrorCode.INVALID_STATUS_FOR_APPROVAL);
@@ -88,7 +88,7 @@ public class Payment extends BaseEntity {
     //결제 취소 검증
     public void checkCancelable(String requestPgPaymentKey) {
         //결제 상태 검증
-        if (this.status != PaymentStatus.CAPTURED) {
+        if (status.isNotCaptured()) {
             log.warn("[Payment-Validate] 결제 취소 불가 상태 - paymentId={}, currentStatus={}",
                 paymentId, status);
             throw new BusinessException(PaymentErrorCode.INVALID_STATUS_FOR_CANCEL);
