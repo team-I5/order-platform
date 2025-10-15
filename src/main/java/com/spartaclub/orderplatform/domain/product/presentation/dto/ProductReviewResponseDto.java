@@ -1,10 +1,5 @@
 package com.spartaclub.orderplatform.domain.product.presentation.dto;
 
-import com.spartaclub.orderplatform.user.domain.entity.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
