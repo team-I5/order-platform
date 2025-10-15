@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.category.application.mapper;
 
 import com.spartaclub.orderplatform.domain.category.domain.model.Category;
+import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategoryRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
 import org.mapstruct.Mapper;
@@ -12,15 +13,15 @@ import org.mapstruct.Mapping;
  * @date 2025-10-13(월)
  */
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", imports = CategoryType.class)
 public interface CategoryMapper {
 
     // 외래키
     @Mapping(target = "storeCategories", ignore = true)
     // categoryId DB auto_increment로 자동 생성
     @Mapping(target = "categoryId", ignore = true)
-    @Mapping(target = "type", expression = "java(CategoryType.CHICKEN)")
-    Category toCategoryEntity(CategoryRequestDto dto);
+    @Mapping(target = "type", source = "categoryType")
+    Category toCategoryEntity(CategoryRequestDto dto, CategoryType categoryType);
 
     //    @Mapping(target = "storeId", source = "store.storeId")
     @Mapping(target = "type", expression = "java(category.getType())")

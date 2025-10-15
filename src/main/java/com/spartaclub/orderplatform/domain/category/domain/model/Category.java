@@ -55,7 +55,7 @@ public class Category extends BaseEntity {
     }
 
     // 카테고리 삭제 메서드
-    public void deleteCategory() {
-        delete();
+    public void deleteCategory(Long userId) {
+        delete(userId);
     }
 }

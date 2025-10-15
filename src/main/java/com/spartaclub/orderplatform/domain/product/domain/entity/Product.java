@@ -1,21 +1,28 @@
 package com.spartaclub.orderplatform.domain.product.domain.entity;
 
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
-import com.spartaclub.orderplatform.domain.review.entity.Review;
+import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.LastModifiedBy;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * 상품 정보 Entity
@@ -62,8 +69,8 @@ public class Product extends BaseEntity {
 
     // 메뉴 리뷰
     @OneToMany(mappedBy = "product",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+        cascade = CascadeType.ALL,
+        orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
     // 정적 팩토리 메소드

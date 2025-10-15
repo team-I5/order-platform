@@ -6,9 +6,9 @@ import com.spartaclub.orderplatform.domain.review.presentation.dto.request.Revie
 import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewResponseDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewSearchResponseDto;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
-import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

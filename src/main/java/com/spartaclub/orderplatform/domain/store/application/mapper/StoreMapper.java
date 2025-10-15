@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.store.application.mapper;
 
-import com.spartaclub.orderplatform.domain.category.entity.Category;
+
+import com.spartaclub.orderplatform.domain.category.domain.model.Category;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;

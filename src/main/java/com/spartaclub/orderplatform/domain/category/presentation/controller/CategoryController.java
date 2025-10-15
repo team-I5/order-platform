@@ -4,9 +4,9 @@ import com.spartaclub.orderplatform.domain.category.application.service.Category
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategoryRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategorySearchRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
-import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,9 +40,8 @@ public class CategoryController {
     // 필드 선언
     private final CategoryService categoryService;
 
-
     // 카테고리 등록 API
-    @PatchMapping
+    @PostMapping
     public ResponseEntity<ApiResponse<CategoryResponseDto>> createCategory(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Valid @RequestBody CategoryRequestDto dto) {

@@ -7,7 +7,7 @@ import com.spartaclub.orderplatform.domain.category.infrastructure.repository.Ca
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategoryRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategorySearchRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,9 +39,9 @@ public class CategoryService {
     @Transactional
     public CategoryResponseDto createCategory(User user, CategoryRequestDto dto) {
         // 1. 카테고리 관리자 등급 확인
-        if (!user.getRole().equals("MANAGER")) {
-            throw new IllegalArgumentException("유효한 카테고리 등록자가 아닙니다.");
-        }
+//        if (!user.getRole().equals("MASTER")) {
+//            throw new IllegalArgumentException("유효한 카테고리 등록자가 아닙니다.");
+//        }
         /*
          * ▶고민해본 요소들
          * 가게 이름으로 해당 store행 도출 후 storeId 뽑아옴
@@ -53,7 +53,8 @@ public class CategoryService {
         CategoryType type = CategoryType.getInstance(dto.getName());
         */
         // 2. requestDto → entity 전환
-        Category category = categoryMapper.toCategoryEntity(dto);
+        CategoryType categoryType = CategoryType.getInstance(dto.getName());
+        Category category = categoryMapper.toCategoryEntity(dto, categoryType);
         // 3. DB 저장 후 entity → responseDto 전환
         return categoryMapper.toCategoryResponseDto(categoryRepository.save(category));
 
@@ -84,9 +85,9 @@ public class CategoryService {
     public CategoryResponseDto updateCategory(User user, UUID categoryId,
         CategoryRequestDto dto) {
         // 1. 카테고리 관리자 등급 확인
-        if (!user.getRole().equals("MANAGER")) {
-            throw new IllegalArgumentException("유효한 카테고리 관리자가 아닙니다.");
-        }
+//        if (!user.getRole().equals("MASTER")) {
+//            throw new IllegalArgumentException("유효한 카테고리 관리자가 아닙니다.");
+//        }
         // 2. categoryId로 해당 카테코리 DB존재 확인
         Category category = findCategory(categoryId);
 
@@ -103,13 +104,13 @@ public class CategoryService {
     @Transactional
     public void deleteCategory(User user, UUID categoryId) {
         // 1. 카테고리 관리자 등급 확인
-        if (!user.getRole().equals("MANAGER")) {
-            throw new IllegalArgumentException("유효한 카테고리 관리자가 아닙니다.");
-        }
+//        if (!user.getRole().equals("MASTER")) {
+//            throw new IllegalArgumentException("유효한 카테고리 관리자가 아닙니다.");
+//        }
         // 2. categoryId로 해당 카테코리 DB존재 확인
         Category category = findCategory(categoryId);
         // 3. 카테고리 도메인 삭제 메서드 호출
-        category.deleteCategory();
+        category.deleteCategory(user.getUserId());
     }
 
     // 존재하는 카테고리인지 확인

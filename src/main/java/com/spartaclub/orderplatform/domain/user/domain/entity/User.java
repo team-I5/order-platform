@@ -1,6 +1,8 @@
 package com.spartaclub.orderplatform.domain.user.domain.entity;
 
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,6 +30,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@AttributeOverrides({
+    @AttributeOverride(name = "createdId", column = @Column(insertable = false, updatable = false)),
+})
 public class User extends BaseEntity {
 
     @Id

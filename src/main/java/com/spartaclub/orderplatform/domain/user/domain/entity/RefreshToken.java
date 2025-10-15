@@ -1,17 +1,24 @@
 package com.spartaclub.orderplatform.domain.user.domain.entity;
 
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 /**
- * 리프레시 토큰 엔티티
- * JWT 액세스 토큰 갱신을 위한 리프레시 토큰 정보 저장
- * RTR(Refresh Token Rotation) 패턴을 통한 보안 강화
+ * 리프레시 토큰 엔티티 JWT 액세스 토큰 갱신을 위한 리프레시 토큰 정보 저장 RTR(Refresh Token Rotation) 패턴을 통한 보안 강화
  *
  * @author 전우선
  * @date 2025-10-02(목)
@@ -21,6 +28,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AttributeOverrides({
+    @AttributeOverride(name = "createdId", column = @Column(insertable = false, updatable = false)),
+    @AttributeOverride(name = "modifiedId", column = @Column(insertable = false, updatable = false)),
+    @AttributeOverride(name = "deletedId", column = @Column(insertable = false, updatable = false))
+})
 public class RefreshToken extends BaseEntity {
 
     // 리프레시 토큰 고유 ID (기본키)
@@ -43,8 +55,7 @@ public class RefreshToken extends BaseEntity {
     private LocalDateTime expiresAt;
 
     /**
-     * 리프레시 토큰 생성자
-     * 새로운 리프레시 토큰 생성 시 사용
+     * 리프레시 토큰 생성자 새로운 리프레시 토큰 생성 시 사용
      *
      * @param token     JWT 리프레시 토큰 문자열
      * @param user      토큰 소유 사용자
@@ -57,8 +68,7 @@ public class RefreshToken extends BaseEntity {
     }
 
     /**
-     * 토큰 만료 여부 확인
-     * 현재 시간과 만료 시간을 비교하여 만료 여부 판단
+     * 토큰 만료 여부 확인 현재 시간과 만료 시간을 비교하여 만료 여부 판단
      *
      * @return 만료되었으면 true, 아니면 false
      */

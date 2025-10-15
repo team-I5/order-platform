@@ -1,9 +1,8 @@
 package com.spartaclub.orderplatform.domain.review.presentation.dto.response;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.util.UUID;
 
 /*
  * 리뷰 응답 DTO 클래스
@@ -30,6 +29,7 @@ public class ReviewResponseDto {
     private Integer rating;
     // 리뷰내용
     private String contents;
+
     // 평점
 
 }

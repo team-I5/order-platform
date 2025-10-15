@@ -9,7 +9,7 @@ import com.spartaclub.orderplatform.domain.review.presentation.dto.request.Revie
 import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewResponseDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewSearchResponseDto;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +51,7 @@ public class ReviewService {
         }
         // 2. requestDto → entity 전환
         Review review = reviewMapper.toReviewEntity(reviewCreateRequestDto);
+        review.setUser(user);
         // 3. DB 저장 후 entity → responseDto 전환
         return reviewMapper.toReviewDto(reviewRepository.save(review));
     }
@@ -61,10 +62,11 @@ public class ReviewService {
         // 1. reviewId로 해당 리뷰 DB 존재 확인
         Review review = findReview(reviewId);
         // 2. 리뷰 수정자 일치 확인
-        if (!review.getUser().getUserId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("본인 작성 리뷰만 수정할 수 있습니다.");
-        }
+//        if (!review.getUser().getUserId().equals(user.getUserId())) {
+//            throw new IllegalArgumentException("본인 작성 리뷰만 수정할 수 있습니다.");
+//        }
         // 3. 리뷰 엔티티 update 함수에서 변경된 값 반영
+
         review.updateReview(dto.getRating(), dto.getContents());
         // 4. dirty checking후 et.commit()이 호출될 때 DB 반영
         // @Transactional안에서 JPA 변경 감지(dirty checking) 되면 entity transaction에 의해 et.commit()이 호출될 때 DB반영
@@ -77,12 +79,13 @@ public class ReviewService {
     public void deleteReview(User user, UUID reviewId) {
         // 1. reviewId로 해당 리뷰 DB 존재 확인
         Review review = findReview(reviewId);
+        review.setUser(user);
         // 2. 리뷰 삭제자 일치 확인
         if (!review.getUser().getUserId().equals(user.getUserId())) {
             throw new IllegalArgumentException("본인 작성 리뷰만 삭제할 수 있습니다.");
         }
         // 3. 리뷰 도메인 삭제 메서드 호출
-        review.deleteReview(0L);
+        review.deleteReview(user.getUserId());
     }
 
     // 리뷰 조건별 조회
