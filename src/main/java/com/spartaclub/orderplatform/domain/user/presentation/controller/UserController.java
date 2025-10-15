@@ -3,6 +3,8 @@ package com.spartaclub.orderplatform.domain.user.presentation.controller;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.auth.jwt.JwtUtil;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
+import com.spartaclub.orderplatform.domain.user.exception.UserErrorCode;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import com.spartaclub.orderplatform.domain.user.application.service.UserService;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.LogoutResponseDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.ManagerCreateRequestDto;
@@ -174,7 +176,7 @@ public class UserController {
 
         // 페이지 크기 검증 (최대 50)
         if (pageable.getPageSize() > 50) {
-            throw new RuntimeException("페이지 크기는 1~50 사이여야 합니다.");
+            throw new BusinessException(UserErrorCode.INVALID_PAGE_SIZE);
         }
 
         // 정렬 정보 추출
