@@ -3,7 +3,7 @@ package com.spartaclub.orderplatform.domain.store.infrastructure.repository;
 import com.spartaclub.orderplatform.domain.category.entity.CategoryType;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
