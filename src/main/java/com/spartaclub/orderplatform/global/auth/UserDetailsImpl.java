@@ -1,7 +1,7 @@
 package com.spartaclub.orderplatform.global.auth;
 
-import com.spartaclub.orderplatform.user.domain.entity.User;
-import com.spartaclub.orderplatform.user.domain.entity.UserRole;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
 import java.util.ArrayList;
 import java.util.Collection;
 import lombok.Getter;

@@ -8,7 +8,7 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

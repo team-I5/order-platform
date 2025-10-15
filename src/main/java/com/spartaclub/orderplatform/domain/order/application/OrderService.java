@@ -24,7 +24,7 @@ import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.auth.exception.AuthErrorCode;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
