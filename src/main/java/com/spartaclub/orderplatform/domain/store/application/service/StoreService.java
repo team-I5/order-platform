@@ -15,12 +15,14 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.request.Reject
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreCategoryRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByCategoryRequestDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByStoreNameRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.RejectStoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByStoreNameResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import com.spartaclub.orderplatform.user.domain.entity.UserRole;
@@ -271,6 +273,24 @@ public class StoreService {
         }
 
         return stores.map(this::getStoreSearchByCategoryResponseDto);
+    }
+
+    // 해당 이름이 들어가는 식당 목록
+    @Transactional
+    public Page<StoreSearchByStoreNameResponseDto> searchStoreListByStoreName(
+        StoreSearchByStoreNameRequestDto dto
+    ) {
+        dto.validatePageSize();
+
+        Pageable pageable = PageRequest.of(
+            dto.getPage(), dto.getSize(),
+            Sort.by(DESC, "createdAt")
+        );
+
+        Page<Store> stores = storeRepository
+            .findApprovedStoresByStoreName(dto.getStoreName(), APPROVED, pageable);
+
+        return stores.map(storeMapper::toStoreSearchByStoreNameResponseDto);
     }
 
     // mapper에서 분리한 로직 - 유효한 카테고리만 포함한 dto 변환
