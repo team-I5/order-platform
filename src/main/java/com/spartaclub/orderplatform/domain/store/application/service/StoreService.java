@@ -10,17 +10,19 @@ import com.spartaclub.orderplatform.domain.category.repository.CategoryRepositor
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;
-import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
+import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.RejectStoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreCategoryRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByCategoryRequestDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByStoreNameRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.RejectStoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByStoreNameResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import com.spartaclub.orderplatform.user.domain.entity.UserRole;
@@ -49,7 +51,7 @@ public class StoreService {
         // 이미 나에게 존재하는 가게 이름인지 확인
         boolean existStoreName = storeRepository
             .existsByUserAndStoreName(user, dto.getStoreName());
-        
+
         if (existStoreName) {
             throw new IllegalArgumentException("이미 같은 이름의 음식점이 존재합니다.");
         }
@@ -217,9 +219,8 @@ public class StoreService {
 
         // 기존 관계들은 soft deleteProductOptionGroup 처리
         store.getStoreCategories().forEach(storeCategory -> {
-            if (storeCategory.getDeletedId() != null) {
+            if (storeCategory.getDeletedId() == null) {
                 storeCategory.scSoftDelete(user.getUserId());
-                storeCategory.delete();
             }
         });
 
@@ -271,6 +272,24 @@ public class StoreService {
         }
 
         return stores.map(this::getStoreSearchByCategoryResponseDto);
+    }
+
+    // 해당 이름이 들어가는 식당 목록
+    @Transactional
+    public Page<StoreSearchByStoreNameResponseDto> searchStoreListByStoreName(
+        StoreSearchByStoreNameRequestDto dto
+    ) {
+        dto.validatePageSize();
+
+        Pageable pageable = PageRequest.of(
+            dto.getPage(), dto.getSize(),
+            Sort.by(DESC, "createdAt")
+        );
+
+        Page<Store> stores = storeRepository
+            .findApprovedStoresByStoreName(dto.getStoreName(), APPROVED, pageable);
+
+        return stores.map(storeMapper::toStoreSearchByStoreNameResponseDto);
     }
 
     // mapper에서 분리한 로직 - 유효한 카테고리만 포함한 dto 변환

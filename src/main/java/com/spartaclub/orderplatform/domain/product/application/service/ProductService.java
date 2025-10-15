@@ -9,10 +9,20 @@ import com.spartaclub.orderplatform.domain.product.infrastructure.repository.Pro
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
-import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreRepository;
+import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.Address;
 import com.spartaclub.orderplatform.user.infrastructure.repository.AddressRepository;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,10 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * 상품 Service
@@ -47,8 +53,8 @@ public class ProductService {
     // 상품 등록 서비스 로직
     @Transactional
     public ProductResponseDto createProduct(
-        ProductCreateRequestDto productCreateRequestDto,
-        Long userId
+            ProductCreateRequestDto productCreateRequestDto,
+            Long userId
     ) {
         // 1. storeId로 Store 조회
         Store store = storeRepository.findById(productCreateRequestDto.getStoreId())
@@ -108,8 +114,8 @@ public class ProductService {
 
         // 2. 페이지 객체에서 상품 리스트만 추출
         List<ProductResponseDto> productList = productPage.getContent().stream()
-            .map(productMapper::toDto)
-            .collect(Collectors.toList());
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
 
         // 3. 페이지 메타 데이터 -> dto 변환
         PageMetaDto pageMetaDto = productMapper.toPageDto(productPage);
@@ -142,7 +148,6 @@ public class ProductService {
         // 4. Product Entity -> Dto 변환 후 반환
         return productMapper.toDto(product);
     }
-
 
 
     // 검색 키워드와 사용자 배송지 정보로 상점 검색
@@ -184,7 +189,7 @@ public class ProductService {
     // --- 상품 공통 조회 메소드 ---
     private Product findProductOrThrow(UUID productId) {
         return productRepository.findById(productId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
     }
 
     // 사용자 배송지에서 도로명 주소만 추출하는 메소드

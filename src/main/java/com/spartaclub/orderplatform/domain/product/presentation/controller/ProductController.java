@@ -112,8 +112,8 @@ public class ProductController {
     }
 
     // 상품 별 리뷰 조회
-    @GetMapping("/{productId}/reviews")
-    public ResponseEntity<ApiResponse<Page<ProductReviewResponstDto>>> getProductReviews(@PathVariable UUID productId) {
-
-    }
+//    @GetMapping("/{productId}/reviews")
+//    public ResponseEntity<ApiResponse<Page<ProductReviewResponstDto>>> getProductReviews(@PathVariable UUID productId) {
+//
+//    }
 }

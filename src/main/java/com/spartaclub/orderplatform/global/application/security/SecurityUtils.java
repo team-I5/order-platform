@@ -1,5 +1,6 @@
 package com.spartaclub.orderplatform.global.application.security;
 
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;

@@ -78,8 +78,8 @@ public class Store extends BaseEntity {
     @Column(length = 300)
     private String rejectReason;
 
-    private Double averageRating;
-    private Integer reviewCount;
+    private Double averageRating = 0.0;
+    private Integer reviewCount = 0;
 
     // 음식점 정보 업데이트(기본 정보만)
     public void updateStoreInfo(StoreRequestDto dto) {
@@ -109,7 +109,7 @@ public class Store extends BaseEntity {
 
     // 음식점 삭제 처리
     public void storeSoftDelete(Long userId) {
-        this.deletedId = userId;
+        delete(userId);
     }
 
     // 음식점에 카테고리 추가
@@ -126,8 +126,13 @@ public class Store extends BaseEntity {
                     && storeCategory.getDeletedId() != null)
             .findFirst()
             .ifPresent(storeCategory -> {
-                storeCategory.delete();
                 storeCategory.scSoftDelete(userId);
             });
+    }
+
+    // 음식점 리뷰 개수와 평점 업데이트
+    public void updateAverageRatingAndReviewCount(double averageRating, int reviewCount) {
+        this.averageRating = averageRating;
+        this.reviewCount = reviewCount;
     }
 }

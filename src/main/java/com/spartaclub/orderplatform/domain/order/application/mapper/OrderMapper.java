@@ -3,9 +3,9 @@ package com.spartaclub.orderplatform.domain.order.application.mapper;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.request.PlaceOrderRequestDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrderDetailResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrdersResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
@@ -17,9 +17,6 @@ public interface OrderMapper {
     @Mapping(target = "orderId", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "store", ignore = true)
-    @Mapping(target = "createdId", source = "userId")
-    @Mapping(target = "modifiedId", ignore = true)
-    @Mapping(target = "deletedId", ignore = true)
     @Mapping(target = "status", expression = "java(OrderStatus.PAYMENT_PENDING)")
     @Mapping(target = "payment", ignore = true)
     @Mapping(target = "orderProducts", ignore = true)
@@ -40,6 +37,11 @@ public interface OrderMapper {
     @Mapping(source = "unitPrice", target = "price")
     @Mapping(target = "totalPrice", expression = "java(op.getUnitPrice() * op.getQuantity())")
     OrderDetailResponseDto.ProductsListItem toItem(OrderProduct op);
+
+    // Order -> OrderSummaryDto
+    @Mapping(source = "user.userId", target = "userId")
+    @Mapping(source = "store.storeId", target = "storeId")
+    OrdersResponseDto.OrderSummaryDto toSummaryDto(Order order);
 
     // Page -> PageableDto
     default OrdersResponseDto.PageableDto toPageableDto(Page<?> page) {

@@ -2,18 +2,19 @@ package com.spartaclub.orderplatform.domain.payment.application;
 
 import com.spartaclub.orderplatform.domain.order.application.OrderService;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
+import com.spartaclub.orderplatform.domain.payment.application.dto.query.PaymentQuery;
 import com.spartaclub.orderplatform.domain.payment.application.mapper.PaymentMapper;
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
 import com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus;
+import com.spartaclub.orderplatform.domain.payment.domain.repository.PaymentRepository;
 import com.spartaclub.orderplatform.domain.payment.infrastructure.pg.TossPaymentsClient;
-import com.spartaclub.orderplatform.domain.payment.infrastructure.repository.PaymentRepository;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.CancelPaymentRequestDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.ConfirmPaymentRequestDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.GetPaymentsListRequestDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentRequestDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentResponseDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.PaymentDetailResponseDto;
-import com.spartaclub.orderplatform.domain.payment.presentation.dto.PaymentsListResponseDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.CancelPaymentRequestDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.ConfirmPaymentRequestDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.GetPaymentsListRequestDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.InitPaymentRequestDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.InitPaymentResponseDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentDetailResponseDto;
+import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentsListResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
@@ -171,7 +172,8 @@ public class PaymentService {
             parseSort(requestDto.sort()));
 
         //조회
-        Page<Payment> paymentPage = paymentRepository.findAll(pageable);
+        PaymentQuery paymentQuery = new PaymentQuery(requestDto.status());
+        Page<Payment> paymentPage = paymentRepository.findAll(paymentQuery, pageable);
 
         //매핑
         List<PaymentDetailResponseDto> payments = paymentPage.stream()

@@ -83,7 +83,6 @@ public class AiService {
                     .prompt(response.getPrompt())
                     .generatedText(response.getGeneratedText())
                     .status(response.isUsed() ? "USED" : "NO_USE")
-                    .createdId(createdId)
                     .build();
             aiLogRepository.save(aiLog);
         }

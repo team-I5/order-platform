@@ -39,8 +39,5 @@ public class AiLog extends BaseEntity {
     // 결과 사용 여부 (e.g. "USED", "UNUSED")
     @Column(length = 20)
     private String status;
-
-    @CreatedBy
-    private Long createdId;
 }
 

@@ -1,10 +1,11 @@
 package com.spartaclub.orderplatform.domain.review.repository;
 
 import com.spartaclub.orderplatform.domain.review.entity.Review;
-import org.springframework.data.jpa.repository.JpaRepository;
-
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 /*
  * Review Entity 레포지토리 인터페이스
@@ -14,6 +15,7 @@ import java.util.UUID;
  */
 // SimpleJpaRepository에 @Repository 있어서 생략했음
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
+
     // 조회 메서드들 - Spring Data JPA가 메서드 이름으로 자동 쿼리 생성
     Optional<Review> findByUser_UserIdAndDeletedAtIsNull(Long userId);         // 사용자 리뷰 조회
 
@@ -29,4 +31,13 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     // 중복 검사 메서드 - Spring Data JPA가 메서드 이름으로 자동 쿼리 생성
     boolean existsByOrder_OrderIdAndDeletedAtIsNull(UUID orderId);              // 주문 리뷰 중복 체크
+
+    @Query("""
+           SELECT s.storeId, COALESCE(ROUND(AVG(r.rating), 1), 0), COUNT(r)
+           FROM Store s
+           LEFT JOIN Review r
+                   ON r.store = s AND r.deletedAt IS NULL
+           GROUP BY s.storeId
+        """)
+    List<Object[]> findReviewCountAndAverageForAllStores();
 }

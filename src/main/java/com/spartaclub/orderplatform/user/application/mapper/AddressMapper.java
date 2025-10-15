@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
  * Address 엔티티와 DTO 간의 변환을 담당
  *
  * @author 전우선
- * @date 2025-10-11(토)
+ * @date 2025-10-12(일)
  */
 @Mapper(componentModel = "spring")
 public interface AddressMapper {
@@ -71,4 +71,12 @@ public interface AddressMapper {
     @Mapping(target = "message", constant = "주소가 성공적으로 수정되었습니다.")
     @Mapping(target = "fullAddress", expression = "java(address.getRoadNameAddress() + \" \" + address.getDetailedAddress())")
     AddressUpdateResponseDto toUpdateResponse(Address address);
+
+    /**
+     * Address 엔티티를 주소 삭제 응답 DTO로 변환
+     */
+    @Mapping(target = "message", constant = "주소가 성공적으로 삭제되었습니다.")
+    @Mapping(target = "deletedAddressId", source = "addressId")
+    @Mapping(target = "deletedAddressName", source = "addressName")
+    AddressDeleteResponseDto toDeleteResponse(Address address);
 }
