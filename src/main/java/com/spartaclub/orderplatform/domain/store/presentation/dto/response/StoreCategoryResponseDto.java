@@ -1,5 +1,6 @@
 package com.spartaclub.orderplatform.domain.store.presentation.dto.response;
 
+import com.spartaclub.orderplatform.domain.category.entity.Category;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,5 +10,5 @@ import lombok.Getter;
 public class StoreCategoryResponseDto {
 
     private String storeName;
-    private List<String> categories;
+    private List<Category> categories;
 }
