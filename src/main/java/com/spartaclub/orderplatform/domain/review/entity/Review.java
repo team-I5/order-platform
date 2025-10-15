@@ -46,12 +46,7 @@ public class Review extends BaseEntity {
     // Null 값 허용 안함. 길이 1000자 까지
     @Column(nullable = false, length = 1000)
     private String contents;            // 리뷰 내용
-    @CreatedBy
-    @Column(updatable = false, nullable = false)
-    private Long createdId;             // 리뷰 생성자 ID
-    @LastModifiedBy
-    private Long modifiedId;            // 리뷰 수정자 ID
-    private Long deletedId;             // 리뷰 삭제자 ID
+
     // 외래 키 관계 설정
     @ManyToOne(fetch = FetchType.LAZY)  // 리뷰 : 회원 → Many to one
     @JoinColumn(name = "userId")
@@ -71,8 +66,7 @@ public class Review extends BaseEntity {
 
     // 리뷰 삭제 메서드(soft deleteProductOptionGroup)
     public void deleteReview(Long userId) {
-        this.deletedId = userId;
-        delete();
+        delete(userId);
     }
 
 

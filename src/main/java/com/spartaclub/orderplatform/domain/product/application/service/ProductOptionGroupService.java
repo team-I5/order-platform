@@ -34,8 +34,7 @@ public class ProductOptionGroupService {
     @Transactional
     public ProductOptionGroupResponseDto updateProductOptionGroup(UUID productOptionGroupId, ProductOptionGroupRequestDto productOptionGroupRequestDto) {
         // 1️. 수정할 옵션 그룹 조회
-        ProductOptionGroup productOptionGroup = groupRepository.findById(productOptionGroupId)
-                .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
+        ProductOptionGroup productOptionGroup = getProductOptionGroup(productOptionGroupId);
 
         // 2️. 수정 대상 필드 변경
         productOptionGroup.updateOptionGroupInfo(productOptionGroupRequestDto);
@@ -49,10 +48,15 @@ public class ProductOptionGroupService {
 
     @Transactional
     public void deleteProductOptionGroup(Long userId, UUID productOptionGroupId) {
-        ProductOptionGroup group = groupRepository.findById(productOptionGroupId)
-                .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
+        ProductOptionGroup group = getProductOptionGroup(productOptionGroupId);
 
         group.deleteOptionGroup(userId);
+    }
+
+    // 상품 옵션 그룹 조회 공통 메소드
+    private ProductOptionGroup getProductOptionGroup(UUID productOptionGroupId) {
+        return groupRepository.findById(productOptionGroupId)
+                .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
     }
 
 }

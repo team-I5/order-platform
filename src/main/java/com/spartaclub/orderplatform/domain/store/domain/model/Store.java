@@ -81,15 +81,6 @@ public class Store extends BaseEntity {
     private Double averageRating;
     private Integer reviewCount;
 
-    @CreatedBy
-    @Column(updatable = false)
-    private Long createdId;
-
-    @LastModifiedBy
-    private Long modifiedId;
-
-    private Long deletedId;
-
     // 음식점 정보 업데이트(기본 정보만)
     public void updateStoreInfo(StoreRequestDto dto) {
         this.storeName = dto.getStoreName();

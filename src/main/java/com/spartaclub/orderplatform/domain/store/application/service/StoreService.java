@@ -107,7 +107,7 @@ public class StoreService {
             throw new IllegalArgumentException("본인의 음식점만 삭제할 수 있습니다.");
         }
 
-        store.delete();
+        store.delete(user.getUserId());
         store.storeSoftDelete(user.getUserId());
     }
 

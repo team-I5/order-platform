@@ -66,18 +66,6 @@ public class Product extends BaseEntity {
             orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
-    // 생성자 ID
-    @CreatedBy
-    @Column(updatable = false, nullable = false)
-    private Long createdId;
-
-    // 수정자 ID
-    @LastModifiedBy
-    private Long modifiedId;
-
-    // 삭제자 ID
-    private Long deletedId;
-
     // 정적 팩토리 메소드
     public static Product create(String productName, Long price, String description) {
         Product product = new Product();
@@ -97,8 +85,7 @@ public class Product extends BaseEntity {
     // 상품 삭제 메소드 (soft deleteProductOptionGroup)
     public void deleteProduct(Long userId) {
         this.isHidden = true;
-        this.deletedId = userId;
-        delete();
+        delete(userId);
     }
 
     // 상품 공개/숨김 여부 수정 메소드

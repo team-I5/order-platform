@@ -40,18 +40,6 @@ public class ProductOptionItem extends BaseEntity {
     @JoinColumn(name = "product_option_group_id", nullable = false)
     private ProductOptionGroup productOptionGroup;
 
-    // 생성자 ID
-    @CreatedBy
-    @Column(updatable = false, nullable = false)
-    private Long createdId;
-
-    // 수정자 ID
-    @LastModifiedBy
-    private Long modifiedId;
-
-    // 삭제자 ID
-    private Long deletedId;
-
     // 정적 팩토리 메소드
     public static ProductOptionItem create(ProductOptionGroup productOptionGroup, String optionName, Long additionalPrice) {
         ProductOptionItem productOptionItem = new ProductOptionItem();
@@ -67,7 +55,6 @@ public class ProductOptionItem extends BaseEntity {
     }
 
     public void deleteItem(Long userId) {
-        deletedId = userId;
-        delete();
+        delete(userId);
     }
 }

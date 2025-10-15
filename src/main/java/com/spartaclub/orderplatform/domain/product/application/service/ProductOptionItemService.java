@@ -42,8 +42,7 @@ public class ProductOptionItemService {
     @Transactional
     public ProductOptionItemResponseDto updateProductOptionItem(UUID productOptionItemId, ProductOptionItemRequestDto productOptionItemRequestDto) {
         // 1. 상품 옵션 조회
-        ProductOptionItem optionItem = productOptionItemRepository.findById(productOptionItemId)
-                .orElseThrow(() -> new IllegalArgumentException("옵션 아이템을 찾을 수 없습니다."));
+        ProductOptionItem optionItem = getOptionItem(productOptionItemId);
 
         // 2. 상품 옵션 수정
         optionItem.updateOptionItem(productOptionItemRequestDto);
@@ -57,10 +56,16 @@ public class ProductOptionItemService {
     @Transactional
     public void deleteProductOptionItem(Long userId, UUID productOptionItemId) {
         // 1. 상품 옵션 조회
-        ProductOptionItem optionItem = productOptionItemRepository.findById(productOptionItemId)
-                .orElseThrow(() -> new IllegalArgumentException("옵션 아이템을 찾을 수 없습니다."));
+        ProductOptionItem optionItem = getOptionItem(productOptionItemId);
 
+        // 2. 삭제
         optionItem.deleteItem(userId);
+    }
+
+    // 상품 옵션 조회 공통 메소드
+    private ProductOptionItem getOptionItem(UUID productOptionItemId) {
+        return productOptionItemRepository.findById(productOptionItemId)
+                .orElseThrow(() -> new IllegalArgumentException("옵션 아이템을 찾을 수 없습니다."));
     }
 
 }

@@ -44,14 +44,6 @@ public class ProductOptionGroup extends BaseEntity {
     @OneToMany(mappedBy = "productOptionGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProductOptionItem> optionItems = new HashSet<>();
 
-    @CreatedBy
-    @Column(updatable = false, nullable = false)
-    private Long createdId;
-
-    @LastModifiedBy
-    private Long modifiedId;
-
-    private Long deletedId;
 
     // 정적 팩토리 메소드
     public static ProductOptionGroup create(String optionGroupName, OptionGroupTag tag, Long minSelect, Long maxSelect) {
@@ -71,7 +63,6 @@ public class ProductOptionGroup extends BaseEntity {
     }
 
     public void deleteOptionGroup(Long userId) {
-        this.deletedId = userId;
-        delete();
+        delete(userId);
     }
 }
