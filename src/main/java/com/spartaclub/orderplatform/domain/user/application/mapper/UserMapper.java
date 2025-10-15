@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.user.application.mapper;
 
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,7 +14,7 @@ import org.springframework.data.domain.Page;
  * @author 전우선
  * @date 2025-10-09(목)
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", imports = {UserRole.class})
 public interface UserMapper {
 
     /**
@@ -60,7 +61,7 @@ public interface UserMapper {
      */
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "role", expression = "java(com.spartaclub.orderplatform.domain.user.domain.entity.UserRole.MANAGER)")
+    @Mapping(target = "role", expression = "java(UserRole.MANAGER)")
     @Mapping(target = "businessNumber", ignore = true) // MANAGER는 사업자번호 없음
     @Mapping(target = "addresses", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
