@@ -3,7 +3,9 @@ package com.spartaclub.orderplatform.domain.product.domain.entity;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionItemRequestDto;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 

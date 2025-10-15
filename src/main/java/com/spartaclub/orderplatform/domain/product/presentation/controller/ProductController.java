@@ -4,6 +4,7 @@ import com.spartaclub.orderplatform.domain.product.application.service.ProductSe
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.UUID;
 
 import static com.spartaclub.orderplatform.global.application.security.SecurityUtils.getCurrentUserId;
@@ -34,6 +34,7 @@ public class ProductController {
     // 상품 등록 API
     @PreAuthorize("hasRole('OWNER')")
     @PostMapping
+    @Operation(summary = "상품 상세 조회", description = "상품 ID로 상품 상세 정보를 조회합니다.")
     public ResponseEntity<ApiResponse<ProductResponseDto>> createProduct(@Valid @RequestBody ProductCreateRequestDto productCreateRequestDto) {
         Long userId = getCurrentUserId();
         ProductResponseDto responseDto = productService.createProduct(productCreateRequestDto, userId);

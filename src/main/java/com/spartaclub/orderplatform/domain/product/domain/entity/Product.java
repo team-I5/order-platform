@@ -6,14 +6,16 @@ import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import lombok.*;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.LastModifiedBy;
 
 /**
  * 상품 정보 Entity
