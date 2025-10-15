@@ -180,12 +180,12 @@ public class Order extends BaseEntity {
             order.addOrderProduct(op);
         }
 
-        order.recalculateTotals();
+        order.calculateTotalPriceAndCount();
         return order;
     }
 
     //주문 총액, 총 수량 계산
-    private void recalculateTotals() {
+    private void calculateTotalPriceAndCount() {
         long sum = 0L;
         int cnt = 0;
         for (OrderProduct op : orderProducts) {
