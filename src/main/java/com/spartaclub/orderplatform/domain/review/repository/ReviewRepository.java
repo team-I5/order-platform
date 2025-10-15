@@ -4,6 +4,10 @@ import com.spartaclub.orderplatform.domain.review.entity.Review;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -40,4 +44,10 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
            GROUP BY s.storeId
         """)
     List<Object[]> findReviewCountAndAverageForAllStores();
+
+
+    @EntityGraph(attributePaths = {"user"})
+    Page<Review> findAllByProduct_ProductId(UUID productId, Pageable pageable);
+
+
 }
