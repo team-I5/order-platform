@@ -1,0 +1,39 @@
+package com.spartaclub.orderplatform.domain.order.infrastructure.repository;
+
+import com.spartaclub.orderplatform.domain.order.application.dto.query.OrderQuery;
+import com.spartaclub.orderplatform.domain.order.domain.model.Order;
+import com.spartaclub.orderplatform.domain.order.domain.repository.OrderRepository;
+import com.spartaclub.orderplatform.domain.order.infrastructure.repository.spec.OrderSpecs;
+import java.util.Optional;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class OrderRepositoryImpl implements OrderRepository {
+
+    private final OrderJPARepository orderJPARepository;
+
+    @Override
+    public void save(Order order) {
+        orderJPARepository.save(order);
+    }
+
+    @Override
+    public Page<Order> findAll(OrderQuery orderQuery, Pageable pageable) {
+        Specification<Order> spec = (root, query, cb) -> cb.conjunction(); // 초기값
+        spec = spec
+            .and(OrderSpecs.visibleFor(orderQuery.viewer()))
+            .and(OrderSpecs.statusIn(orderQuery.status()));
+        return orderJPARepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public Optional<Order> findById(UUID orderId) {
+        return orderJPARepository.findById(orderId);
+    }
+}
