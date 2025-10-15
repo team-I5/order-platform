@@ -7,6 +7,7 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGr
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
+import com.spartaclub.orderplatform.domain.review.entity.Review;
 import com.spartaclub.orderplatform.domain.review.repository.ReviewRepository;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
@@ -117,7 +118,7 @@ public class ProductService {
         // 2. 페이지 객체에서 상품 리스트만 추출
         List<ProductResponseDto> productList = productPage.getContent().stream()
                 .map(productMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
 
         // 3. 페이지 메타 데이터 -> dto 변환
         PageMetaDto pageMetaDto = productMapper.toPageDto(productPage);
@@ -187,9 +188,19 @@ public class ProductService {
         productRepository.save(product);
     }
 
-    public Page<ProductReviewResponseDto> getReviewListByProductId(UUID productId, Pageable pageable) {
-        return reviewRepository.findAllByProduct_ProductId(productId, pageable)
-                .map(productMapper::toReviewDto);
+    public PageResponseDto<ProductReviewResponseDto> getReviewListByProductId(UUID productId, Pageable pageable) {
+        Page<Review> reviewPage =  reviewRepository.findAllByProduct_ProductId(productId, pageable);
+
+        // 2. 페이지 객체에서 상품 리스트만 추출
+        List<ProductReviewResponseDto> reviewList = reviewPage.getContent().stream()
+                .map(productMapper::toReviewDto)
+                .toList();
+
+        // 3. 페이지 메타 데이터 -> dto 변환
+        PageMetaDto pageMetaDto = productMapper.toPageDto(reviewPage);
+
+        // 4. 상품 리스트와 메타 데이터 dto 반환
+        return new PageResponseDto<>(reviewList, pageMetaDto);
     }
 
 
