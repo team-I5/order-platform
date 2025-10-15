@@ -113,7 +113,13 @@ public class ProductController {
 
     // 상품 별 리뷰 조회
 //    @GetMapping("/{productId}/reviews")
-//    public ResponseEntity<ApiResponse<Page<ProductReviewResponstDto>>> getProductReviews(@PathVariable UUID productId) {
-//
+//    public ResponseEntity<ApiResponse<Page<ProductReviewResponseDto>>> getProductReviews(
+//            @PathVariable UUID productId,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size
+//    ) {
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<ProductReviewResponseDto> reviews = productService.getReviewListByProductId(productId, pageable);
+//        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(reviews));
 //    }
 }

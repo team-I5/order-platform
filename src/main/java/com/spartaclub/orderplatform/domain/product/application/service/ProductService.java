@@ -203,4 +203,7 @@ public class ProductService {
         }
         return ""; // 못 찾은 경우
     }
+
+//    public Page<ProductReviewResponseDto> getReviewListByProductId(UUID productId, Pageable pageable) {
+//    }
 }
