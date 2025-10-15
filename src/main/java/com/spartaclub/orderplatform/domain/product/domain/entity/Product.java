@@ -1,38 +1,31 @@
 package com.spartaclub.orderplatform.domain.product.domain.entity;
 
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
+import com.spartaclub.orderplatform.domain.review.entity.Review;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 상품 정보 Entity
  *
  * @author 류형선
- * @date 2025-10-02(목)
+ * @date 2025-10-05(일)
  */
 @Entity
 @Table(name = "p_products")
 @Getter
-@Builder(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
@@ -55,27 +48,32 @@ public class Product extends BaseEntity {
 
     // 상품 숨김 여부
     @Column(nullable = false)
-    @Builder.Default
     private Boolean isHidden = false;
 
-
     // 소속 가게
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
+    // 상품 주문 중간 테이블
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductOptionMap> productOptionGroupMaps = new ArrayList<>();
 
-    // 생성자 ID
-    @CreatedBy
-    @Column(updatable = false, nullable = false)
-    private Long createdId;
+    // 메뉴 리뷰
+    @OneToMany(mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
 
-    // 수정자 ID
-    @LastModifiedBy
-    private Long modifiedId;
-
-    // 삭제자 ID
-    private Long deletedId;
+    // 정적 팩토리 메소드
+    public static Product create(String productName, Long price, String description) {
+        Product product = new Product();
+        product.productName = productName;
+        product.price = price;
+        product.productDescription = description;
+        return product;
+    }
 
     // 상품 정보 수정 메소드
     public void updateProduct(@Valid ProductUpdateRequestDto productUpdateRequestDto) {
@@ -84,16 +82,21 @@ public class Product extends BaseEntity {
         this.productDescription = productUpdateRequestDto.getProductDescription();
     }
 
-    // 상품 삭제 메소드 (soft delete)
+    // 상품 삭제 메소드 (soft deleteProductOptionGroup)
     public void deleteProduct(Long userId) {
         this.isHidden = true;
-        this.deletedId = userId;
-        delete();
+        delete(userId);
     }
 
     // 상품 공개/숨김 여부 수정 메소드
     public void updateVisibility() {
         this.isHidden = true;
+    }
+
+    // 상품과 옵션그룹 매핑
+    public void addOptionGroup(ProductOptionGroup productOptionGroup) {
+        ProductOptionMap map = ProductOptionMap.create(this, productOptionGroup);
+        productOptionGroupMaps.add(map);
     }
 }
 

@@ -318,7 +318,7 @@ public class AddressService {
         handleDefaultAddressForDelete(address, user);
 
         // 5. Soft Delete 실행
-        performSoftDelete(address);
+        performSoftDelete(address, user.getUserId());
 
         // 6. 응답 DTO 생성
         return addressMapper.toDeleteResponse(address);
@@ -382,8 +382,8 @@ public class AddressService {
      *
      * @param address 삭제할 주소
      */
-    private void performSoftDelete(Address address) {
-        address.delete();
+    private void performSoftDelete(Address address, Long userId) {
+        address.delete(userId);
         addressRepository.save(address);
     }
 }

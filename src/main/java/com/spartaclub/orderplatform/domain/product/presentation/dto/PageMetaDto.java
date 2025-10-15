@@ -1,10 +1,9 @@
 package com.spartaclub.orderplatform.domain.product.presentation.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Builder
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class PageMetaDto {

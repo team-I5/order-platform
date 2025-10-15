@@ -38,21 +38,12 @@ public class StoreCategory extends BaseEntity {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @CreatedBy
-    @Column(updatable = false)
-    private Long createdId;
-
-    @LastModifiedBy
-    private Long modifiedId;
-
-    private Long deletedId;
-
     public StoreCategory(Store store, Category category) {
         this.store = store;
         this.category = category;
     }
 
     public void scSoftDelete(Long userId) {
-        this.deletedId = userId;
+        delete(userId);
     }
 }

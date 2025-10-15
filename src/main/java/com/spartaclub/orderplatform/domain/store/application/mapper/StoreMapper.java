@@ -44,9 +44,6 @@ public interface StoreMapper {
     @Mapping(target = "status", expression = "java(StoreStatus.PENDING)")
     @Mapping(target = "averageRating", expression = "java(0.0)")
     @Mapping(target = "reviewCount", expression = "java(0)")
-    @Mapping(target = "createdId", expression = "java(user.getUserId())")
-    @Mapping(target = "modifiedId", ignore = true)
-    @Mapping(target = "deletedId", ignore = true)
     @Mapping(target = "rejectReason", ignore = true)
     Store toCreateStoreEntity(User user, StoreRequestDto dto);
 

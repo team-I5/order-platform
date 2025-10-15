@@ -43,4 +43,8 @@ public interface StoreRepository {
 
     Page<Store> findApprovedStoresByStoreName(
         String storeName, StoreStatus status, Pageable pageable);
+
+    Page<Store> findDistinctByProductNameContainingIgnoreCase(String keyword,
+                                                              String roadName,
+                                                              Pageable pageable);
 }

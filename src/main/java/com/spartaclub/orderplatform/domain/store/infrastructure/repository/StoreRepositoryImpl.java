@@ -95,4 +95,11 @@ public class StoreRepositoryImpl implements StoreRepository {
         Pageable pageable) {
         return storeJpaRepository.findApprovedStoresByStoreName(storeName, status, pageable);
     }
+
+    @Override
+    public Page<Store> findDistinctByProductNameContainingIgnoreCase(String keyword,
+                                                                     String roadName,
+                                                                     Pageable pageable) {
+        return storeJpaRepository.findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable);
+    }
 }

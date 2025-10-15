@@ -49,12 +49,4 @@ public class OrderProduct extends BaseEntity {
     @Column(name = "productName", nullable = false, length = 200)
     private String productName;             // 주문 시점 메뉴명
 
-    @Column(name = "createdId")
-    private Long createdId;                 // 생성자 ID
-
-    @Column(name = "modifiedId")
-    private Long modifiedId;                // 수정자 ID
-
-    @Column(name = "deletedId")
-    private Long deletedId;                 // 삭제자 ID
 }
