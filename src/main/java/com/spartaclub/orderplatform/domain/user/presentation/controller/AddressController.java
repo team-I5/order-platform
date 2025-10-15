@@ -10,7 +10,6 @@ import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import com.spartaclub.orderplatform.domain.user.application.service.AddressService;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
-import com.spartaclub.orderplatform.user.presentation.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

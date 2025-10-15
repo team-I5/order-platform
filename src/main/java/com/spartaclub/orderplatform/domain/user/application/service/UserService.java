@@ -1,5 +1,13 @@
 package com.spartaclub.orderplatform.domain.user.application.service;
 
+import com.spartaclub.orderplatform.domain.user.application.mapper.UserMapper;
+import com.spartaclub.orderplatform.domain.user.domain.entity.RefreshToken;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
+import com.spartaclub.orderplatform.domain.user.domain.repository.RefreshTokenDomainRepository;
+import com.spartaclub.orderplatform.domain.user.domain.repository.UserDomainRepository;
+import com.spartaclub.orderplatform.domain.user.domain.service.PasswordEncryptionService;
+import com.spartaclub.orderplatform.domain.user.domain.service.TokenService;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.LogoutResponseDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.ManagerCreateRequestDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.ManagerCreateResponseDto;
@@ -18,26 +26,16 @@ import com.spartaclub.orderplatform.domain.user.presentation.dto.UserSignupReque
 import com.spartaclub.orderplatform.domain.user.presentation.dto.UserSignupResponseDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.UserUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.UserUpdateResponseDto;
-import com.spartaclub.orderplatform.global.application.jwt.JwtUtil;
-import com.spartaclub.orderplatform.domain.user.application.mapper.UserMapper;
-import com.spartaclub.orderplatform.domain.user.domain.entity.RefreshToken;
-import com.spartaclub.orderplatform.domain.user.domain.entity.User;
-import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
-import com.spartaclub.orderplatform.domain.user.infrastructure.repository.RefreshTokenRepository;
-import com.spartaclub.orderplatform.domain.user.infrastructure.repository.UserRepository;
-import com.spartaclub.orderplatform.user.presentation.dto.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * User 서비스 클래스 사용자 관련 비즈니스 로직 처리
@@ -50,11 +48,11 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserDomainRepository userRepository;
+    private final RefreshTokenDomainRepository refreshTokenRepository;
     private final UserMapper userMapper;
-    private final BCryptPasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final PasswordEncryptionService passwordEncryptionService;
+    private final TokenService tokenService;
 
     /**
      * 회원가입 처리 중복 체크, 비밀번호 암호화, 사용자 생성
@@ -70,7 +68,8 @@ public class UserService {
         validateDuplicateData(requestDto);
 
         // 2. 비밀번호 암호화
-        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+        String encodedPassword = passwordEncryptionService.encryptPassword(
+            requestDto.getPassword());
 
         // 3. User 엔티티 생성
         User user = userMapper.toEntity(requestDto);
@@ -91,26 +90,26 @@ public class UserService {
      */
     private void validateDuplicateData(UserSignupRequestDto requestDto) {
 
-        if (userRepository.existsByEmailAndDeletedAtIsNull(requestDto.getEmail())) {
+        if (userRepository.isEmailAlreadyTaken(requestDto.getEmail())) {
             throw new RuntimeException("이미 존재하는 이메일입니다.");
         }
 
-        if (userRepository.existsByUsernameAndDeletedAtIsNull(requestDto.getUsername())) {
+        if (userRepository.isUsernameAlreadyTaken(requestDto.getUsername())) {
             throw new RuntimeException("이미 존재하는 사용자명입니다.");
         }
 
-        if (userRepository.existsByNicknameAndDeletedAtIsNull(requestDto.getNickname())) {
+        if (userRepository.isNicknameAlreadyTaken(requestDto.getNickname())) {
             throw new RuntimeException("이미 존재하는 닉네임입니다.");
         }
 
-        if (userRepository.existsByPhoneNumberAndDeletedAtIsNull(requestDto.getPhoneNumber())) {
+        if (userRepository.isPhoneNumberAlreadyTaken(requestDto.getPhoneNumber())) {
             throw new RuntimeException("이미 존재하는 전화번호입니다.");
         }
 
         // 사업자번호 중복 체크 (입력된 경우에만)
         if (requestDto.getBusinessNumber() != null && !requestDto.getBusinessNumber().trim()
             .isEmpty()) {
-            if (userRepository.existsByBusinessNumberAndDeletedAtIsNull(
+            if (userRepository.isBusinessNumberAlreadyTaken(
                 requestDto.getBusinessNumber())) {
                 throw new RuntimeException("이미 존재하는 사업자번호입니다.");
             }
@@ -120,31 +119,31 @@ public class UserService {
     @Transactional
     public UserLoginResponseDto login(UserLoginRequestDto requestDto) {
         // 1. 이메일로 사용자 조회 (탈퇴하지 않은 사용자만)
-        User user = userRepository.findByEmailAndDeletedAtIsNull(requestDto.getEmail())
+        User user = userRepository.findActiveUserByEmail(requestDto.getEmail())
             .orElseThrow(() -> new RuntimeException("이메일 또는 비밀번호가 일치하지 않습니다."));
 
         // 2. 비밀번호 검증
-        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+        if (!passwordEncryptionService.matches(requestDto.getPassword(), user.getPassword())) {
             throw new RuntimeException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
 
         // 3. JWT 토큰 생성
-        String accessToken = jwtUtil.createAccessToken(user.getUserId(), user.getEmail(),
+        String accessToken = tokenService.createAccessToken(user.getUserId(), user.getEmail(),
             user.getRole().name());
-        String refreshToken = jwtUtil.createRefreshToken(user.getUserId());
+        String refreshToken = tokenService.createRefreshToken(user.getUserId());
 
         // 4. 기존 리프레시 토큰 삭제 후 새 토큰 저장
         refreshTokenRepository.deleteByUser(user);
 
         LocalDateTime expiresAt = LocalDateTime.now().plusSeconds(
-            jwtUtil.getRefreshTokenExpiration() / 1000);
+            tokenService.getRefreshTokenExpiration() / 1000);
         RefreshToken refreshTokenEntity = new RefreshToken(refreshToken, user, expiresAt);
         refreshTokenRepository.save(refreshTokenEntity);
 
         // 5. MapStruct를 사용한 응답 DTO 생성
         UserInfoDto userInfo = userMapper.toUserInfo(user);
         return new UserLoginResponseDto(accessToken, refreshToken,
-            jwtUtil.getAccessTokenExpirationInSeconds(), userInfo);
+            tokenService.getAccessTokenExpirationInSeconds(), userInfo);
     }
 
     /**
@@ -159,17 +158,17 @@ public class UserService {
         String refreshTokenValue = requestDto.getRefreshToken();
 
         // 1. 리프레시 토큰 유효성 검증
-        if (!jwtUtil.validateToken(refreshTokenValue)) {
+        if (!tokenService.validateToken(refreshTokenValue)) {
             throw new RuntimeException("유효하지 않은 리프레시 토큰입니다.");
         }
 
         // 2. 리프레시 토큰인지 확인
-        if (!jwtUtil.isRefreshToken(refreshTokenValue)) {
+        if (!tokenService.isRefreshToken(refreshTokenValue)) {
             throw new RuntimeException("유효하지 않은 리프레시 토큰입니다.");
         }
 
         // 3. DB에서 리프레시 토큰 조회
-        RefreshToken refreshTokenEntity = refreshTokenRepository.findByTokenAndDeletedAtIsNull(
+        RefreshToken refreshTokenEntity = refreshTokenRepository.findActiveTokenByValue(
                 refreshTokenValue)
             .orElseThrow(() -> new RuntimeException("유효하지 않은 리프레시 토큰입니다."));
 
@@ -189,22 +188,22 @@ public class UserService {
         }
 
         // 6. 새로운 토큰 생성
-        String newAccessToken = jwtUtil.createAccessToken(user.getUserId(), user.getEmail(),
+        String newAccessToken = tokenService.createAccessToken(user.getUserId(), user.getEmail(),
             user.getRole().name());
-        String newRefreshToken = jwtUtil.createRefreshToken(user.getUserId());
+        String newRefreshToken = tokenService.createRefreshToken(user.getUserId());
 
         // 7. RTR 패턴: 기존 리프레시 토큰 삭제 후 새 토큰 저장
         refreshTokenRepository.delete(refreshTokenEntity);
 
         LocalDateTime newExpiresAt = LocalDateTime.now().plusSeconds(
-            jwtUtil.getRefreshTokenExpiration() / 1000);
+            tokenService.getRefreshTokenExpiration() / 1000);
         RefreshToken newRefreshTokenEntity = new RefreshToken(newRefreshToken, user, newExpiresAt);
         refreshTokenRepository.save(newRefreshTokenEntity);
 
         // 8. MapStruct를 사용한 응답 DTO 생성
         UserInfoDto userInfo = userMapper.toUserInfo(user);
         return new TokenRefreshResponseDto(newAccessToken, newRefreshToken,
-            jwtUtil.getAccessTokenExpirationInSeconds(), userInfo);
+            tokenService.getAccessTokenExpirationInSeconds(), userInfo);
     }
 
     /**
@@ -216,7 +215,7 @@ public class UserService {
     @Transactional
     public LogoutResponseDto logout(Long userId) {
         // 1. 사용자 조회 (이미 인증된 사용자이므로 존재함이 보장됨)
-        User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
+        User user = userRepository.findActiveUserById(userId)
             .orElse(null); // 사용자가 없어도 멱등성을 위해 성공 처리
 
         // 2. 해당 사용자의 모든 리프레시 토큰 삭제 (토큰 무효화)
@@ -238,7 +237,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserProfileResponseDto getUserProfile(Long userId) {
         // 1. DB에서 최신 사용자 정보 조회 (실시간 정보 반영)
-        User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
+        User user = userRepository.findActiveUserById(userId)
             .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         // 2. MapStruct를 사용한 응답 DTO 생성 및 반환 (민감정보 제외)
@@ -256,7 +255,7 @@ public class UserService {
     @Transactional
     public UserUpdateResponseDto updateUserProfile(Long userId, UserUpdateRequestDto requestDto) {
         // 1. 사용자 조회
-        User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
+        User user = userRepository.findActiveUserById(userId)
             .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         // 2. 비밀번호 변경 검증
@@ -288,7 +287,8 @@ public class UserService {
             throw new RuntimeException("비밀번호 변경 시 현재 비밀번호는 필수입니다.");
         }
 
-        if (!passwordEncoder.matches(requestDto.getCurrentPassword(), user.getPassword())) {
+        if (!passwordEncryptionService.matches(requestDto.getCurrentPassword(),
+            user.getPassword())) {
             throw new RuntimeException("현재 비밀번호가 일치하지 않습니다.");
         }
     }
@@ -300,7 +300,7 @@ public class UserService {
         // 사용자명 중복 체크 (변경하려는 경우만)
         if (requestDto.getUsername() != null && !requestDto.getUsername()
             .equals(currentUser.getUsername())) {
-            if (userRepository.existsByUsernameAndDeletedAtIsNull(requestDto.getUsername())) {
+            if (userRepository.isUsernameAlreadyTaken(requestDto.getUsername())) {
                 throw new RuntimeException("이미 존재하는 사용자명입니다.");
             }
         }
@@ -308,7 +308,7 @@ public class UserService {
         // 닉네임 중복 체크 (변경하려는 경우만)
         if (requestDto.getNickname() != null && !requestDto.getNickname()
             .equals(currentUser.getNickname())) {
-            if (userRepository.existsByNicknameAndDeletedAtIsNull(requestDto.getNickname())) {
+            if (userRepository.isNicknameAlreadyTaken(requestDto.getNickname())) {
                 throw new RuntimeException("이미 존재하는 닉네임입니다.");
             }
         }
@@ -316,7 +316,7 @@ public class UserService {
         // 연락처 중복 체크 (변경하려는 경우만)
         if (requestDto.getPhoneNumber() != null && !requestDto.getPhoneNumber()
             .equals(currentUser.getPhoneNumber())) {
-            if (userRepository.existsByPhoneNumberAndDeletedAtIsNull(requestDto.getPhoneNumber())) {
+            if (userRepository.isPhoneNumberAlreadyTaken(requestDto.getPhoneNumber())) {
                 throw new RuntimeException("이미 존재하는 전화번호입니다.");
             }
         }
@@ -324,7 +324,7 @@ public class UserService {
         // 사업자번호 중복 체크 (변경하려는 경우만)
         if (requestDto.getBusinessNumber() != null && !requestDto.getBusinessNumber()
             .equals(currentUser.getBusinessNumber())) {
-            if (userRepository.existsByBusinessNumberAndDeletedAtIsNull(
+            if (userRepository.isBusinessNumberAlreadyTaken(
                 requestDto.getBusinessNumber())) {
                 throw new RuntimeException("이미 존재하는 사업자번호입니다.");
             }
@@ -366,7 +366,7 @@ public class UserService {
 
         // 비밀번호 업데이트 (암호화 처리)
         if (requestDto.isPasswordChangeRequested()) {
-            String encodedPassword = passwordEncoder.encode(requestDto.getNewPassword());
+            String encodedPassword = passwordEncryptionService.encryptPassword(requestDto.getNewPassword());
             user.setPassword(encodedPassword);
         }
     }
@@ -382,11 +382,11 @@ public class UserService {
     @Transactional
     public UserDeleteResponseDto deleteUser(Long userId, UserDeleteRequestDto requestDto) {
         // 1. 사용자 조회
-        User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
+        User user = userRepository.findActiveUserById(userId)
             .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         // 2. 비밀번호 확인 (본인 인증)
-        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+        if (!passwordEncryptionService.matches(requestDto.getPassword(), user.getPassword())) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
@@ -424,17 +424,17 @@ public class UserService {
         if (requestDto.getRole() != null) {
             // 권한별 조회
             if (Boolean.TRUE.equals(requestDto.getIncludeDeleted())) {
-                userPage = userRepository.findByRole(requestDto.getRole(), pageable);
+                userPage = userRepository.findAllUsersByRole(requestDto.getRole(), pageable);
             } else {
-                userPage = userRepository.findByRoleAndDeletedAtIsNull(requestDto.getRole(),
+                userPage = userRepository.findActiveUsersByRole(requestDto.getRole(),
                     pageable);
             }
         } else {
             // 전체 조회
             if (Boolean.TRUE.equals(requestDto.getIncludeDeleted())) {
-                userPage = userRepository.findAll(pageable);
+                userPage = userRepository.findAllUsers(pageable);
             } else {
-                userPage = userRepository.findByDeletedAtIsNull(pageable);
+                userPage = userRepository.findActiveUsers(pageable);
             }
         }
 
@@ -457,9 +457,9 @@ public class UserService {
      */
     private UserListPageResponseDto.SummaryInfo calculateUserStatistics() {
         // 기본 통계 정보 조회
-        long totalUsers = userRepository.countAllUsers();
-        long activeUsers = userRepository.countActiveUsers();
-        long deletedUsers = userRepository.countDeletedUsers();
+        long totalUsers = userRepository.getTotalUserCount();
+        long activeUsers = userRepository.getActiveUserCount();
+        long deletedUsers = userRepository.getDeletedUserCount();
 
         // 권한별 분포 계산
         Map<String, Long> roleDistribution = calculateRoleDistribution();
@@ -474,13 +474,11 @@ public class UserService {
      * @return 권한별 사용자 수 맵
      */
     private Map<String, Long> calculateRoleDistribution() {
+        Map<UserRole, Long> roleStats = userRepository.getActiveUserCountByRole();
         Map<String, Long> roleDistribution = new HashMap<>();
-        List<Object[]> roleStats = userRepository.countByRoleAndActiveUsers();
 
-        for (Object[] stat : roleStats) {
-            UserRole role = (UserRole) stat[0];
-            Long count = (Long) stat[1];
-            roleDistribution.put(role.name(), count);
+        for (Map.Entry<UserRole, Long> entry : roleStats.entrySet()) {
+            roleDistribution.put(entry.getKey().name(), entry.getValue());
         }
 
         return roleDistribution;
@@ -502,7 +500,8 @@ public class UserService {
         validateDuplicateDataForManager(requestDto);
 
         // 2. 비밀번호 암호화
-        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+        String encodedPassword = passwordEncryptionService.encryptPassword(
+            requestDto.getPassword());
 
         // 3. User 엔티티 생성 (MapStruct 사용)
         User user = userMapper.toEntityFromManagerRequest(requestDto);
@@ -527,19 +526,19 @@ public class UserService {
      */
     private void validateDuplicateDataForManager(ManagerCreateRequestDto requestDto) {
 
-        if (userRepository.existsByEmailAndDeletedAtIsNull(requestDto.getEmail())) {
+        if (userRepository.isEmailAlreadyTaken(requestDto.getEmail())) {
             throw new RuntimeException("이미 존재하는 이메일입니다.");
         }
 
-        if (userRepository.existsByUsernameAndDeletedAtIsNull(requestDto.getUsername())) {
+        if (userRepository.isUsernameAlreadyTaken(requestDto.getUsername())) {
             throw new RuntimeException("이미 존재하는 사용자명입니다.");
         }
 
-        if (userRepository.existsByNicknameAndDeletedAtIsNull(requestDto.getNickname())) {
+        if (userRepository.isNicknameAlreadyTaken(requestDto.getNickname())) {
             throw new RuntimeException("이미 존재하는 닉네임입니다.");
         }
 
-        if (userRepository.existsByPhoneNumberAndDeletedAtIsNull(requestDto.getPhoneNumber())) {
+        if (userRepository.isPhoneNumberAlreadyTaken(requestDto.getPhoneNumber())) {
             throw new RuntimeException("이미 존재하는 전화번호입니다.");
         }
     }

@@ -18,7 +18,6 @@ import com.spartaclub.orderplatform.global.application.jwt.JwtUtil;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import com.spartaclub.orderplatform.domain.user.application.service.UserService;
-import com.spartaclub.orderplatform.user.presentation.dto.*;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

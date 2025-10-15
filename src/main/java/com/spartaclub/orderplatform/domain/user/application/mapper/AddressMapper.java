@@ -7,7 +7,6 @@ import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressDeleteRe
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressListPageResponseDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressListResponseDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressUpdateResponseDto;
-import com.spartaclub.orderplatform.user.presentation.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

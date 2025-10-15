@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.user.application.mapper;
 
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.ManagerCreateRequestDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.ManagerCreateResponseDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.UserInfoDto;
@@ -9,7 +10,6 @@ import com.spartaclub.orderplatform.domain.user.presentation.dto.UserListRespons
 import com.spartaclub.orderplatform.domain.user.presentation.dto.UserProfileResponseDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.UserSignupRequestDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.UserUpdateResponseDto;
-import com.spartaclub.orderplatform.user.presentation.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
@@ -65,7 +65,7 @@ public interface UserMapper {
      */
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "role", expression = "java(com.spartaclub.orderplatform.user.domain.entity.UserRole.MANAGER)")
+    @Mapping(target = "role", expression = "java(com.spartaclub.orderplatform.domain.user.domain.entity.UserRole.MANAGER)")
     @Mapping(target = "businessNumber", ignore = true) // MANAGER는 사업자번호 없음
     @Mapping(target = "addresses", ignore = true)
     @Mapping(target = "createdAt", ignore = true)

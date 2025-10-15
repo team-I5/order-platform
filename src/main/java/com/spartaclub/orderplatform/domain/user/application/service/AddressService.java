@@ -3,7 +3,7 @@ package com.spartaclub.orderplatform.domain.user.application.service;
 import com.spartaclub.orderplatform.domain.user.application.mapper.AddressMapper;
 import com.spartaclub.orderplatform.domain.user.domain.entity.Address;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
-import com.spartaclub.orderplatform.domain.user.infrastructure.repository.AddressRepository;
+import com.spartaclub.orderplatform.domain.user.domain.repository.AddressDomainRepository;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressCreateRequestDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressCreateResponseDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressDeleteResponseDto;
@@ -11,7 +11,6 @@ import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressListPage
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressListResponseDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressUpdateResponseDto;
-import com.spartaclub.orderplatform.user.presentation.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +20,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * 주소 비즈니스 로직 서비스 주소 등록, 조회, 수정, 삭제 등의 비즈니스 로직 처리
+ * 주소 비즈니스 로직 서비스
+ * 주소 등록, 조회, 수정, 삭제 등의 비즈니스 로직 처리
  *
  * @author 전우선
  * @date 2025-10-12(일)
@@ -31,11 +31,12 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class AddressService {
 
-    private final AddressRepository addressRepository;
+    private final AddressDomainRepository addressRepository;
     private final AddressMapper addressMapper;
 
     /**
-     * 주소 등록 새로운 주소를 등록하고 기본 주소 설정 관리
+     * 주소 등록
+     * 새로운 주소를 등록하고 기본 주소 설정 관리
      *
      * @param requestDto 주소 등록 요청 데이터
      * @param user       주소를 등록하는 사용자
@@ -68,7 +69,8 @@ public class AddressService {
     }
 
     /**
-     * 주소명 중복 체크 동일한 사용자의 활성 주소 중 같은 주소명이 있는지 확인
+     * 주소명 중복 체크
+     * 동일한 사용자의 활성 주소 중 같은 주소명이 있는지 확인
      *
      * @param addressName 확인할 주소명
      * @param user        사용자
@@ -81,7 +83,8 @@ public class AddressService {
     }
 
     /**
-     * 기본 주소 설정 처리 새로운 기본 주소 설정 시 기존 기본 주소를 해제
+     * 기본 주소 설정 처리
+     * 새로운 기본 주소 설정 시 기존 기본 주소를 해제
      *
      * @param requestDto 주소 등록 요청 데이터
      * @param user       사용자
@@ -90,7 +93,7 @@ public class AddressService {
     private void handleDefaultAddress(AddressCreateRequestDto requestDto, User user) {
         if (Boolean.TRUE.equals(requestDto.getDefaultAddress())) {
             Optional<Address> existingDefaultAddress = addressRepository
-                .findByUserAndDefaultAddressTrueAndDeletedAtIsNull(user);
+                    .findByUserAndDefaultAddressTrueAndDeletedAtIsNull(user);
 
             if (existingDefaultAddress.isPresent()) {
                 // 기존 기본 주소를 일반 주소로 변경
@@ -102,7 +105,8 @@ public class AddressService {
     }
 
     /**
-     * 사용자의 첫 번째 주소인지 확인 활성 주소가 없는 경우 첫 번째 주소로 판단
+     * 사용자의 첫 번째 주소인지 확인
+     * 활성 주소가 없는 경우 첫 번째 주소로 판단
      *
      * @param user 사용자
      * @return 첫 번째 주소 여부
@@ -112,7 +116,8 @@ public class AddressService {
     }
 
     /**
-     * 주소 목록 조회 사용자의 주소 목록을 조회하고 통계 정보와 함께 반환
+     * 주소 목록 조회
+     * 사용자의 주소 목록을 조회하고 통계 정보와 함께 반환
      *
      * @param includeDeleted 삭제된 주소 포함 여부
      * @param user           주소를 조회하는 사용자
@@ -126,31 +131,31 @@ public class AddressService {
         if (Boolean.TRUE.equals(includeDeleted)) {
             addresses = addressRepository.findByUserOrderByDefaultAddressDescCreatedAtDesc(user);
         } else {
-            addresses = addressRepository.findByUserAndDeletedAtIsNullOrderByDefaultAddressDescCreatedAtDesc(
-                user);
+            addresses = addressRepository.findByUserAndDeletedAtIsNullOrderByDefaultAddressDescCreatedAtDesc(user);
         }
 
         // 2. Address -> AddressListResponseDto 변환
         List<AddressListResponseDto> addressList = addresses.stream()
-            .map(addressMapper::toListResponse)
-            .collect(java.util.stream.Collectors.toList());
+                .map(addressMapper::toListResponse)
+                .collect(java.util.stream.Collectors.toList());
 
         // 3. 기본 주소 조회
         Address defaultAddress = addressRepository
-            .findByUserAndDefaultAddressTrueAndDeletedAtIsNull(user)
-            .orElse(null);
+                .findByUserAndDefaultAddressTrueAndDeletedAtIsNull(user)
+                .orElse(null);
 
         // 4. 총 주소 개수 계산
         long totalCount = Boolean.TRUE.equals(includeDeleted)
-            ? addresses.size()
-            : addressRepository.countByUserAndDeletedAtIsNull(user);
+                ? addresses.size()
+                : addressRepository.countByUserAndDeletedAtIsNull(user);
 
         // 5. Mapper를 통한 응답 DTO 생성
         return addressMapper.toPageResponse(addressList, totalCount, defaultAddress);
     }
 
     /**
-     * 주소 수정 기존 주소 정보를 수정하고 소유자 검증 및 기본 주소 관리 수행
+     * 주소 수정
+     * 기존 주소 정보를 수정하고 소유자 검증 및 기본 주소 관리 수행
      *
      * @param addressId  수정할 주소 ID
      * @param requestDto 주소 수정 요청 데이터
@@ -159,8 +164,7 @@ public class AddressService {
      * @throws RuntimeException 주소를 찾을 수 없거나 권한이 없는 경우
      */
     @Transactional
-    public AddressUpdateResponseDto updateAddress(UUID addressId,
-        AddressUpdateRequestDto requestDto, User user) {
+    public AddressUpdateResponseDto updateAddress(UUID addressId, AddressUpdateRequestDto requestDto, User user) {
 
         // 1. 주소 조회 및 소유자 검증
         Address address = findAddressAndValidateOwner(addressId, user);
@@ -194,7 +198,7 @@ public class AddressService {
      */
     private Address findAddressAndValidateOwner(UUID addressId, User user) {
         Address address = addressRepository.findById(addressId)
-            .orElseThrow(() -> new RuntimeException("주소를 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("주소를 찾을 수 없습니다."));
 
         if (!address.getUser().getUserId().equals(user.getUserId())) {
             throw new RuntimeException("해당 주소에 접근할 권한이 없습니다.");
@@ -216,20 +220,19 @@ public class AddressService {
     }
 
     /**
-     * 주소명 중복 체크 (수정용) 본인 주소 제외하고 동일한 주소명이 있는지 확인
+     * 주소명 중복 체크 (수정용)
+     * 본인 주소 제외하고 동일한 주소명이 있는지 확인
      *
      * @param addressName 확인할 주소명
      * @param user        사용자
      * @param excludeId   제외할 주소 ID (본인)
      * @throws RuntimeException 중복 주소명 발견 시
      */
-    private void validateDuplicateAddressNameForUpdate(String addressName, User user,
-        UUID excludeId) {
+    private void validateDuplicateAddressNameForUpdate(String addressName, User user, UUID excludeId) {
         Optional<Address> existingAddress = addressRepository
-            .findByUserAndAddressNameAndDeletedAtIsNull(user, addressName);
+                .findByUserAndAddressNameAndDeletedAtIsNull(user, addressName);
 
-        if (existingAddress.isPresent() && !existingAddress.get().getAddressId()
-            .equals(excludeId)) {
+        if (existingAddress.isPresent() && !existingAddress.get().getAddressId().equals(excludeId)) {
             throw new RuntimeException("동일한 주소명이 이미 존재합니다.");
         }
     }
@@ -242,8 +245,7 @@ public class AddressService {
      * @param address    수정할 주소
      * @throws RuntimeException 기본 주소 해제 불가한 경우
      */
-    private void handleDefaultAddressForUpdate(AddressUpdateRequestDto requestDto, User user,
-        Address address) {
+    private void handleDefaultAddressForUpdate(AddressUpdateRequestDto requestDto, User user, Address address) {
         boolean newDefaultValue = Boolean.TRUE.equals(requestDto.getDefaultAddress());
         boolean currentDefaultValue = Boolean.TRUE.equals(address.getDefaultAddress());
 
@@ -251,7 +253,7 @@ public class AddressService {
         if (newDefaultValue && !currentDefaultValue) {
             // 기존 기본 주소 해제
             Optional<Address> existingDefaultAddress = addressRepository
-                .findByUserAndDefaultAddressTrueAndDeletedAtIsNull(user);
+                    .findByUserAndDefaultAddressTrueAndDeletedAtIsNull(user);
 
             if (existingDefaultAddress.isPresent()) {
                 Address currentDefault = existingDefaultAddress.get();
@@ -269,8 +271,7 @@ public class AddressService {
 
             // 다른 주소를 기본 주소로 설정
             List<Address> otherAddresses = addressRepository
-                .findByUserAndDeletedAtIsNullAndAddressIdNotOrderByCreatedAtDesc(user,
-                    address.getAddressId());
+                    .findByUserAndDeletedAtIsNullAndAddressIdNotOrderByCreatedAtDesc(user, address.getAddressId());
 
             if (!otherAddresses.isEmpty()) {
                 Address newDefaultAddress = otherAddresses.get(0);
@@ -297,7 +298,8 @@ public class AddressService {
     }
 
     /**
-     * 주소 삭제 (Soft Delete) 기존 주소를 소프트 삭제하고 기본 주소 보호 및 최소 주소 보장 로직 수행
+     * 주소 삭제 (Soft Delete)
+     * 기존 주소를 소프트 삭제하고 기본 주소 보호 및 최소 주소 보장 로직 수행
      *
      * @param addressId 삭제할 주소 ID
      * @param user      주소를 삭제하는 사용자
@@ -339,7 +341,8 @@ public class AddressService {
     }
 
     /**
-     * 마지막 주소 삭제 방지 사용자는 최소 1개의 활성 주소를 보유해야 함
+     * 마지막 주소 삭제 방지
+     * 사용자는 최소 1개의 활성 주소를 보유해야 함
      *
      * @param user 사용자
      * @throws RuntimeException 마지막 주소인 경우
@@ -352,7 +355,8 @@ public class AddressService {
     }
 
     /**
-     * 기본 주소 삭제 시 다른 주소를 자동으로 기본 주소로 설정 기본 주소가 아닌 경우 아무 작업 안 함
+     * 기본 주소 삭제 시 다른 주소를 자동으로 기본 주소로 설정
+     * 기본 주소가 아닌 경우 아무 작업 안 함
      *
      * @param address 삭제할 주소
      * @param user    사용자
@@ -365,8 +369,7 @@ public class AddressService {
 
         // 삭제할 주소를 제외한 다른 활성 주소 목록 조회 (최신순)
         List<Address> otherAddresses = addressRepository
-            .findByUserAndDeletedAtIsNullAndAddressIdNotOrderByCreatedAtDesc(user,
-                address.getAddressId());
+                .findByUserAndDeletedAtIsNullAndAddressIdNotOrderByCreatedAtDesc(user, address.getAddressId());
 
         // 다른 주소 중 가장 최근에 생성된 주소를 기본 주소로 설정
         if (!otherAddresses.isEmpty()) {
@@ -378,7 +381,8 @@ public class AddressService {
     }
 
     /**
-     * Soft Delete 실행 BaseEntity의 delete() 메서드 사용
+     * Soft Delete 실행
+     * BaseEntity의 delete() 메서드 사용
      *
      * @param address 삭제할 주소
      */
