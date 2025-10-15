@@ -17,7 +17,7 @@ import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.Ini
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentDetailResponseDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentsListResponseDto;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

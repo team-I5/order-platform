@@ -10,7 +10,7 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.response.Store
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
