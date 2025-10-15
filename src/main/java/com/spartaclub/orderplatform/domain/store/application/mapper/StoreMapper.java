@@ -7,6 +7,7 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.response.Store
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByStoreNameResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.user.domain.entity.User;
 import com.spartaclub.orderplatform.user.domain.entity.UserRole;
@@ -67,4 +68,7 @@ public interface StoreMapper {
 
     @Mapping(target = "categories", ignore = true)
     StoreSearchByCategoryResponseDto toStoreSearchByCategoryResponseDto(Store store);
+
+    @Mapping(target = "categories", expression = "java(mapCategories(store))")
+    StoreSearchByStoreNameResponseDto toStoreSearchByStoreNameResponseDto(Store store);
 }

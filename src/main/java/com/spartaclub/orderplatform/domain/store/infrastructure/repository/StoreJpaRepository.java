@@ -52,8 +52,11 @@ public interface StoreJpaRepository extends JpaRepository<Store, UUID> {
            AND sc.deletedAt IS NULL
            AND c.deletedAt IS NULL
         """)
-    Page<Store> findOwnerApprovedStoreByCategory(@Param("type") CategoryType type,
-        @Param("userId") Long userId, Pageable pageable);
+    Page<Store> findOwnerApprovedStoreByCategory(
+        @Param("type") CategoryType type,
+        @Param("userId") Long userId,
+        Pageable pageable
+    );
 
     @Query("""
            SELECT DISTINCT s

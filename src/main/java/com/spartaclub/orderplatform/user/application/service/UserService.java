@@ -1,6 +1,6 @@
 package com.spartaclub.orderplatform.user.application.service;
 
-import com.spartaclub.orderplatform.global.application.jwt.JwtUtil;
+import com.spartaclub.orderplatform.global.auth.jwt.JwtUtil;
 import com.spartaclub.orderplatform.user.application.mapper.UserMapper;
 import com.spartaclub.orderplatform.user.domain.entity.RefreshToken;
 import com.spartaclub.orderplatform.user.domain.entity.User;

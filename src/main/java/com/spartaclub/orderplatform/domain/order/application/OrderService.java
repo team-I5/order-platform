@@ -1,58 +1,66 @@
 package com.spartaclub.orderplatform.domain.order.application;
 
+import com.spartaclub.orderplatform.domain.order.application.dto.query.OrderQuery;
 import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
-import com.spartaclub.orderplatform.domain.order.infrastructure.repository.OrderRepository;
-import com.spartaclub.orderplatform.domain.order.infrastructure.repository.spec.OrderSpecs;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderStatusResponseDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto.OrderSummaryDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto.OrderItemRequest;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
+import com.spartaclub.orderplatform.domain.order.domain.repository.OrderRepository;
+import com.spartaclub.orderplatform.domain.order.domain.repository.ProductReaderRepository;
+import com.spartaclub.orderplatform.domain.order.domain.repository.StoreReaderRepository;
+import com.spartaclub.orderplatform.domain.order.exception.OrderErrorCode;
+import com.spartaclub.orderplatform.domain.order.exception.ProductRefErrorCode;
+import com.spartaclub.orderplatform.domain.order.exception.StoreRefErrorCode;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.request.GetOrdersRequestDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.request.PlaceOrderRequestDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.request.PlaceOrderRequestDto.OrderItemRequest;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrderDetailResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrderStatusResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrdersResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrdersResponseDto.OrderSummaryDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.PlaceOrderResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
-import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
+import com.spartaclub.orderplatform.global.auth.exception.AuthErrorCode;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import com.spartaclub.orderplatform.user.domain.entity.User;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
-    private final ProductRepository productRepository;
-    private final StoreRepository storeRepository;
+    private final ProductReaderRepository productReaderRepository;
+    private final StoreReaderRepository storeReaderRepository;
 
     //주문 생성
     @Transactional
     public PlaceOrderResponseDto placeOrder(PlaceOrderRequestDto placeOrderRequestDto, User user) {
         List<OrderItemRequest> products = placeOrderRequestDto.items(); // 주문 상품 리스트
 
-        Store store = storeRepository.findById(placeOrderRequestDto.storeId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "음식점을 찾을 수 없습니다: " + placeOrderRequestDto.storeId()));
+        Store store = storeReaderRepository.findById(placeOrderRequestDto.storeId())
+            .orElseThrow(() -> {
+                log.warn("[Store] NOT_EXIST - storeId={}, userId={}",
+                    placeOrderRequestDto.storeId(),
+                    user.getUserId());
+                return new BusinessException(StoreRefErrorCode.NOT_EXIST);
+            });
 
         Long totalPrice = 0L;
         Integer productCount = 0;
@@ -60,9 +68,14 @@ public class OrderService {
 
         // 총 주문 금액, 상품 개수 집계, 주문-상품 엔티티 생성
         for (OrderItemRequest orderItem : products) {
-            Product product = productRepository.findById(orderItem.productId())
-                .orElseThrow(
-                    () -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + orderItem.productId()));
+            Product product = productReaderRepository.findById(orderItem.productId())
+                .orElseThrow(() -> {
+                    log.warn("[Product] NOT_EXIST - productId={}, quantity={}, userId={}",
+                        orderItem.productId(),
+                        orderItem.quantity(),
+                        user.getUserId());
+                    return new BusinessException(ProductRefErrorCode.NOT_EXIST);
+                });
 
             totalPrice += orderItem.quantity() * product.getPrice();
             productCount += orderItem.quantity();
@@ -108,7 +121,10 @@ public class OrderService {
                 Long ownerUserId = order.getUser().getUserId();
                 Long viewerUserId = viewer.getUserId();
                 if (!ownerUserId.equals(viewerUserId)) {
-                    throw new AccessDeniedException("CUSTOMER는 본인의 주문만 조회할 수 있습니다.");
+                    log.warn(
+                        "CUSTOMER는 본인의 주문만 조회할 수 있습니다. : role={}, viewerId={}, ownerId={}, orderId={}",
+                        viewer.getRole(), viewerUserId, ownerUserId, orderId);
+                    throw new BusinessException(AuthErrorCode.FORBIDDEN);
                 }
             }
             case OWNER -> {
@@ -116,14 +132,19 @@ public class OrderService {
                 Long storeOwnerId = order.getStore().getUser().getUserId();
                 Long viewerUserId = viewer.getUserId();
                 if (!storeOwnerId.equals(viewerUserId)) {
-                    throw new AccessDeniedException("OWNER는 본인 가게의 주문만 조회할 수 있습니다.");
+                    log.warn(
+                        "OWNER는 본인 가게의 주문만 조회할 수 있습니다. : role={}, viewerId={}, storeOwnerId={}, orderId={}",
+                        viewer.getRole(), viewerUserId, storeOwnerId, orderId);
+                    throw new BusinessException(AuthErrorCode.FORBIDDEN);
                 }
             }
             case MANAGER, MASTER -> {
                 // 모두 가능: 추가 검증 없음
             }
             default -> {
-                throw new AccessDeniedException("해당 역할은 주문 조회 권한이 없습니다.");
+                log.warn("해당 역할은 주문 조회 권한이 없습니다. : role={}, viewerId={}, orderId={}",
+                    viewer.getRole(), viewer.getUserId(), orderId);
+                throw new BusinessException(AuthErrorCode.FORBIDDEN);
             }
         }
         return orderMapper.toDto(order);
@@ -140,12 +161,9 @@ public class OrderService {
             requestDto.size(),
             parseSort(requestDto.sort()));
 
-        Specification<Order> spec = (root, query, cb) -> cb.conjunction(); // 초기값
-        spec = spec
-            .and(OrderSpecs.visibleFor(viewer))
-            .and(OrderSpecs.statusIn(requestDto.status()));
-
-        Page<Order> orders = orderRepository.findAll(spec, pageable);
+        //조회
+        OrderQuery orderQuery = new OrderQuery(requestDto.status(), viewer);
+        Page<Order> orders = orderRepository.findAll(orderQuery, pageable);
 
         List<OrderSummaryDto> ordersList = orders.getContent().stream()
             .map(orderMapper::toSummaryDto)
@@ -235,6 +253,9 @@ public class OrderService {
 
     public Order findById(UUID orderId) {
         return orderRepository.findById(orderId)
-            .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다: " + orderId));
+            .orElseThrow(() -> {
+                log.warn("[Order] NOT_EXIST - orderId={}", orderId);
+                return new BusinessException(OrderErrorCode.NOT_EXIST);
+            });
     }
 }
