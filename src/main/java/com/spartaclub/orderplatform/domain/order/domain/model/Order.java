@@ -1,7 +1,9 @@
 package com.spartaclub.orderplatform.domain.order.domain.model;
 
+import com.spartaclub.orderplatform.domain.order.application.command.PlaceOrderCommand;
 import com.spartaclub.orderplatform.domain.order.exception.OrderErrorCode;
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
@@ -22,14 +24,12 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -37,8 +37,6 @@ import org.hibernate.annotations.UuidGenerator;
 @Table(name = "p_orders")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Builder
-@AllArgsConstructor
 @Slf4j
 public class Order extends BaseEntity {
 
@@ -49,7 +47,6 @@ public class Order extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @Setter
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -60,7 +57,6 @@ public class Order extends BaseEntity {
         cascade = CascadeType.ALL,        // Order 저장/삭제 시 자식도 같이
         orphanRemoval = true,             // 컬렉션에서 제거 시 DB에서도 삭제
         fetch = FetchType.LAZY)
-    @Builder.Default
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
     @Column(name = "total_price", nullable = false)
@@ -87,14 +83,6 @@ public class Order extends BaseEntity {
     public void addOrderProduct(OrderProduct orderProduct) {
         this.orderProducts.add(orderProduct);
         orderProduct.setOrder(this);
-    }
-
-    //음식점 연관관계 형성
-    public void setStore(Store store) {
-        this.store = store;
-        if (!store.getOrders().contains(this)) {
-            store.getOrders().add(this);
-        }
     }
 
     //주문 상태 변경
@@ -164,5 +152,51 @@ public class Order extends BaseEntity {
                 OrderStatus.ACCEPTED, status);
             throw new BusinessException(OrderErrorCode.INVALID_STATUS_FOR_COMPLETE_DELIVERY);
         }
+    }
+
+    // User, Store 연관 관계 형성
+    private void link(User user, Store store) {
+        this.user = user;
+
+        this.store = store;
+        if (!store.getOrders().contains(this)) {
+            store.getOrders().add(this);
+        }
+    }
+
+    public static Order place(User user, Store store, List<PlaceOrderCommand> commands,
+        Map<UUID, Product> products, String address, String memo) {
+
+        Order order = new Order();
+        order.link(user, store);
+        order.status = OrderStatus.PAYMENT_PENDING;
+        order.address = address;
+        order.memo = memo;
+
+        for (PlaceOrderCommand c : commands) {
+            Product p = products.get(c.productId());
+            OrderProduct op = OrderProduct.builder()
+                .product(p)
+                .productName(p.getProductName())
+                .unitPrice(p.getPrice())
+                .quantity(c.quantity())
+                .build();
+
+            order.addOrderProduct(op);
+        }
+
+        order.recalculateTotals();
+        return order;
+    }
+
+    private void recalculateTotals() {
+        long sum = 0L;
+        int cnt = 0;
+        for (OrderProduct op : orderProducts) {
+            sum += op.getUnitPrice() * (long) op.getQuantity();
+            cnt += op.getQuantity();
+        }
+        this.totalPrice = sum;
+        this.productCount = cnt;
     }
 }

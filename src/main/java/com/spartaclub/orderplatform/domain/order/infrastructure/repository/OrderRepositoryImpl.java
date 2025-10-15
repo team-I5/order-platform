@@ -1,6 +1,6 @@
 package com.spartaclub.orderplatform.domain.order.infrastructure.repository;
 
-import com.spartaclub.orderplatform.domain.order.application.dto.query.OrderQuery;
+import com.spartaclub.orderplatform.domain.order.application.query.OrderQuery;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.repository.OrderRepository;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.spec.OrderSpecs;
@@ -19,8 +19,8 @@ public class OrderRepositoryImpl implements OrderRepository {
     private final OrderJPARepository orderJPARepository;
 
     @Override
-    public void save(Order order) {
-        orderJPARepository.save(order);
+    public Order save(Order order) {
+        return orderJPARepository.save(order);
     }
 
     @Override
