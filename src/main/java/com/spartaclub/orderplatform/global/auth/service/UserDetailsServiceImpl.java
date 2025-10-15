@@ -1,8 +1,8 @@
 package com.spartaclub.orderplatform.global.auth.service;
 
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
-import com.spartaclub.orderplatform.user.domain.entity.User;
-import com.spartaclub.orderplatform.user.infrastructure.repository.UserRepository;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -32,7 +32,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+        User user = userRepository.findActiveByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
 
         return new UserDetailsImpl(user); // User 엔티티를 UserDetails로 래핑
@@ -46,7 +46,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      * @throws UsernameNotFoundException 사용자를 찾을 수 없는 경우
      */
     public UserDetails loadUserByUserId(Long userId) throws UsernameNotFoundException {
-        User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
+        User user = userRepository.findActiveById(userId)
             .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userId));
 
         return new UserDetailsImpl(user); // User 엔티티를 UserDetails로 래핑

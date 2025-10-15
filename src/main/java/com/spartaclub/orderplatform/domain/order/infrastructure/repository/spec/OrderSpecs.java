@@ -2,7 +2,7 @@ package com.spartaclub.orderplatform.domain.order.infrastructure.repository.spec
 
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import org.springframework.data.jpa.domain.Specification;
 
 public final class OrderSpecs {
