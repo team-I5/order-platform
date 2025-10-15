@@ -16,11 +16,11 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class OrderRepositoryImpl implements OrderRepository {
 
-    private final OrderJPARepository orderJPARepository;
+    private final OrderJpaRepository orderJpaRepository;
 
     @Override
     public Order save(Order order) {
-        return orderJPARepository.save(order);
+        return orderJpaRepository.save(order);
     }
 
     @Override
@@ -29,11 +29,11 @@ public class OrderRepositoryImpl implements OrderRepository {
         spec = spec
             .and(OrderSpecs.visibleFor(orderQuery.viewer()))
             .and(OrderSpecs.statusIn(orderQuery.status()));
-        return orderJPARepository.findAll(spec, pageable);
+        return orderJpaRepository.findAll(spec, pageable);
     }
 
     @Override
     public Optional<Order> findById(UUID orderId) {
-        return orderJPARepository.findById(orderId);
+        return orderJpaRepository.findById(orderId);
     }
 }
