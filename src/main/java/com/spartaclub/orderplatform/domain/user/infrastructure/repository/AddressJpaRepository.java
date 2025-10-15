@@ -21,8 +21,8 @@ public interface AddressJpaRepository extends JpaRepository<Address, java.util.U
     List<Address> findByUser(User user);
     List<Address> findByUserUserId(Long userId);
     
-    Optional<Address> findByUserAndIsDefaultTrue(User user);
-    Optional<Address> findByUserUserIdAndIsDefaultTrue(Long userId);
+    Optional<Address> findByUserAndDefaultAddressTrue(User user);
+    Optional<Address> findByUserUserIdAndDefaultAddressTrue(Long userId);
     
     Page<Address> findByUser(User user, Pageable pageable);
     Page<Address> findByUserUserId(Long userId, Pageable pageable);
@@ -34,7 +34,7 @@ public interface AddressJpaRepository extends JpaRepository<Address, java.util.U
     long countByUser(User user);
     
     // 정렬된 주소 목록 조회
-    List<Address> findByUserOrderByIsDefaultDescCreatedAtDesc(User user);
+    List<Address> findByUserOrderByDefaultAddressDescCreatedAtDesc(User user);
     
     // 특정 주소 제외하고 조회
     List<Address> findByUserAndAddressIdNotOrderByCreatedAtDesc(User user, java.util.UUID addressId);
