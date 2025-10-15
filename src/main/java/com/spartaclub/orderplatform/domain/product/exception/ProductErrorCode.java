@@ -18,6 +18,6 @@ public enum ProductErrorCode implements ErrorCode {
 
     @Override
     public String getCode() {
-        return "";
+        return this.name();
     }
 }

@@ -7,12 +7,11 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGr
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
+import com.spartaclub.orderplatform.domain.review.repository.ReviewRepository;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
-import com.spartaclub.orderplatform.user.domain.entity.Address;
-import com.spartaclub.orderplatform.user.infrastructure.repository.AddressRepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
@@ -23,6 +22,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.spartaclub.orderplatform.domain.user.domain.entity.Address;
+import com.spartaclub.orderplatform.domain.user.domain.repository.AddressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +50,7 @@ public class ProductService {
     private final AddressRepository addressRepository;
     private final AiService aiService;
     private final ProductOptionGroupRepository productOptionGroupRepository;
+    private final ReviewRepository reviewRepository;
 
     // 상품 등록 서비스 로직
     @Transactional
@@ -185,6 +187,11 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    public Page<ProductReviewResponseDto> getReviewListByProductId(UUID productId, Pageable pageable) {
+        return reviewRepository.findAllByProduct_ProductId(productId, pageable)
+                .map(productMapper::toReviewDto);
+    }
+
 
     // --- 상품 공통 조회 메소드 ---
     private Product findProductOrThrow(UUID productId) {
@@ -204,6 +211,5 @@ public class ProductService {
         return ""; // 못 찾은 경우
     }
 
-//    public Page<ProductReviewResponseDto> getReviewListByProductId(UUID productId, Pageable pageable) {
-//    }
+
 }
