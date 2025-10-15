@@ -15,7 +15,7 @@ import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentR
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.InitPaymentResponseDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.PaymentDetailResponseDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.PaymentsListResponseDto;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;

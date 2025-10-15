@@ -1,7 +1,7 @@
 package com.spartaclub.orderplatform.global.application.security;
 
-import com.spartaclub.orderplatform.user.domain.entity.User;
-import com.spartaclub.orderplatform.user.domain.entity.UserRole;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,9 +12,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Spring Security UserDetails 구현체
- * User 엔티티를 Spring Security에서 사용할 수 있도록 어댑터 역할
- * 인증 및 권한 처리에 필요한 사용자 정보 제공
+ * Spring Security UserDetails 구현체 User 엔티티를 Spring Security에서 사용할 수 있도록 어댑터 역할 인증 및 권한 처리에 필요한 사용자
+ * 정보 제공
  *
  * @author 전우선
  * @date 2025-10-02(목)
@@ -27,8 +26,7 @@ public class UserDetailsImpl implements UserDetails {
     private final User user;
 
     /**
-     * 사용자 비밀번호 반환
-     * Spring Security 인증 과정에서 비밀번호 검증에 사용
+     * 사용자 비밀번호 반환 Spring Security 인증 과정에서 비밀번호 검증에 사용
      *
      * @return 암호화된 비밀번호
      */
@@ -38,8 +36,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     /**
-     * 사용자명 반환
-     * 이메일을 사용자명으로 사용 (로그인 ID)
+     * 사용자명 반환 이메일을 사용자명으로 사용 (로그인 ID)
      *
      * @return 사용자 이메일 주소
      */
@@ -49,8 +46,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     /**
-     * 사용자 권한 목록 반환
-     * Spring Security 권한 체크에 사용
+     * 사용자 권한 목록 반환 Spring Security 권한 체크에 사용
      *
      * @return 사용자 권한 목록 (ROLE_ 접두사 포함)
      */
@@ -65,8 +61,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     /**
-     * 계정 활성화 상태 확인
-     * 탈퇴하지 않은 사용자만 활성 상태로 판단
+     * 계정 활성화 상태 확인 탈퇴하지 않은 사용자만 활성 상태로 판단
      *
      * @return 활성 상태면 true, 비활성 상태면 false
      */
@@ -76,8 +71,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     /**
-     * 계정 만료 여부 확인
-     * 현재 프로젝트에서는 계정 만료 기능을 사용하지 않음
+     * 계정 만료 여부 확인 현재 프로젝트에서는 계정 만료 기능을 사용하지 않음
      *
      * @return 항상 true (계정 만료 없음)
      */
@@ -87,8 +81,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     /**
-     * 계정 잠금 여부 확인
-     * 현재 프로젝트에서는 계정 잠금 기능을 사용하지 않음
+     * 계정 잠금 여부 확인 현재 프로젝트에서는 계정 잠금 기능을 사용하지 않음
      *
      * @return 항상 true (계정 잠금 없음)
      */
@@ -98,8 +91,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     /**
-     * 자격 증명 만료 여부 확인
-     * 현재 프로젝트에서는 자격 증명 만료 기능을 사용하지 않음
+     * 자격 증명 만료 여부 확인 현재 프로젝트에서는 자격 증명 만료 기능을 사용하지 않음
      *
      * @return 항상 true (자격 증명 만료 없음)
      */

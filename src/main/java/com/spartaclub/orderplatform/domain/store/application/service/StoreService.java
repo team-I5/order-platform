@@ -22,8 +22,8 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.response.Store
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
-import com.spartaclub.orderplatform.user.domain.entity.User;
-import com.spartaclub.orderplatform.user.domain.entity.UserRole;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

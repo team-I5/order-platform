@@ -19,7 +19,7 @@ import com.spartaclub.orderplatform.domain.product.infrastructure.repository.Pro
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
