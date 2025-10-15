@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 @Component
 @RequiredArgsConstructor
-public class RefreshTokenRepositoryAdapter implements RefreshTokenDomainRepository {
+public class RefreshTokenRepositoryImpl implements RefreshTokenDomainRepository {
 
     private final RefreshTokenRepository refreshTokenJpaRepository;
 

@@ -21,7 +21,7 @@ import java.util.Optional;
  */
 @Component
 @RequiredArgsConstructor
-public class UserRepositoryAdapter implements UserDomainRepository {
+public class UserRepositoryImpl implements UserDomainRepository {
 
     private final UserRepository userJpaRepository;
 
