@@ -6,8 +6,22 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import com.spartaclub.orderplatform.user.domain.entity.User;
-import jakarta.persistence.*;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -71,15 +85,6 @@ public class Store extends BaseEntity {
     private Double averageRating = 0.0;
     private Integer reviewCount = 0;
 
-    @CreatedBy
-    @Column(updatable = false)
-    private Long createdId;
-
-    @LastModifiedBy
-    private Long modifiedId;
-
-    private Long deletedId;
-
     // 음식점 정보 업데이트(기본 정보만)
     public void updateStoreInfo(StoreRequestDto dto) {
         this.storeName = dto.getStoreName();
@@ -108,7 +113,7 @@ public class Store extends BaseEntity {
 
     // 음식점 삭제 처리
     public void storeSoftDelete(Long userId) {
-        this.deletedId = userId;
+        delete(userId);
     }
 
     // 음식점에 카테고리 추가
@@ -120,14 +125,13 @@ public class Store extends BaseEntity {
     // 음식점에 카테고리 삭제
     public void removeCategory(Long userId, Category category) {
         this.storeCategories.stream()
-                .filter(storeCategory ->
-                        storeCategory.getCategory().equals(category)
-                                && storeCategory.getDeletedId() != null)
-                .findFirst()
-                .ifPresent(storeCategory -> {
-                    storeCategory.delete();
-                    storeCategory.scSoftDelete(userId);
-                });
+            .filter(storeCategory ->
+                storeCategory.getCategory().equals(category)
+                    && storeCategory.getDeletedId() != null)
+            .findFirst()
+            .ifPresent(storeCategory -> {
+                storeCategory.scSoftDelete(userId);
+            });
     }
 
     // 음식점 리뷰 개수와 평점 업데이트

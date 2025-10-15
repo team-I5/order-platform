@@ -15,15 +15,17 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.request.Reject
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreCategoryRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByCategoryRequestDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByStoreNameRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.RejectStoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByStoreNameResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
-import com.spartaclub.orderplatform.user.domain.entity.User;
-import com.spartaclub.orderplatform.user.domain.entity.UserRole;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -107,7 +109,7 @@ public class StoreService {
             throw new IllegalArgumentException("본인의 음식점만 삭제할 수 있습니다.");
         }
 
-        store.delete();
+        store.delete(user.getUserId());
         store.storeSoftDelete(user.getUserId());
     }
 
@@ -215,11 +217,10 @@ public class StoreService {
             throw new IllegalArgumentException("본인의 음식점의 카테고리만 수정할 수 있습니다.");
         }
 
-        // 기존 관계들은 soft delete 처리
+        // 기존 관계들은 soft deleteProductOptionGroup 처리
         store.getStoreCategories().forEach(storeCategory -> {
             if (storeCategory.getDeletedId() == null) {
                 storeCategory.scSoftDelete(user.getUserId());
-                storeCategory.delete();
             }
         });
 
@@ -271,6 +272,24 @@ public class StoreService {
         }
 
         return stores.map(this::getStoreSearchByCategoryResponseDto);
+    }
+
+    // 해당 이름이 들어가는 식당 목록
+    @Transactional
+    public Page<StoreSearchByStoreNameResponseDto> searchStoreListByStoreName(
+        StoreSearchByStoreNameRequestDto dto
+    ) {
+        dto.validatePageSize();
+
+        Pageable pageable = PageRequest.of(
+            dto.getPage(), dto.getSize(),
+            Sort.by(DESC, "createdAt")
+        );
+
+        Page<Store> stores = storeRepository
+            .findApprovedStoresByStoreName(dto.getStoreName(), APPROVED, pageable);
+
+        return stores.map(storeMapper::toStoreSearchByStoreNameResponseDto);
     }
 
     // mapper에서 분리한 로직 - 유효한 카테고리만 포함한 dto 변환

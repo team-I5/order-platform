@@ -1,15 +1,18 @@
 package com.spartaclub.orderplatform.domain.store.application.mapper;
 
+import com.spartaclub.orderplatform.domain.category.entity.Category;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.RejectStoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByStoreNameResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
-import com.spartaclub.orderplatform.user.domain.entity.User;
-import com.spartaclub.orderplatform.user.domain.entity.UserRole;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
 import java.util.List;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -41,9 +44,6 @@ public interface StoreMapper {
     @Mapping(target = "status", expression = "java(StoreStatus.PENDING)")
     @Mapping(target = "averageRating", expression = "java(0.0)")
     @Mapping(target = "reviewCount", expression = "java(0)")
-    @Mapping(target = "createdId", expression = "java(user.getUserId())")
-    @Mapping(target = "modifiedId", ignore = true)
-    @Mapping(target = "deletedId", ignore = true)
     @Mapping(target = "rejectReason", ignore = true)
     Store toCreateStoreEntity(User user, StoreRequestDto dto);
 
@@ -60,11 +60,13 @@ public interface StoreMapper {
     @Mapping(target = "categories", expression = "java(mapCategories(store))")
     StoreCategoryResponseDto toStoreCategoryResponseDto(Store store);
 
-    default List<String> mapCategories(Store store) {
-        return store.getStoreCategories().stream()
-            .map(storeCategory -> storeCategory.getCategory().getType().name()).toList();
+    default List<Category> mapCategories(Store store) {
+        return store.getStoreCategories().stream().map(StoreCategory::getCategory).toList();
     }
 
     @Mapping(target = "categories", ignore = true)
     StoreSearchByCategoryResponseDto toStoreSearchByCategoryResponseDto(Store store);
+
+    @Mapping(target = "categories", expression = "java(mapCategories(store))")
+    StoreSearchByStoreNameResponseDto toStoreSearchByStoreNameResponseDto(Store store);
 }

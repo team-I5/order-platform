@@ -4,7 +4,7 @@ import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus;
 import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -88,5 +88,18 @@ public class StoreRepositoryImpl implements StoreRepository {
     public Map<UUID, Store> findAllById(Collection<UUID> storeIds) {
         return storeJpaRepository.findAllById(storeIds).stream()
             .collect(Collectors.toMap(Store::getStoreId, Function.identity()));
+    }
+
+    @Override
+    public Page<Store> findApprovedStoresByStoreName(String storeName, StoreStatus status,
+        Pageable pageable) {
+        return storeJpaRepository.findApprovedStoresByStoreName(storeName, status, pageable);
+    }
+
+    @Override
+    public Page<Store> findDistinctByProductNameContainingIgnoreCase(String keyword,
+                                                                     String roadName,
+                                                                     Pageable pageable) {
+        return storeJpaRepository.findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable);
     }
 }

@@ -1,13 +1,13 @@
 package com.spartaclub.orderplatform.domain.order.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.order.application.OrderService;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.GetOrdersRequestDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderDetailResponseDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.OrderStatusResponseDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.OrdersResponseDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderRequestDto;
-import com.spartaclub.orderplatform.domain.order.presentation.dto.PlaceOrderResponseDto;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.request.GetOrdersRequestDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.request.PlaceOrderRequestDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrderDetailResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrderStatusResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrdersResponseDto;
+import com.spartaclub.orderplatform.domain.order.presentation.dto.response.PlaceOrderResponseDto;
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
 import java.util.UUID;

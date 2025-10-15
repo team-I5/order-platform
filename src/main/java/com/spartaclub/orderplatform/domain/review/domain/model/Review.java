@@ -4,7 +4,7 @@ import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,9 +33,9 @@ import org.springframework.data.annotation.LastModifiedBy;
 @Entity
 @Table(name = "p_reviews")
 @Getter
-@AllArgsConstructor // 외부에서 접근해 리뷰 객체 생성할 수 있게 애너테이션 추가
+// 외부에서 접근해 리뷰 객체 생성할 수 있게 애너테이션 추가
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-// JPA 엔티티에서 사용;외부에서 직접 객체 생성하는 것을 막아줍니다.
 public class Review extends BaseEntity {
 
     @Id // primary key
@@ -46,12 +46,7 @@ public class Review extends BaseEntity {
     // Null 값 허용 안함. 길이 1000자 까지
     @Column(nullable = false, length = 1000)
     private String contents;            // 리뷰 내용
-    @CreatedBy
-    @Column(updatable = false, nullable = false)
-    private Long createdId;             // 리뷰 생성자 ID
-    @LastModifiedBy
-    private Long modifiedId;            // 리뷰 수정자 ID
-    private Long deletedId;             // 리뷰 삭제자 ID
+
     // 외래 키 관계 설정
     @ManyToOne(fetch = FetchType.LAZY)  // 리뷰 : 회원 → Many to one
     @JoinColumn(name = "userId")
@@ -77,7 +72,8 @@ public class Review extends BaseEntity {
 
     // 리뷰 삭제 메서드(soft delete)
     public void deleteReview(Long userId) {
-        this.deletedId = userId;
-        delete();
+        delete(userId);
     }
+
+
 }

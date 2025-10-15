@@ -2,18 +2,21 @@ package com.spartaclub.orderplatform.domain.store.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.store.application.service.StoreService;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByCategoryRequestDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByStoreNameRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByStoreNameResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
-import com.spartaclub.orderplatform.global.application.security.UserDetailsImpl;
+import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,7 +56,7 @@ public class StoreController {
             );
     }
 
-    // 음식점 카테고리별 목록 조회 API
+    // 음식점 카테고리별 검색 API
     @GetMapping("/search-category")
     public ResponseEntity<ApiResponse<Page<StoreSearchByCategoryResponseDto>>> searchStoreCategory(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -62,5 +65,15 @@ public class StoreController {
         User user = userDetails.getUser();
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponse.success(storeService.searchStoreByCategory(dto, user)));
+    }
+
+    // 음식점 이름(키워드)으로 검색 API
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
+    @GetMapping("/search-store-name")
+    public ResponseEntity<ApiResponse<Page<StoreSearchByStoreNameResponseDto>>> searchStoreListByStoreName(
+        @RequestBody StoreSearchByStoreNameRequestDto dto
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(ApiResponse.success(storeService.searchStoreListByStoreName(dto)));
     }
 }

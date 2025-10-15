@@ -1,0 +1,44 @@
+package com.spartaclub.orderplatform.domain.product.domain.entity;
+
+import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+
+import java.util.UUID;
+
+@Entity
+@Table(name = "p_product_option_map")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class ProductOptionMap extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID productOptionMapId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_option_group_id", nullable = false)
+    private ProductOptionGroup productOptionGroup;
+
+    @CreatedBy
+    @Column(updatable = false, nullable = false)
+    private Long createdId;
+
+    @LastModifiedBy
+    private Long modifiedId;
+
+    // 정적 팩토리 메소드
+    public static ProductOptionMap create(Product product, ProductOptionGroup productOptionGroup) {
+        ProductOptionMap map = new ProductOptionMap();
+        map.product = product;
+        map.productOptionGroup = productOptionGroup;
+        return map;
+    }
+}

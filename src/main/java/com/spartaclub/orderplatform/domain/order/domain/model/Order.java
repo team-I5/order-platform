@@ -3,7 +3,7 @@ package com.spartaclub.orderplatform.domain.order.domain.model;
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import com.spartaclub.orderplatform.user.domain.entity.User;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -64,15 +64,6 @@ public class Order extends BaseEntity {
 
     @Column(name = "product_count", nullable = false)
     private Integer productCount;         // 상품개수
-
-    @Column(name = "created_id")
-    private Long createdId;               // 생성자 ID
-
-    @Column(name = "modified_id")
-    private Long modifiedId;              // 수정자 ID
-
-    @Column(name = "deleted_id")
-    private Long deletedId;               // 삭제자 ID
 
     @Column(name = "address", length = 255)
     private String address;               // 배송 주소

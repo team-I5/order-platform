@@ -4,7 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -33,12 +35,25 @@ public abstract class BaseEntity { // 추상 클래스로 선언 (직접 인스�
     @Column(name = "deletedAt") // deletedAt 컬럼 - 선택사항 (소프트 삭제용)
     private LocalDateTime deletedAt; // 엔티티 삭제 일시 (소프트 삭제 플래그, 수동 설정)
 
+    // 생성자 ID
+    @CreatedBy
+    @Column(updatable = false, nullable = false)
+    private Long createdId;
+
+    // 수정자 ID
+    @LastModifiedBy
+    private Long modifiedId;
+
+    // 삭제자 ID
+    private Long deletedId;
+
     /**
      * 소프트 삭제 처리
      * deletedAt 필드에 현재 시간을 설정하여 논리적 삭제 수행
      */
-    public void delete() {
+    public void delete(Long userId) {
         this.deletedAt = LocalDateTime.now();
+        this.deletedId = userId;
     }
 
     /**
