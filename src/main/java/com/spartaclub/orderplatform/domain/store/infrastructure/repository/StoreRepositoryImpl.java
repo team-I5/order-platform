@@ -89,4 +89,10 @@ public class StoreRepositoryImpl implements StoreRepository {
         return storeJpaRepository.findAllById(storeIds).stream()
             .collect(Collectors.toMap(Store::getStoreId, Function.identity()));
     }
+
+    @Override
+    public Page<Store> findApprovedStoresByStoreName(String storeName, StoreStatus status,
+        Pageable pageable) {
+        return storeJpaRepository.findApprovedStoresByStoreName(storeName, status, pageable);
+    }
 }

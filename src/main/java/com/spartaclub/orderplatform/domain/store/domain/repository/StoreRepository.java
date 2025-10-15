@@ -41,5 +41,6 @@ public interface StoreRepository {
 
     Map<UUID, Store> findAllById(Collection<UUID> storeIds);
 
-//    Page<Store> findApprovedStoresByStoreName(String storeName, StoreStatus status, Pageable pageable);
+    Page<Store> findApprovedStoresByStoreName(
+        String storeName, StoreStatus status, Pageable pageable);
 }
