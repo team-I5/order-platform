@@ -6,23 +6,22 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
 import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductAddOptionGroupsRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductDetailResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
-import com.spartaclub.orderplatform.user.domain.entity.Address;
-import com.spartaclub.orderplatform.user.infrastructure.repository.AddressRepository;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
-
+import com.spartaclub.orderplatform.domain.user.domain.entity.Address;
+import com.spartaclub.orderplatform.domain.user.domain.repository.AddressRepository;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -53,12 +52,12 @@ public class ProductService {
     // 상품 등록 서비스 로직
     @Transactional
     public ProductResponseDto createProduct(
-            ProductCreateRequestDto productCreateRequestDto,
-            Long userId
+        ProductCreateRequestDto productCreateRequestDto,
+        Long userId
     ) {
         // 1. storeId로 Store 조회
         Store store = storeRepository.findById(productCreateRequestDto.getStoreId())
-                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다."));
 
         // 2. dto → entity 변환
         Product product = productMapper.toEntity(productCreateRequestDto);
@@ -70,7 +69,8 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
 
         // 5. 캐시에 AI 응답이 있으면 로그 저장
-        aiService.saveAiLogsIfNeeded(userId, savedProduct.getProductId(), savedProduct.getCreatedId(), productCreateRequestDto.getProductDescription());
+        aiService.saveAiLogsIfNeeded(userId, savedProduct.getProductId(),
+            savedProduct.getCreatedId(), productCreateRequestDto.getProductDescription());
 
         // 6. entity → dto 변환 후 반환
         return productMapper.toDto(savedProduct);
@@ -79,7 +79,7 @@ public class ProductService {
     // 상품 수정 서비스 로직
     @Transactional
     public ProductResponseDto updateProduct(UUID productId,
-                                            ProductUpdateRequestDto productUpdateRequestDto
+        ProductUpdateRequestDto productUpdateRequestDto
     ) {
         // 1. productId로 상품 조회
         Product product = findProductOrThrow(productId);
@@ -97,8 +97,8 @@ public class ProductService {
     // 상품 삭제 서비스 로직
     @Transactional
     public void deleteProduct(
-            Long userId,
-            UUID productId
+        Long userId,
+        UUID productId
     ) {
         // 1. productId로 상품 조회
         Product product = findProductOrThrow(productId);
@@ -110,12 +110,13 @@ public class ProductService {
     // 상품 목록 조회 서비스 로직
     public PageResponseDto<ProductResponseDto> getProductList(UUID storeId, Pageable pageable) {
         // 1. storeId로 상품 리스트 페이지 객체로 조회( isHidden이 false 이고, deletedAt이 NULL인 상품만 조회)
-        Page<Product> productPage = productRepository.findByStore_StoreIdAndIsHiddenFalseAndDeletedAtIsNull(storeId, pageable);
+        Page<Product> productPage = productRepository.findByStore_StoreIdAndIsHiddenFalseAndDeletedAtIsNull(
+            storeId, pageable);
 
         // 2. 페이지 객체에서 상품 리스트만 추출
         List<ProductResponseDto> productList = productPage.getContent().stream()
-                .map(productMapper::toDto)
-                .collect(Collectors.toList());
+            .map(productMapper::toDto)
+            .collect(Collectors.toList());
 
         // 3. 페이지 메타 데이터 -> dto 변환
         PageMetaDto pageMetaDto = productMapper.toPageDto(productPage);
@@ -128,7 +129,7 @@ public class ProductService {
     public ProductDetailResponseDto getProduct(UUID productId) {
         // 1. productId로 상품 조회
         Product product = productRepository.findWithOptionGroupsAndItemsByProductId(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
 
         return productMapper.toResponseDto(product);
     }
@@ -151,16 +152,19 @@ public class ProductService {
 
 
     // 검색 키워드와 사용자 배송지 정보로 상점 검색
-    public Page<StoreSearchResponseDto> getStoreListByProductNameAndAddressId(String keyword, UUID addressId, Pageable pageable) {
+    public Page<StoreSearchResponseDto> getStoreListByProductNameAndAddressId(String keyword,
+        UUID addressId, Pageable pageable) {
         // 1. 사용자의 배송지 조회
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "배송지가 존재하지 않습니다."));
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "배송지가 존재하지 않습니다."));
 
         // 2. 도로명 주소만 추출
         String roadName = extractRoadName(address.getRoadNameAddress());
 
         // 3. 키워드로 찾은 상품과 연계된 가게 중 배송지 주소 근처인 가게 조회
-        Page<Store> storePage = storeRepository.findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable);
+        Page<Store> storePage = storeRepository.findDistinctByProductNameContainingIgnoreCase(
+            keyword, roadName, pageable);
 
         // 3. entity -> dto 후 반환
         return storePage.map(storeMapper::toStoreSearchResponseDto);
@@ -168,15 +172,18 @@ public class ProductService {
 
 
     @Transactional
-    public void addGroupToProduct(ProductAddOptionGroupsRequestDto productAddOptionGroupsRequestDto) {
+    public void addGroupToProduct(
+        ProductAddOptionGroupsRequestDto productAddOptionGroupsRequestDto) {
         // 1. 상품 조회
         Product product = findProductOrThrow(productAddOptionGroupsRequestDto.getProductId());
 
         // 2. 상품 옵션 그룹들 조회
-        List<ProductOptionGroup> optionGroups = productAddOptionGroupsRequestDto.getProductOptionGroupIds().stream()
-                .map(productOptionGroupId -> productOptionGroupRepository.findById(productOptionGroupId)
-                        .orElseThrow(() -> new IllegalArgumentException("상품 옵션 그룹을 찾을 수 없습니다: " + productOptionGroupId)))
-                .toList();
+        List<ProductOptionGroup> optionGroups = productAddOptionGroupsRequestDto.getProductOptionGroupIds()
+            .stream()
+            .map(productOptionGroupId -> productOptionGroupRepository.findById(productOptionGroupId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "상품 옵션 그룹을 찾을 수 없습니다: " + productOptionGroupId)))
+            .toList();
 
         // 3. 상품에 상품 옵션 그룹 매핑
         optionGroups.forEach(product::addOptionGroup);
@@ -189,7 +196,7 @@ public class ProductService {
     // --- 상품 공통 조회 메소드 ---
     private Product findProductOrThrow(UUID productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
     }
 
     // 사용자 배송지에서 도로명 주소만 추출하는 메소드
