@@ -53,12 +53,12 @@ public class AddressRepositoryImpl implements AddressRepository {
 
     @Override
     public Optional<Address> findDefaultByUser(User user) {
-        return addressJpaRepository.findByUserAndIsDefaultTrue(user);
+        return addressJpaRepository.findByUserAndDefaultAddressTrue(user);
     }
 
     @Override
     public Optional<Address> findDefaultByUserId(Long userId) {
-        return addressJpaRepository.findByUserUserIdAndIsDefaultTrue(userId);
+        return addressJpaRepository.findByUserUserIdAndDefaultAddressTrue(userId);
     }
 
     @Override
@@ -95,13 +95,13 @@ public class AddressRepositoryImpl implements AddressRepository {
 
     @Override
     public List<Address> findByUserOrderByIsDefaultDescCreatedAtDesc(User user) {
-        return addressJpaRepository.findByUserOrderByIsDefaultDescCreatedAtDesc(user);
+        return addressJpaRepository.findByUserOrderByDefaultAddressDescCreatedAtDesc(user);
     }
 
     @Override
     public List<Address> findActiveByUserOrderByIsDefaultDescCreatedAtDesc(User user) {
         // 소프트 삭제가 적용된다면 deletedAt이 null인 것만 조회
-        return addressJpaRepository.findByUserOrderByIsDefaultDescCreatedAtDesc(user);
+        return addressJpaRepository.findByUserOrderByDefaultAddressDescCreatedAtDesc(user);
     }
 
     @Override
