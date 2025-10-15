@@ -82,7 +82,6 @@ public class Order extends BaseEntity {
     //주문 상품 추가(연관관계 형성)
     public void addOrderProduct(OrderProduct orderProduct) {
         this.orderProducts.add(orderProduct);
-        orderProduct.setOrder(this);
     }
 
     //주문 상태 변경
@@ -164,6 +163,7 @@ public class Order extends BaseEntity {
         }
     }
 
+    //주문 생성 정적 팩토리 메서드
     public static Order place(User user, Store store, List<PlaceOrderCommand> commands,
         Map<UUID, Product> products, String address, String memo) {
 
@@ -175,12 +175,7 @@ public class Order extends BaseEntity {
 
         for (PlaceOrderCommand c : commands) {
             Product p = products.get(c.productId());
-            OrderProduct op = OrderProduct.builder()
-                .product(p)
-                .productName(p.getProductName())
-                .unitPrice(p.getPrice())
-                .quantity(c.quantity())
-                .build();
+            OrderProduct op = OrderProduct.of(p, c.quantity(), order);
 
             order.addOrderProduct(op);
         }
@@ -189,6 +184,7 @@ public class Order extends BaseEntity {
         return order;
     }
 
+    //주문 총액, 총 수량 계산
     private void recalculateTotals() {
         long sum = 0L;
         int cnt = 0;
