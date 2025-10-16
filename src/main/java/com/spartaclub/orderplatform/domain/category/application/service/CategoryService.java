@@ -2,18 +2,13 @@ package com.spartaclub.orderplatform.domain.category.application.service;
 
 import com.spartaclub.orderplatform.domain.category.application.mapper.CategoryMapper;
 import com.spartaclub.orderplatform.domain.category.domain.model.Category;
-import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
 import com.spartaclub.orderplatform.domain.category.infrastructure.repository.CategoryRepository;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategoryRequestDto;
-import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategorySearchRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,10 +33,7 @@ public class CategoryService {
     // 카테고리 생성
     @Transactional
     public CategoryResponseDto createCategory(User user, CategoryRequestDto dto) {
-        // 1. 카테고리 관리자 등급 확인
-//        if (!user.getRole().equals("MASTER")) {
-//            throw new IllegalArgumentException("유효한 카테고리 등록자가 아닙니다.");
-//        }
+
         /*
          * ▶고민해본 요소들
          * 가게 이름으로 해당 store행 도출 후 storeId 뽑아옴
@@ -53,49 +45,39 @@ public class CategoryService {
         CategoryType type = CategoryType.getInstance(dto.getName());
         */
         // 2. requestDto → entity 전환
-        CategoryType categoryType = CategoryType.getInstance(dto.getName());
-        Category category = categoryMapper.toCategoryEntity(dto, categoryType);
+//        CategoryType categoryType = CategoryType.getInstance(dto.getName());
+//        Category category = categoryMapper.toCategoryEntity(dto, categoryType);
+//        String type = treatName(dto.getName());
+        Category category = Category.of(dto.getName());
         // 3. DB 저장 후 entity → responseDto 전환
         return categoryMapper.toCategoryResponseDto(categoryRepository.save(category));
 
     }
 
-    // 카테고리 조회
+    // 카테고리 상세 조회
     @Transactional(readOnly = true)
-    public Page<CategoryResponseDto> searchCategory(CategorySearchRequestDto dto) {
-        // Pageable로 페이지 단위 처리 설정
-        Pageable pageable = PageRequest.of(
-            dto.getPage(), dto.getSize(),
-            Sort.by(dto.getDirection(), "createdAt")
-        );
-        // 카테고리 타입이 존재하면 카테고리 타입으로 조회
-        if (dto.getCategoryType() != null) {
-            return categoryRepository.findByTypeAndDeletedAtIsNull(
-                    CategoryType.valueOf(dto.getCategoryType()), pageable)
-                .map(categoryMapper::toCategoryResponseDto);
-            // 카테고리 타입이 존재하지 않으면 전체 타입으로 조회
-        } else {
-            return categoryRepository.findAll(pageable)
-                .map(categoryMapper::toCategoryResponseDto);
-        }
+    public CategoryResponseDto searchCategory(UUID categoryId) {
+        return categoryMapper.toCategoryResponseDto(
+            findCategory(categoryId));
+    }
+
+    // 카테고리 목록 조회
+    @Transactional(readOnly = true)
+    public List<CategoryResponseDto> searchCategoryList(User user) {
+        return categoryRepository.findAll().stream().map(categoryMapper::toCategoryResponseDto)
+            .toList();
     }
 
     // 카테고리 수정
     @Transactional
     public CategoryResponseDto updateCategory(User user, UUID categoryId,
         CategoryRequestDto dto) {
-        // 1. 카테고리 관리자 등급 확인
-//        if (!user.getRole().equals("MASTER")) {
-//            throw new IllegalArgumentException("유효한 카테고리 관리자가 아닙니다.");
-//        }
+
         // 2. categoryId로 해당 카테코리 DB존재 확인
         Category category = findCategory(categoryId);
 
-        if (category == null) {
-            // 3. 카테고리 엔티티 update 함수에서 변경된 값 반영
-            CategoryType tmp = CategoryType.valueOf(dto.getName());
-            category.updateReview(tmp);
-        }
+        category.updateCategory(dto.getName());
+        category = categoryRepository.save(category);
         // 4. entity → responseDto 변환 뒤 반환
         return categoryMapper.toCategoryResponseDto(category);
     }
@@ -103,15 +85,33 @@ public class CategoryService {
     // 카테고리 삭제
     @Transactional
     public void deleteCategory(User user, UUID categoryId) {
-        // 1. 카테고리 관리자 등급 확인
-//        if (!user.getRole().equals("MASTER")) {
-//            throw new IllegalArgumentException("유효한 카테고리 관리자가 아닙니다.");
-//        }
         // 2. categoryId로 해당 카테코리 DB존재 확인
         Category category = findCategory(categoryId);
         // 3. 카테고리 도메인 삭제 메서드 호출
         category.deleteCategory(user.getUserId());
     }
+
+//    public String treatName(String name) {
+//        if (Pattern.matches("^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]*$", name)) {
+//            if (name.equals("한식")) {
+//                return "KOREANFOOD";
+//            } else if (name.equals("중식")) {
+//                return "CHINESEFOOD";
+//            } else if (name.equals("분식")) {
+//                return "SNACKFOOD";
+//            } else if (name.equals("치킨")) {
+//                return "CHICKEN";
+//            } else if (name.equals("피자")) {
+//                return "PIZZA";
+//            } else if (name.equals("양식")) {
+//                return "WESTERNFOOD";
+//            } else if (name.equals("일식")) {
+//                return "JAPANESEFOOD";
+//            }
+//        }
+//        return name;
+//    }
+
 
     // 존재하는 카테고리인지 확인
     @Transactional(readOnly = true)

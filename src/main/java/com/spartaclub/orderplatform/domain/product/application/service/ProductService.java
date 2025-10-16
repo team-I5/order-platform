@@ -194,7 +194,7 @@ public class ProductService {
 
 
     // --- 상품 공통 조회 메소드 ---
-    private Product findProductOrThrow(UUID productId) {
+    public Product findProductOrThrow(UUID productId) {
         return productRepository.findById(productId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
     }

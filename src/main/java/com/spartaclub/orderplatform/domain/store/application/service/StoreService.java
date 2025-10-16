@@ -314,7 +314,7 @@ public class StoreService {
     }
 
     // 존재하는 음식점인지 확인
-    private Store getStore(UUID storeId) {
+    public Store getStore(UUID storeId) {
         return storeRepository.findById(storeId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 음식점 입니다."));
     }
@@ -340,7 +340,7 @@ public class StoreService {
                 );
 
             if (exist) {
-                throw new IllegalArgumentException("이미 등록된 카테고리 입니다." + category.getType().name());
+                throw new IllegalArgumentException("이미 등록된 카테고리 입니다." + category.getType());
             }
 
             store.addCategory(category);

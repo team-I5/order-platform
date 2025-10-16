@@ -2,18 +2,19 @@ package com.spartaclub.orderplatform.domain.category.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.category.application.service.CategoryService;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategoryRequestDto;
-import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategorySearchRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     // 카테고리 등록 API
+    @PreAuthorize("hasAnyRole({'MASTER','MANAGER'})")
     @PostMapping
     public ResponseEntity<ApiResponse<CategoryResponseDto>> createCategory(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -52,6 +54,7 @@ public class CategoryController {
     }
 
     // 카테고리 수정 API
+    @PreAuthorize("hasAnyRole({'MASTER','MANAGER'})")
     @PatchMapping("/{categoryId}")
     public ResponseEntity<ApiResponse<CategoryResponseDto>> updateCategory(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -64,6 +67,7 @@ public class CategoryController {
     }
 
     // 카테고리 삭제 API
+    @PreAuthorize("hasAnyRole({'MASTER','MANAGER'})")
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -74,12 +78,23 @@ public class CategoryController {
             .body(ApiResponse.success());
     }
 
-    // 카테고리 조회 API
+    // 카테고리 상세 조회 API
     @GetMapping("/{categoryId}")
-    public ResponseEntity<ApiResponse<Page<CategoryResponseDto>>> searchCategory(
-        @RequestBody CategorySearchRequestDto dto
+    public ResponseEntity<ApiResponse<CategoryResponseDto>> searchCategory(
+        @PathVariable UUID categoryId
     ) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(ApiResponse.success(categoryService.searchCategory(dto)));
+            .body(ApiResponse.success(categoryService.searchCategory(categoryId)));
+    }
+
+    // 카테고리 상세 조회 API
+    @PreAuthorize("hasAnyRole({'MASTER','MANAGER'})")
+    @GetMapping("")
+    public ResponseEntity<ApiResponse<List<CategoryResponseDto>>> searchCategoryList(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        Pageable pageable
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(ApiResponse.success(categoryService.searchCategoryList(userDetails.getUser())));
     }
 }

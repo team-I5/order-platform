@@ -17,7 +17,6 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,8 +30,6 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "p_reviews")
 @Getter
-// 외부에서 접근해 리뷰 객체 생성할 수 있게 애너테이션 추가
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
 
@@ -47,20 +44,49 @@ public class Review extends BaseEntity {
 
     // 외래 키 관계 설정
     @ManyToOne(fetch = FetchType.LAZY)  // 리뷰 : 회원 → Many to one
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "userId", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)   // 리뷰 : 음식점 → Many to One
-    @JoinColumn(name = "storeId")
+    @JoinColumn(name = "storeId", nullable = false)
     private Store store;
 
+    //정적 팩토리 메서드 (리뷰 생성용)
+    public static Review create(User user, Store store, Product product, Order order,
+        Integer rating,
+        String contents) {
+        Review review = new Review();
+        review.user = user;
+        review.store = store;
+        review.order = order;
+        review.product = product;
+        review.rating = rating;
+        review.contents = contents;
+        return review;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+        if (!store.getReviews().contains(this)) {
+            store.getReviews().add(this);
+        }
+    }
+
     @OneToOne(fetch = FetchType.LAZY)    // 리뷰 : 주문 → One to One
-    @JoinColumn(name = "orderId")
+    @JoinColumn(name = "orderId", nullable = false)
     private Order order;
+//    private UUID orderId;
 
     @ManyToOne(fetch = FetchType.LAZY)    // 리뷰 : 상품 → Many to One
-    @JoinColumn(name = "productId")
+    @JoinColumn(name = "productId", nullable = false)
     private Product product;
+
+    public void setProduct(Product product) {
+        this.product = product;
+        if (!product.getReviews().contains(this)) {
+            product.getReviews().add(this);
+        }
+    }
 
     // 리뷰 수정 메서드
     public void updateReview(Integer rating, String contents) {
@@ -71,9 +97,5 @@ public class Review extends BaseEntity {
     // 리뷰 삭제 메서드(soft delete)
     public void deleteReview(Long userId) {
         delete(userId);
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 }

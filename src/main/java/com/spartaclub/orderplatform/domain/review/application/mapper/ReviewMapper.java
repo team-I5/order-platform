@@ -1,7 +1,6 @@
 package com.spartaclub.orderplatform.domain.review.application.mapper;
 
 import com.spartaclub.orderplatform.domain.review.domain.model.Review;
-import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewCreateRequestDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewResponseDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewSearchResponseDto;
 import org.mapstruct.Mapper;
@@ -24,17 +23,13 @@ public interface ReviewMapper {
      * 메뉴ID product_id
      */
     // RequestDto → Entity 변환
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "store", ignore = true)
-    @Mapping(target = "order", ignore = true)
-    @Mapping(target = "product", ignore = true)
-    // reviewId DB auto_increment로 자동 생성
-    @Mapping(target = "reviewId", ignore = true)
-    // 생성자, 수정자, 삭제자 Audit에서 자동 생성
-    @Mapping(target = "createdId", ignore = true)
-    @Mapping(target = "modifiedId", ignore = true)
-    @Mapping(target = "deletedId", ignore = true)
-    Review toReviewEntity(ReviewCreateRequestDto reviewCreateRequestDto);
+//    @Mapping(target = "user", ignore = true)
+//    @Mapping(target = "store", ignore = true)
+//    @Mapping(target = "order", ignore = true)
+//    @Mapping(target = "product", ignore = true)
+//    // reviewId DB auto_increment로 자동 생성
+//    @Mapping(target = "reviewId", ignore = true)
+//    Review toReviewEntity(User user, ReviewCreateRequestDto requestDto);
 
     // Entity → ResponseDto 변환
     @Mapping(target = "userId", source = "user.userId")
@@ -43,10 +38,8 @@ public interface ReviewMapper {
     @Mapping(target = "productId", source = "product.productId")
     ReviewResponseDto toReviewDto(Review review);
 
-
     @Mapping(target = "rating", source = "rating")
     @Mapping(target = "contents", source = "contents")
     ReviewSearchResponseDto toReviewSearchResponseDto(Review review);
-
 
 }

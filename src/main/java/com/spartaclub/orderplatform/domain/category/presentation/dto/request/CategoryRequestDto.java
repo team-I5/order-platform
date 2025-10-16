@@ -1,6 +1,6 @@
 package com.spartaclub.orderplatform.domain.category.presentation.dto.request;
 
-import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CategoryRequestDto {
 
-    @Column(nullable = false)
+    @NotBlank
     private String name;
 }

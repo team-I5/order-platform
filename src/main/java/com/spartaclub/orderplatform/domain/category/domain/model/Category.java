@@ -2,10 +2,9 @@ package com.spartaclub.orderplatform.domain.category.domain.model;
 
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,25 +36,31 @@ public class Category extends BaseEntity {
 
     // Enum에 요소가 추가되어야 하는 상황에 적용해보려고 CategoryConverter 고민했었음.
     //    @Convert(converter = CategoryConverter.class)
-    @Enumerated(value = EnumType.STRING)
-    @Column(nullable = false)
-    public CategoryType type;      // 카테고리 종류
 
-    public Category(CategoryType type) {
+    @Column(nullable = false)
+    public String type;      // 카테고리 종류
+
+    public Category(String type) {
         this.type = type;
     }
 
     // 외래 키 관계 설정 StoreyCategory → Category
-    @OneToMany(mappedBy = "category", orphanRemoval = true)
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StoreCategory> storeCategories = new ArrayList<>();
 
     // 카테고리 수정 메서드
-    public void updateReview(CategoryType type) {
+    public void updateCategory(String type) {
         this.type = type;
     }
 
     // 카테고리 삭제 메서드
     public void deleteCategory(Long userId) {
         delete(userId);
+    }
+
+    public static Category of(String type) {
+        Category category = new Category();
+        category.type = type;
+        return category;
     }
 }

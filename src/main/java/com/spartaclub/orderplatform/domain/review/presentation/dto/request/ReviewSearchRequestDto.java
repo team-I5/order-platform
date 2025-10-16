@@ -1,28 +1,24 @@
 package com.spartaclub.orderplatform.domain.review.presentation.dto.request;
 
 
-import java.util.UUID;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.domain.Sort;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class ReviewSearchRequestDto {
+@RequiredArgsConstructor
+public class ReviewSearchRequestDto extends ReviewCreateRequestDto {
 
-    // foreign key
-    private Long userId;
-    private UUID storeId;
-    private UUID orderId;
-    private UUID productId;
-    // option value
-    private Integer rating;
-    private String contents;
     // page set
-    private int page = 0;
-    private int size = 10;
-    private Sort.Direction direction = Sort.Direction.DESC;
+    private final int page;
+    private final int size;
+    private final Sort.Direction direction;
 
+//    public void isRightPageSize() {
+//        if (size != 10 || size !=30 || size != 50) {
+//            this.size = 10;
+//        }
+//    }
 }
