@@ -12,4 +12,10 @@ import java.util.UUID;
 public interface StorePublicReader {
 
     Optional<StoreView> loadStoreSummaryInfo(UUID storeId);
+    /*
+    더 구현 해볼만한 메서드
+    List<StoreView> findByOwner(Long ownerId);                     // 오너의 모든 가게
+    Page<StoreView> search(StoreSearchQuery query, Pageable pageable); // 검색/페이징
+    Optional<StoreDetailView> loadStoreDetail(UUID storeId);       // 더 풍부한 상세 뷰
+     */
 }

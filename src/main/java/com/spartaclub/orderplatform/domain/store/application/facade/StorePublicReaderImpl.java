@@ -15,6 +15,10 @@ public class StorePublicReaderImpl implements StorePublicReader {
 
     @Override
     public Optional<StoreView> loadStoreSummaryInfo(UUID storeId) {
+        /*퍼사드 계층에서 할 수 있는 것들
+          도메인 간 접근 제어
+          제공 데이터 필터링
+        * */
         return storeRepository.findById(storeId)
             .map(StoreView::from);
     }
