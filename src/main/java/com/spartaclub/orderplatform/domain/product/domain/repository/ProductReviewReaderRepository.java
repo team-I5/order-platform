@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
-@Repository
-public interface ReviewReaderRepository {
+public interface ProductReviewReaderRepository {
     Page<Review> findAllByProduct_ProductId(UUID productId, Pageable pageable);
 }

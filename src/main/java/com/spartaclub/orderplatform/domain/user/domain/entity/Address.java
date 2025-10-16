@@ -21,6 +21,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@AttributeOverrides({
+        @AttributeOverride(name = "createdId", column = @Column(insertable = false, updatable = false)),
+})
 public class Address extends BaseEntity {
 
     @Id

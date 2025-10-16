@@ -40,7 +40,7 @@ public class ProductService {
     private final ProductAddressReaderRepository addressRepository;
     private final AiService aiService;
     private final ProductOptionGroupRepository productOptionGroupRepository;
-    private final ReviewReaderRepository reviewRepository;
+    private final ProductReviewReaderRepository reviewRepository;
 
     // 상품 등록 서비스 로직
     @Transactional
