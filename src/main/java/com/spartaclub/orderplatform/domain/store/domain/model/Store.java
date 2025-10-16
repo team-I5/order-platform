@@ -1,5 +1,8 @@
 package com.spartaclub.orderplatform.domain.store.domain.model;
 
+import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.APPROVED;
+import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.PENDING;
+import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.REJECTED;
 import static jakarta.persistence.EnumType.STRING;
 
 import com.spartaclub.orderplatform.domain.category.entity.Category;
@@ -7,8 +10,8 @@ import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
-import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,8 +31,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.LastModifiedBy;
 
 @Entity
 @Table(name = "p_stores")
@@ -91,19 +92,19 @@ public class Store extends BaseEntity {
 
     // 재승인 요청
     public void requestReapproval() {
-        this.status = StoreStatus.PENDING;
+        this.status = PENDING;
         this.rejectReason = null;
     }
 
     // 음식점 승인
     public void approve() {
-        this.status = StoreStatus.APPROVED;
+        this.status = APPROVED;
         this.rejectReason = null;
     }
 
     // 음식점 승인 거절
     public void reject(String rejectReason) {
-        this.status = StoreStatus.REJECTED;
+        this.status = REJECTED;
         this.rejectReason = rejectReason;
     }
 
