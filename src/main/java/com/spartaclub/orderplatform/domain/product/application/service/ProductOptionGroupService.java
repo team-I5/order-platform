@@ -2,7 +2,8 @@ package com.spartaclub.orderplatform.domain.product.application.service;
 
 import com.spartaclub.orderplatform.domain.product.application.mapper.ProductOptionGroupMapper;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupJPARepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupRequestDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupResponseDto;
 import lombok.RequiredArgsConstructor;

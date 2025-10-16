@@ -4,25 +4,15 @@ import com.spartaclub.orderplatform.domain.ai.application.service.AiService;
 import com.spartaclub.orderplatform.domain.product.application.mapper.ProductMapper;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.ProductRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.ReviewReaderRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.ProductStoreReaderRepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
-import com.spartaclub.orderplatform.domain.review.repository.ReviewRepository;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
-import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import com.spartaclub.orderplatform.domain.user.domain.entity.Address;
 import com.spartaclub.orderplatform.domain.user.domain.repository.AddressRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +22,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 상품 Service
@@ -46,12 +39,12 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final StoreRepository storeRepository;
+    private final ProductStoreReaderRepository storeRepository;
     private final StoreMapper storeMapper;
     private final AddressRepository addressRepository;
     private final AiService aiService;
     private final ProductOptionGroupRepository productOptionGroupRepository;
-    private final ReviewRepository reviewRepository;
+    private final ReviewReaderRepository reviewRepository;
 
     // 상품 등록 서비스 로직
     @Transactional

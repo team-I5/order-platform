@@ -2,11 +2,13 @@ package com.spartaclub.orderplatform.domain.product.application.service;
 
 import com.spartaclub.orderplatform.domain.product.application.mapper.ProductOptionItemMapper;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.ProductOptionItemRepository;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupJPARepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionItemRequestDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionItemResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionItem;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionItemRepository;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionItemJPARepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
