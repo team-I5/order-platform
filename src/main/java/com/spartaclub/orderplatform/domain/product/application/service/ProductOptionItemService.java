@@ -33,7 +33,10 @@ public class ProductOptionItemService {
                 .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_OPTION_GROUP_NOT_EXIST));
 
         // 2. 아이템 엔티티 생성
-        ProductOptionItem item = productOptionItemMapper.toEntity(productOptionGroup, productOptionItemRequestDto);
+        ProductOptionItem item = ProductOptionItem.create(
+                productOptionGroup,
+                productOptionItemRequestDto.getOptionName(),
+                productOptionItemRequestDto.getAdditionalPrice());
 
         // 3. 그룹의 아이템 리스트에 추가
         productOptionGroup.getOptionItems().add(item);

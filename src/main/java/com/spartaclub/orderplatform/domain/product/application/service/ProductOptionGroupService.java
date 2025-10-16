@@ -24,13 +24,18 @@ public class ProductOptionGroupService {
 
     @Transactional
     public ProductOptionGroupResponseDto createProductOptionGroup(ProductOptionGroupRequestDto productOptionGroupRequestDto) {
-        // 2. Dto -> Entity
-        ProductOptionGroup group = productOptionGroupMapper.toEntity(productOptionGroupRequestDto);
+        // 1. group 생성
+        ProductOptionGroup group = ProductOptionGroup.create(
+                productOptionGroupRequestDto.getOptionGroupName(),
+                productOptionGroupRequestDto.getTag(),
+                productOptionGroupRequestDto.getMinSelect(),
+                productOptionGroupRequestDto.getMaxSelect()
+        );
 
-        // 3. DB 저장
+        // 2. DB 저장
         ProductOptionGroup saved = productOptionGroupRepository.save(group);
 
-        // 4. -> Dto 후 반환
+        // 3. -> Dto 후 반환
         return productOptionGroupMapper.toResponseDto(saved);
     }
 

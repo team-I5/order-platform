@@ -40,7 +40,7 @@ public class ProductService {
     private final ProductAddressReaderRepository addressRepository;
     private final AiService aiService;
     private final ProductOptionGroupRepository productOptionGroupRepository;
-    private final ReviewReaderRepository reviewRepository;
+    private final ProductReviewReaderRepository reviewRepository;
 
     // 상품 등록 서비스 로직
     @Transactional
@@ -52,26 +52,24 @@ public class ProductService {
         Store store = storeRepository.findById(productCreateRequestDto.getStoreId())
                 .orElseThrow(() -> new BusinessException(ProductErrorCode.STORE_NOT_EXIST));
 
-        // 2. dto → entity 변환
-        Product product = productMapper.toEntity(productCreateRequestDto);
+        // 2. 상품 생성
+        Product product = Product.create(productCreateRequestDto.getProductName(), productCreateRequestDto.getPrice(), productCreateRequestDto.getProductDescription(), store);
 
-        // 3. store 객체 연결
-        product.setStore(store);
-
-        // 4. 저장
+        // 3. 저장
         Product savedProduct = productRepository.save(product);
 
-        // 5. 캐시에 AI 응답이 있으면 로그 저장
+        // 4. 캐시에 AI 응답이 있으면 로그 저장
         aiService.saveAiLogsIfNeeded(userId, savedProduct.getProductId(), savedProduct.getCreatedId(), productCreateRequestDto.getProductDescription());
 
-        // 6. entity → dto 변환 후 반환
+        // 5. entity → dto 변환 후 반환
         return productMapper.toDto(savedProduct);
     }
 
     // 상품 수정 서비스 로직
     @Transactional
-    public ProductResponseDto updateProduct(UUID productId,
-                                            ProductUpdateRequestDto productUpdateRequestDto
+    public ProductResponseDto updateProduct(
+            UUID productId,
+            ProductUpdateRequestDto productUpdateRequestDto
     ) {
         // 1. productId로 상품 조회
         Product product = findProductOrThrow(productId);
@@ -194,7 +192,7 @@ public class ProductService {
 
 
     // --- 상품 공통 조회 메소드 ---
-    private Product findProductOrThrow(UUID productId) {
+    public Product findProductOrThrow(UUID productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_EXIST));
     }
