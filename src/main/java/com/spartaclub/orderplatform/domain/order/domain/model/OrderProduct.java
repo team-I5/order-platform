@@ -11,19 +11,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "p_orders_products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Builder
-@AllArgsConstructor
 public class OrderProduct extends BaseEntity {
 
     @Id
@@ -33,7 +28,6 @@ public class OrderProduct extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false, columnDefinition = "uuid")
-    @Setter
     private Order order;                   // 주문 FK
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -49,4 +43,23 @@ public class OrderProduct extends BaseEntity {
     @Column(name = "productName", nullable = false, length = 200)
     private String productName;             // 주문 시점 메뉴명
 
+    OrderProduct(Product product, String productName, Long unitPrice, Integer quantity,
+        Order order) {
+        this.product = product;
+        this.productName = productName;
+        this.unitPrice = unitPrice;
+        this.quantity = quantity;
+        this.order = order;
+    }
+
+    // 정적 팩토리 메서드
+    public static OrderProduct of(Product product, int quantity, Order order) {
+        return new OrderProduct(
+            product,
+            product.getProductName(),
+            product.getPrice(),
+            quantity,
+            order
+        );
+    }
 }

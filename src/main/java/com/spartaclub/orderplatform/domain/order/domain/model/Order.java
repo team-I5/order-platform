@@ -1,11 +1,15 @@
 package com.spartaclub.orderplatform.domain.order.domain.model;
 
+import com.spartaclub.orderplatform.domain.order.application.command.PlaceOrderCommand;
 import com.spartaclub.orderplatform.domain.order.exception.OrderErrorCode;
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,22 +26,20 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "p_orders")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Builder
-@AllArgsConstructor
+@Slf4j
 public class Order extends BaseEntity {
 
     @Id
@@ -47,7 +49,6 @@ public class Order extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @Setter
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -58,7 +59,6 @@ public class Order extends BaseEntity {
         cascade = CascadeType.ALL,        // Order 저장/삭제 시 자식도 같이
         orphanRemoval = true,             // 컬렉션에서 제거 시 DB에서도 삭제
         fetch = FetchType.LAZY)
-    @Builder.Default
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
     @Column(name = "total_price", nullable = false)
@@ -84,15 +84,6 @@ public class Order extends BaseEntity {
     //주문 상품 추가(연관관계 형성)
     public void addOrderProduct(OrderProduct orderProduct) {
         this.orderProducts.add(orderProduct);
-        orderProduct.setOrder(this);
-    }
-
-    //음식점 연관관계 형성
-    public void setStore(Store store) {
-        this.store = store;
-        if (!store.getOrders().contains(this)) {
-            store.getOrders().add(this);
-        }
     }
 
     //주문 상태 변경
@@ -102,7 +93,10 @@ public class Order extends BaseEntity {
 
     //주문 상태 및 결제 금액 검증
     public void validatePaymentAvailable(Long requestAmount) {
-        if (this.status != OrderStatus.PAYMENT_PENDING) {
+        if (status.isNotPending()) {
+            log.warn(
+                "[Order-Validate] 주문 상태로 인한 결제 요청 또는 승인 불가 상태 감지 - requiredStatus={}, currentStatus={}",
+                OrderStatus.PAYMENT_PENDING, status);
             throw new BusinessException(OrderErrorCode.INVALID_STATUS_FOR_PAYMENT);
         }
 
@@ -117,7 +111,8 @@ public class Order extends BaseEntity {
     //주문 취소 가능 여부 검증
     public void checkCancelable() {
         // 상태 검증
-        if (this.status != OrderStatus.PAYMENT_PENDING && this.status != OrderStatus.PAID) {
+        if (status.isNotPending() && status.isNotPaid()) {
+            log.warn("[Order-Validate] 주문 취소 불가 상태 감지 - currentStatus={}", status);
             throw new BusinessException(OrderErrorCode.INVALID_STATUS_FOR_CANCELLATION);
         }
 
@@ -129,28 +124,77 @@ public class Order extends BaseEntity {
 
         long elapsedMinutes = Duration.between(created, LocalDateTime.now()).toMinutes();
         if (elapsedMinutes > CANCEL_WINDOW_MINUTES) {
+            log.warn("[Order-Validate] 주문 취소 불가 상태 감지 - 주문 생성 후 경과 시간(분)={}", elapsedMinutes);
             throw new BusinessException(OrderErrorCode.CANCELLATION_WINDOW_EXPIRED);
         }
     }
 
     //주문 승인 가능 여부 검증
     public void checkAcceptable() {
-        if (this.status != OrderStatus.PAID) {
+        if (status.isNotPaid()) {
+            log.warn("[Order-Validate] 주문 승인 불가 상태 감지 - requiredStatus={}, currentStatus={}",
+                OrderStatus.PAID, status);
             throw new BusinessException(OrderErrorCode.INVALID_STATUS_FOR_ACCEPT);
         }
     }
 
     //주문 거부 가능 여부
     public void checkRejectable() {
-        if (this.status != OrderStatus.PAYMENT_PENDING && this.status != OrderStatus.PAID) {
+        if (status.isNotPending() && status.isNotPaid()) {
+            log.warn("[Order-Validate] 주문 거부 불가 상태 감지 - currentStatus={}", status);
             throw new BusinessException(OrderErrorCode.INVALID_STATUS_FOR_REJECT);
         }
     }
 
     //주문 배달 완료 처리 가능 여부
     public void checkDeliverable() {
-        if (this.status != OrderStatus.ACCEPTED) {
+        if (status.isNotAccepted()) {
+            log.warn("[Order-Validate] 주문 배달 완료 처리 불가 상태 감지 - requiredStatus={}, currentStatus={}",
+                OrderStatus.ACCEPTED, status);
             throw new BusinessException(OrderErrorCode.INVALID_STATUS_FOR_COMPLETE_DELIVERY);
         }
+    }
+
+    // User, Store 연관 관계 형성
+    private void link(User user, Store store) {
+        this.user = user;
+
+        this.store = store;
+        if (!store.getOrders().contains(this)) {
+            store.getOrders().add(this);
+        }
+    }
+
+    //주문 생성 정적 팩토리 메서드
+    public static Order place(User user, Store store, List<PlaceOrderCommand> commands,
+        Map<UUID, Product> products, String address, String memo) {
+
+        Order order = new Order();
+        order.link(user, store);
+        order.status = OrderStatus.PAYMENT_PENDING;
+        order.address = address;
+        order.memo = memo;
+
+        for (PlaceOrderCommand c : commands) {
+            Product p = products.get(c.productId());
+            OrderProduct op = OrderProduct.of(p, c.quantity(), order);
+
+            order.addOrderProduct(op);
+        }
+
+        order.calculateTotalPriceAndCount();
+        return order;
+    }
+
+    //주문 총액, 총 수량 계산
+    private void calculateTotalPriceAndCount() {
+        long sum = 0L;
+        int cnt = 0;
+        for (OrderProduct op : orderProducts) {
+            sum += op.getUnitPrice() * (long) op.getQuantity();
+            cnt += op.getQuantity();
+        }
+        this.totalPrice = sum;
+        this.productCount = cnt;
     }
 }
