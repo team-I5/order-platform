@@ -1,7 +1,9 @@
 package com.spartaclub.orderplatform.domain.payment.domain.model;
 
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
+import com.spartaclub.orderplatform.domain.payment.exception.PaymentErrorCode;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,18 +16,16 @@ import jakarta.persistence.Table;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "p_payments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Builder
-@AllArgsConstructor
+@Slf4j
 public class Payment extends BaseEntity {
 
     @Id
@@ -57,38 +57,37 @@ public class Payment extends BaseEntity {
     public void validateApproval(String requestPgPaymentKey, String requestPgOrderId,
         Long requestAmount) {
         // 결제 상태 검증
-        if (this.status != PaymentStatus.AUTHORIZED) {
-            throw new IllegalStateException(
-                "결제를 승인할 수 없는 상태입니다. (현재 상태: " + this.status + ")"
-            );
+        if (status.isNotAuthorized()) {
+            log.warn("[Payment-Validate] 결제 승인 불가 상태 감지 - paymentId={}, currentStatus={}",
+                paymentId, status);
+            throw new BusinessException(PaymentErrorCode.INVALID_STATUS_FOR_APPROVAL);
         }
 
         validatePgPaymentKey(requestPgPaymentKey);
 
         // PG 주문번호 검증
         if (!this.pgOrderId.trim().equals(requestPgOrderId.trim())) {
-            throw new IllegalStateException(
-                "PG 주문번호가 일치하지 않습니다. (저장된 주문번호: " + this.pgOrderId + ", 요청 주문번호: "
-                    + requestPgOrderId + ")"
-            );
+            log.warn("[Payment-Validate] PG 주문번호 불일치 - storedPgOrderId={}, requestPgOrderId={}",
+                pgOrderId, requestPgOrderId);
+            throw new BusinessException(PaymentErrorCode.PG_ORDER_ID_MISMATCH);
         }
 
         // 결제 금액 검증
         if (!Objects.equals(this.paymentAmount, requestAmount)) {
-            throw new IllegalStateException(
-                "결제 금액이 일치하지 않습니다. (저장된 금액: " + this.paymentAmount + ", 요청 금액: " + requestAmount
-                    + ")"
-            );
+            log.warn(
+                "[Payment-Validate] 결제 금액 불일치 - paymentId={}, storedAmount={}, requestAmount={}",
+                paymentId, paymentAmount, requestAmount);
+            throw new BusinessException(PaymentErrorCode.INVALID_PAYMENT_AMOUNT);
         }
     }
 
     //결제 취소 검증
     public void checkCancelable(String requestPgPaymentKey) {
         //결제 상태 검증
-        if (this.status != PaymentStatus.CAPTURED) {
-            throw new IllegalStateException(
-                "결제를 취소할 수 없는 상태입니다. (현재 상태: " + this.status + ")"
-            );
+        if (status.isNotCaptured()) {
+            log.warn("[Payment-Validate] 결제 취소 불가 상태 - paymentId={}, currentStatus={}",
+                paymentId, status);
+            throw new BusinessException(PaymentErrorCode.INVALID_STATUS_FOR_CANCEL);
         }
 
         //결제 키 검증
@@ -98,15 +97,35 @@ public class Payment extends BaseEntity {
     //결제 키 검증
     public void validatePgPaymentKey(String requestPgPaymentKey) {
         if (this.pgPaymentKey == null || requestPgPaymentKey == null) {
-            throw new IllegalStateException("PG 결제키가 존재하지 않습니다.");
+            log.warn("[Payment-Validate] PG 결제키 누락 - paymentId={}, storedKey={}, requestKey={}",
+                paymentId, pgPaymentKey, requestPgPaymentKey);
+            throw new BusinessException(PaymentErrorCode.MISSING_PG_PAYMENT_KEY);
         }
 
         if (!this.pgPaymentKey.trim().equals(requestPgPaymentKey.trim())) {
-            throw new IllegalStateException(
-                "PG 결제키가 일치하지 않습니다. (저장된 키: " + this.pgPaymentKey + ", 요청 키: " + requestPgPaymentKey
-                    + ")"
-            );
+            log.warn("[Payment-Validate] PG 결제키 불일치 - paymentId={}, storedKey={}, requestKey={}",
+                paymentId, pgPaymentKey, requestPgPaymentKey);
+            throw new BusinessException(PaymentErrorCode.PG_PAYMENT_KEY_MISMATCH);
         }
+    }
+
+    public static Payment ofStatus(Order order, PaymentStatus status, Long paymentAmount,
+        String PgPaymentKey, String PgOrderId) {
+        Payment payment = new Payment();
+        payment.order = order;
+        payment.status = status;
+        payment.paymentAmount = paymentAmount;
+        payment.pgPaymentKey = PgPaymentKey;
+        payment.pgOrderId = PgOrderId;
+        return payment;
+    }
+
+    public static Payment ofStatus(Order order, PaymentStatus status, Long paymentAmount) {
+        Payment payment = new Payment();
+        payment.order = order;
+        payment.status = status;
+        payment.paymentAmount = paymentAmount;
+        return payment;
     }
 }
 

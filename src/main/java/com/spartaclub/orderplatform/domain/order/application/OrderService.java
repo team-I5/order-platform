@@ -1,15 +1,16 @@
 package com.spartaclub.orderplatform.domain.order.application;
 
-import com.spartaclub.orderplatform.domain.order.application.dto.query.OrderQuery;
+import static java.util.function.UnaryOperator.identity;
+
+import com.spartaclub.orderplatform.domain.order.application.command.PlaceOrderCommand;
 import com.spartaclub.orderplatform.domain.order.application.mapper.OrderMapper;
+import com.spartaclub.orderplatform.domain.order.application.query.OrderQuery;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
-import com.spartaclub.orderplatform.domain.order.domain.model.OrderProduct;
 import com.spartaclub.orderplatform.domain.order.domain.model.OrderStatus;
 import com.spartaclub.orderplatform.domain.order.domain.repository.OrderRepository;
 import com.spartaclub.orderplatform.domain.order.domain.repository.ProductReaderRepository;
 import com.spartaclub.orderplatform.domain.order.domain.repository.StoreReaderRepository;
 import com.spartaclub.orderplatform.domain.order.exception.OrderErrorCode;
-import com.spartaclub.orderplatform.domain.order.exception.ProductRefErrorCode;
 import com.spartaclub.orderplatform.domain.order.exception.StoreRefErrorCode;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.request.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.request.PlaceOrderRequestDto;
@@ -21,12 +22,13 @@ import com.spartaclub.orderplatform.domain.order.presentation.dto.response.Order
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.PlaceOrderResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.auth.exception.AuthErrorCode;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
-import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -52,58 +54,19 @@ public class OrderService {
     //주문 생성
     @Transactional
     public PlaceOrderResponseDto placeOrder(PlaceOrderRequestDto placeOrderRequestDto, User user) {
-        List<OrderItemRequest> products = placeOrderRequestDto.items(); // 주문 상품 리스트
+        List<OrderItemRequest> items = placeOrderRequestDto.items(); // 주문 상품 리스트
 
-        Store store = storeReaderRepository.findById(placeOrderRequestDto.storeId())
-            .orElseThrow(() -> {
-                log.warn("[Store] NOT_EXIST - storeId={}, userId={}",
-                    placeOrderRequestDto.storeId(),
-                    user.getUserId());
-                return new BusinessException(StoreRefErrorCode.NOT_EXIST);
-            });
+        //상품 Map
+        Map<UUID, Product> productMap = loadProductMap(items);
+        //상품Id, 수량 commands
+        List<PlaceOrderCommand> commands = items.stream().map(orderMapper::toCommand).toList();
 
-        Long totalPrice = 0L;
-        Integer productCount = 0;
-        List<OrderProduct> orderProducts = new ArrayList<>();
+        Store store = loadStore(placeOrderRequestDto.storeId(), user.getUserId());
 
-        // 총 주문 금액, 상품 개수 집계, 주문-상품 엔티티 생성
-        for (OrderItemRequest orderItem : products) {
-            Product product = productReaderRepository.findById(orderItem.productId())
-                .orElseThrow(() -> {
-                    log.warn("[Product] NOT_EXIST - productId={}, quantity={}, userId={}",
-                        orderItem.productId(),
-                        orderItem.quantity(),
-                        user.getUserId());
-                    return new BusinessException(ProductRefErrorCode.NOT_EXIST);
-                });
+        Order order = Order.place(user, store, commands, productMap, placeOrderRequestDto.address(),
+            placeOrderRequestDto.memo());
 
-            totalPrice += orderItem.quantity() * product.getPrice();
-            productCount += orderItem.quantity();
-
-            OrderProduct orderProduct = OrderProduct.builder()
-                .product(product)
-                .quantity(orderItem.quantity())
-                .unitPrice(product.getPrice())
-                .productName(product.getProductName())
-                .build();
-
-            orderProducts.add(orderProduct);
-        }
-
-        //Dto -> Entity 매핑
-        Order order = orderMapper.toEntity(placeOrderRequestDto,
-            totalPrice,
-            productCount,
-            user.getUserId());
-
-        //연관관계 형성
-        for (OrderProduct orderProduct : orderProducts) {
-            order.addOrderProduct(orderProduct);
-        }
-        order.setUser(user);
-        order.setStore(store);
-
-        orderRepository.save(order);
+        order = orderRepository.save(order);
 
         return new PlaceOrderResponseDto(order.getOrderId());
     }
@@ -257,5 +220,23 @@ public class OrderService {
                 log.warn("[Order] NOT_EXIST - orderId={}", orderId);
                 return new BusinessException(OrderErrorCode.NOT_EXIST);
             });
+    }
+
+    private Store loadStore(UUID storeId, Long userId) {
+        return storeReaderRepository.findById(storeId)
+            .orElseThrow(() -> {
+                log.warn("[Store] NOT_EXIST - storeId={}, userId={}", storeId, userId);
+                return new BusinessException(StoreRefErrorCode.NOT_EXIST);
+            });
+    }
+
+    // 상품 로딩(IN) → id->Product 맵
+    private Map<UUID, Product> loadProductMap(List<OrderItemRequest> items) {
+        List<UUID> ids = items.stream()
+            .map(OrderItemRequest::productId)
+            .toList();
+
+        return productReaderRepository.findByProductIdIn(ids).stream()
+            .collect(Collectors.toMap(Product::getProductId, identity()));
     }
 }

@@ -1,16 +1,16 @@
 package com.spartaclub.orderplatform.domain.product.infrastructure.repository;
 
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
-import java.util.UUID;
 /**
  * 상품 Repository
  *
@@ -18,7 +18,7 @@ import java.util.UUID;
  * @date 2025-10-02(목)
  */
 @Repository
-public interface ProductRepository extends JpaRepository<Product, UUID> {
+public interface ProductJPARepository extends JpaRepository<Product, UUID> {
     Page<Product> findByStore_StoreIdAndIsHiddenFalseAndDeletedAtIsNull(UUID storeId, Pageable pageable);
 
     @Query("""
@@ -30,4 +30,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     WHERE p.productId = :productId
 """)
     Optional<Product> findWithOptionGroupsAndItemsByProductId(@Param("productId") UUID productId);
+
+    List<Product> findByProductIdIn(Collection<UUID> productIds);
 }

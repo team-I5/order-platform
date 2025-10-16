@@ -3,6 +3,8 @@ package com.spartaclub.orderplatform.domain.user.presentation.controller;
 import com.spartaclub.orderplatform.global.auth.jwt.JwtUtil;
 import com.spartaclub.orderplatform.domain.user.application.service.UserService;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.TokenRefreshRequestDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.TokenRefreshResponseDto;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 전우선
  * @date 2025-10-03(금)
  */
+@Tag(name = "Auth", description = "인증 및 토큰 관리 API")
 @RestController
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
@@ -33,6 +36,7 @@ public class AuthController {
      * @param response   HTTP 응답 객체 (Authorization 헤더 설정용)
      * @return 토큰 갱신 성공 시 새로운 JWT 토큰과 사용자 정보 반환
      */
+    @Operation(summary = "토큰 갱신", description = "리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급합니다.")
     @PostMapping("/refresh")
     public ResponseEntity<TokenRefreshResponseDto> refreshToken(
         @Valid @RequestBody TokenRefreshRequestDto requestDto,

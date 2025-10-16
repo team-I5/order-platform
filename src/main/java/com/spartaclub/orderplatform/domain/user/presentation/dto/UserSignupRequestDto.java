@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.user.presentation.dto;
 
 import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,21 +14,25 @@ import lombok.Setter;
  * @author 전우선
  * @date 2025-10-02(목)
  */
+@Schema(description = "회원가입 요청 정보")
 @Getter
 @Setter
 @NoArgsConstructor
 public class UserSignupRequestDto {
 
+    @Schema(description = "사용자명 (4-10자, 영소문자와 숫자만 허용)", example = "user1234")
     @NotBlank(message = "사용자명은 필수입니다.")
     @Size(min = 4, max = 10, message = "사용자명은 4-10자 이내여야 합니다.")
     @Pattern(regexp = "^[a-z0-9]+$", message = "사용자명은 영소문자와 숫자만 사용 가능합니다.")
     private String username;
 
+    @Schema(description = "이메일 주소", example = "user@example.com")
     @NotBlank(message = "이메일은 필수입니다.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     @Size(max = 50, message = "이메일은 50자 이내여야 합니다.")
     private String email;
 
+    @Schema(description = "비밀번호 (8-15자, 영대소문자+숫자+특수문자 포함 필수)", example = "Password123!")
     @NotBlank(message = "비밀번호는 필수입니다.")
     @Size(min = 8, max = 15, message = "비밀번호는 8-15자 이내여야 합니다.")
     // 영대소문자, 숫자, 특수문자 모두 포함 필수
@@ -35,17 +40,21 @@ public class UserSignupRequestDto {
             message = "비밀번호는 영대소문자, 숫자, 특수문자를 모두 포함해야 합니다.")
     private String password;
 
+    @Schema(description = "닉네임 (2-10자)", example = "홍길동")
     @NotBlank(message = "닉네임은 필수입니다.")
     @Size(min = 2, max = 10, message = "닉네임은 2-10자 이내여야 합니다.")
     private String nickname;
 
+    @Schema(description = "연락처 (10-11자리 숫자)", example = "01012345678")
     @NotBlank(message = "연락처는 필수입니다.")
     @Pattern(regexp = "^\\d{10,11}$", message = "연락처는 10-11자리 숫자만 입력 가능합니다.")
     private String phoneNumber;
 
+    @Schema(description = "사용자 권한 (CUSTOMER 또는 OWNER)", example = "CUSTOMER")
     @NotNull(message = "권한은 필수입니다.")
     private UserRole role;
 
+    @Schema(description = "사업자번호 (OWNER 권한 시 필수, 10자리 숫자)", example = "1234567890")
     @Pattern(regexp = "^\\d{10}$", message = "사업자번호는 10자리 숫자만 입력 가능합니다.")
     private String businessNumber; // OWNER 권한 시 필수
 

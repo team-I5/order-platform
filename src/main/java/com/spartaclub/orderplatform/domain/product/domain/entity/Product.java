@@ -58,7 +58,6 @@ public class Product extends BaseEntity {
     private Boolean isHidden = false;
 
     // 소속 가게
-    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
@@ -74,11 +73,12 @@ public class Product extends BaseEntity {
     private List<Review> reviews = new ArrayList<>();
 
     // 정적 팩토리 메소드
-    public static Product create(String productName, Long price, String description) {
+    public static Product create(String productName, Long price, String description, Store store) {
         Product product = new Product();
         product.productName = productName;
         product.price = price;
         product.productDescription = description;
+        product.store = store;
         return product;
     }
 

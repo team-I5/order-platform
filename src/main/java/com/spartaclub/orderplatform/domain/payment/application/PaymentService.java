@@ -1,12 +1,17 @@
 package com.spartaclub.orderplatform.domain.payment.application;
 
+import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus.AUTHORIZED;
+import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus.CAPTURED;
+import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus.FAILED;
+import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus.REFUNDED;
+
 import com.spartaclub.orderplatform.domain.order.application.OrderService;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.payment.application.dto.query.PaymentQuery;
 import com.spartaclub.orderplatform.domain.payment.application.mapper.PaymentMapper;
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
-import com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus;
 import com.spartaclub.orderplatform.domain.payment.domain.repository.PaymentRepository;
+import com.spartaclub.orderplatform.domain.payment.exception.PaymentErrorCode;
 import com.spartaclub.orderplatform.domain.payment.infrastructure.pg.TossPaymentsClient;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.CancelPaymentRequestDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.ConfirmPaymentRequestDto;
@@ -16,13 +21,14 @@ import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.Ini
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentDetailResponseDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentsListResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
-import jakarta.persistence.EntityNotFoundException;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -31,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
@@ -47,7 +54,8 @@ public class PaymentService {
         order.validatePaymentAvailable(requestDto.amount());
 
         if (paymentRepository.existsByOrder(order)) {
-            throw new IllegalStateException("이미 결제가 존재하는 주문입니다.");
+            log.warn("[Payment] Duplicate Payment Exception");
+            throw new BusinessException(PaymentErrorCode.DUPLICATE_PAYMENT);
         }
 
         //PG사 결제 요청
@@ -60,24 +68,13 @@ public class PaymentService {
         String PgOrderId = redirectUrlParts[2];
 
         if (result.equals("success")) {
-            Payment payment = Payment.builder()
-                .order(order)
-                .paymentAmount(requestDto.amount())
-                .status(PaymentStatus.AUTHORIZED)
-                .pgPaymentKey(PgPaymentKey)
-                .pgOrderId(PgOrderId)
-                .build();
-
+            Payment payment = Payment.ofStatus(order, AUTHORIZED, requestDto.amount(),
+                PgPaymentKey, PgOrderId);
             paymentRepository.save(payment);
             return new InitPaymentResponseDto(payment.getPaymentId(), redirectUrl, PgPaymentKey,
                 PgOrderId);
         } else {
-            Payment payment = Payment.builder()
-                .order(order)
-                .paymentAmount(requestDto.amount())
-                .status(PaymentStatus.FAILED)
-                .build();
-
+            Payment payment = Payment.ofStatus(order, FAILED, requestDto.amount());
             paymentRepository.save(payment);
             return new InitPaymentResponseDto(payment.getPaymentId(), redirectUrl, null, null);
         }
@@ -101,7 +98,7 @@ public class PaymentService {
             requestDto.pgOrderId(), requestDto.amount());
 
         if (success) {
-            payment.changeStatus(PaymentStatus.CAPTURED);
+            payment.changeStatus(CAPTURED);
         }
 //        else {
 //            payment.changeStatus(PaymentStatus.FAILED);
@@ -119,7 +116,7 @@ public class PaymentService {
         boolean success = tossPaymentsClient.cancelPayment(requestDto.pgPaymentKey(),
             requestDto.cancelReason());
         if (success) {
-            payment.changeStatus(PaymentStatus.REFUNDED);
+            payment.changeStatus(REFUNDED);
         }
     }
 
@@ -131,7 +128,10 @@ public class PaymentService {
 
     public Payment findById(UUID paymentId) {
         return paymentRepository.findById(paymentId)
-            .orElseThrow(() -> new EntityNotFoundException("결제 정보를 찾을 수 없습니다: " + paymentId));
+            .orElseThrow(() -> {
+                log.warn("[Payment] NOT_EXIST - paymentId={}", paymentId);
+                return new BusinessException(PaymentErrorCode.NOT_EXIST);
+            });
     }
 
     private String[] parseRedirectUrl(String redirectUrl) {
@@ -143,13 +143,18 @@ public class PaymentService {
             // 쿼리 파라미터 부분만 분리
             String[] split = redirectUrl.split("\\?");
             if (split.length < 2) {
-                throw new IllegalArgumentException("잘못된 redirectUrl 형식입니다: " + redirectUrl);
+                log.warn("[RedirectURL-Parsing] 잘못된 형식 - '?' 구분자가 없습니다. URL: {}", redirectUrl);
+                throw new BusinessException(PaymentErrorCode.INVALID_REDIRECT_URL_FORMAT);
             }
 
             // 각 파라미터를 '=' 기준으로 분리
             String[] params = split[1].split("&");
             for (String param : params) {
                 String[] keyValue = param.split("=");
+                if (keyValue.length != 2) {
+                    log.warn("[RedirectURL-Parsing] 잘못된 파라미터 형식: {}", param);
+                    throw new BusinessException(PaymentErrorCode.INVALID_REDIRECT_URL_FORMAT);
+                }
                 String key = keyValue[0];
                 String value = keyValue[1];
                 if (key.equals("paymentKey")) {
@@ -160,7 +165,8 @@ public class PaymentService {
             }
 
         } catch (Exception e) {
-            throw new RuntimeException("Redirect URL 파싱 중 오류 발생: " + e.getMessage(), e);
+            log.warn("[RedirectURL-Parsing] Payment 예외 발생 - message={}", e.getMessage());
+            throw new BusinessException(PaymentErrorCode.REDIRECT_URL_PARSING_FAILED);
         }
         return resultParts;
     }

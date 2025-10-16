@@ -3,6 +3,10 @@ package com.spartaclub.orderplatform.domain.user.presentation.controller;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.auth.jwt.JwtUtil;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
+import com.spartaclub.orderplatform.domain.user.exception.UserErrorCode;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import com.spartaclub.orderplatform.domain.user.application.service.UserService;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.LogoutResponseDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.ManagerCreateRequestDto;
@@ -42,6 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 전우선
  * @date 2025-10-08(수)
  */
+@Tag(name = "User", description = "사용자 관리 API")
 @RestController
 @RequestMapping("/v1/users")
 @RequiredArgsConstructor
@@ -56,6 +61,7 @@ public class UserController {
      * @param requestDto 회원가입 요청 데이터 (사용자명, 이메일, 비밀번호, 닉네임, 연락처, 권한 등)
      * @return 회원가입 성공 시 생성된 사용자 ID와 성공 메시지 반환
      */
+    @Operation(summary = "회원가입", description = "신규 사용자 계정을 생성합니다.")
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<UserSignupResponseDto>> signup(
         @Valid @RequestBody UserSignupRequestDto requestDto) {
@@ -72,6 +78,7 @@ public class UserController {
      * @param response   HTTP 응답 객체 (Authorization 헤더 설정용)
      * @return 로그인 성공 시 JWT 토큰과 사용자 정보 반환
      */
+    @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하여 JWT 토큰을 발급합니다.")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<UserLoginResponseDto>> login(
         @Valid @RequestBody UserLoginRequestDto requestDto,
@@ -92,6 +99,7 @@ public class UserController {
      * @param userDetails 인증된 사용자 정보 (JWT에서 추출)
      * @return 로그아웃 성공 메시지와 처리 시간
      */
+    @Operation(summary = "로그아웃", description = "리프레시 토큰을 무효화하여 로그아웃합니다.")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<LogoutResponseDto>> logout(
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -109,6 +117,7 @@ public class UserController {
      * @param userDetails 인증된 사용자 정보 (JWT에서 추출)
      * @return 사용자 프로필 정보 (민감정보 제외)
      */
+    @Operation(summary = "내 정보 조회", description = "인증된 사용자의 프로필 정보를 조회합니다.")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserProfileResponseDto>> getUserProfile(
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -127,6 +136,7 @@ public class UserController {
      * @param requestDto  수정할 정보 (선택적 필드)
      * @return 수정된 사용자 정보
      */
+    @Operation(summary = "내 정보 수정", description = "인증된 사용자의 프로필 정보를 수정합니다.")
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<UserUpdateResponseDto>> updateUserProfile(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -146,6 +156,7 @@ public class UserController {
      * @param requestDto  탈퇴 요청 데이터 (비밀번호 확인)
      * @return 탈퇴 완료 메시지와 처리 시간
      */
+    @Operation(summary = "회원 탈퇴", description = "본인 확인 후 회원 탈퇴를 처리합니다.")
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<UserDeleteResponseDto>> deleteUser(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -165,6 +176,7 @@ public class UserController {
      * @param pageable   페이징/정렬 정보
      * @return 회원 목록과 통계 정보
      */
+    @Operation(summary = "전체 회원 조회 (관리자용)", description = "관리자가 전체 회원 목록을 조회합니다.")
     @GetMapping
     @PreAuthorize("hasAnyRole('MANAGER', 'MASTER')")
     public ResponseEntity<ApiResponse<UserListPageResponseDto>> getAllUsers(
@@ -174,7 +186,7 @@ public class UserController {
 
         // 페이지 크기 검증 (최대 50)
         if (pageable.getPageSize() > 50) {
-            throw new RuntimeException("페이지 크기는 1~50 사이여야 합니다.");
+            throw new BusinessException(UserErrorCode.INVALID_PAGE_SIZE);
         }
 
         // 정렬 정보 추출
@@ -204,6 +216,7 @@ public class UserController {
      * @param requestDto  관리자 생성 요청 데이터
      * @return 생성된 관리자 정보와 생성자 정보
      */
+    @Operation(summary = "관리자 계정 생성 (MASTER 전용)", description = "MASTER 권한으로 MANAGER 계정을 생성합니다.")
     @PostMapping("/manager")
     @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<ApiResponse<ManagerCreateResponseDto>> createManager(

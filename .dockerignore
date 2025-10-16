@@ -1,0 +1,67 @@
+# Git 관련
+.git
+.gitignore
+.gitattributes
+
+# 빌드 결과물
+build/
+target/
+out/
+*.jar
+*.war
+
+# 개발 도구 설정
+.gradle
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# 로그 파일
+logs/
+*.log
+
+# 임시 파일
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+
+# Node.js (프론트엔드가 있는 경우)
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# 환경 설정 파일 (민감한 정보 포함)
+.env.local
+.env.development
+.env.production
+
+# 테스트 관련
+test-results/
+coverage/
+
+# Docker 관련
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# 문서
+README.md
+HELP.md
+docs/
+
+# 설정 파일 백업
+*.bak
+*.backup
+
+# 개발용 설정
+application-local.yml
+application-dev.yml
