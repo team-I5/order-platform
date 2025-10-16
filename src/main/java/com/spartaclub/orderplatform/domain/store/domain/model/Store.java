@@ -31,8 +31,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.LastModifiedBy;
 
 @Entity
 @Table(name = "p_stores")
@@ -84,7 +82,28 @@ public class Store extends BaseEntity {
     private Double averageRating = 0.0;
     private Integer reviewCount = 0;
 
-    // 음식점 정보 업데이트(기본 정보만)
+
+    /*  ==================
+            정적 팩토리
+        ================== */
+    public static Store create(User user, StoreRequestDto storeRequestDto) {
+        Store store = new Store();
+        store.user = user;
+        store.storeName = storeRequestDto.getStoreName();
+        store.storeAddress = storeRequestDto.getStoreAddress();
+        store.storeNumber = storeRequestDto.getStoreNumber();
+        store.storeDescription = storeRequestDto.getStoreDescription();
+        store.storeNumber = storeRequestDto.getStoreNumber();
+        store.status = PENDING;
+        store.averageRating = 0.0;
+        store.reviewCount = 0;
+        store.rejectReason = null;
+        return store;
+    }
+
+    /*  ==================
+            업데이트 관련
+        ================== */
     public void updateStoreInfo(StoreRequestDto dto) {
         this.storeName = dto.getStoreName();
         this.storeAddress = dto.getStoreAddress();
@@ -92,36 +111,32 @@ public class Store extends BaseEntity {
         this.storeDescription = dto.getStoreDescription();
     }
 
-    // 재승인 요청
-    public void requestReapproval() {
-        this.status = PENDING;
-        this.rejectReason = null;
-    }
-
-    // 음식점 승인
+    /*  ==================
+           승인 상태 관련
+        ================== */
     public void approve() {
         this.status = APPROVED;
         this.rejectReason = null;
     }
 
-    // 음식점 승인 거절
     public void reject(String rejectReason) {
         this.status = REJECTED;
         this.rejectReason = rejectReason;
     }
 
-    // 음식점 삭제 처리
-    public void storeSoftDelete(Long userId) {
-        delete(userId);
+    public void requestReapproval() {
+        this.status = PENDING;
+        this.rejectReason = null;
     }
 
-    // 음식점에 카테고리 추가
+    /*  ==================
+           카테고리 관련
+        ================== */
     public void addCategory(Category category) {
         StoreCategory storeCategory = new StoreCategory(this, category);
         storeCategories.add(storeCategory);
     }
 
-    // 음식점에 카테고리 삭제
     public void removeCategory(Long userId, Category category) {
         this.storeCategories.stream()
             .filter(storeCategory ->
@@ -133,9 +148,19 @@ public class Store extends BaseEntity {
             });
     }
 
-    // 음식점 리뷰 개수와 평점 업데이트
+    /*  ==================
+            평점 관련
+        ================== */
     public void updateAverageRatingAndReviewCount(double averageRating, int reviewCount) {
         this.averageRating = averageRating;
         this.reviewCount = reviewCount;
     }
+
+    /*  ==================
+              삭제
+        ================== */
+    public void storeSoftDelete(Long userId) {
+        delete(userId);
+    }
+
 }
