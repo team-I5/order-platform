@@ -61,7 +61,7 @@ public class GlobalExceptionHandler { // 전역 예외 처리를 담당하는 �
     public ResponseEntity<ApiResponse<Void>> handleRuntimeException(
         BusinessException e) { // BusinessException을 처리하는 핸들러 메서드
         ErrorCode errorCode = e.getErrorCode();
-        log.error("[BusinessException] status={}, code={}, message={}",
+        log.warn("[BusinessException] status={}, code={}, message={}",
             errorCode.getStatus(), errorCode.getCode(), errorCode.getMessage());
         return ResponseEntity.status(errorCode.getStatus())
             .body(ApiResponse.error("요청 오류: " + errorCode.getMessage())); // 에러 메시지와 함께 실패 응답 반환
