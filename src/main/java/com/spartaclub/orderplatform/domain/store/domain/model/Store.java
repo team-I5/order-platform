@@ -5,10 +5,10 @@ import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus
 import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.REJECTED;
 import static jakarta.persistence.EnumType.STRING;
 
-import com.spartaclub.orderplatform.domain.category.entity.Category;
+import com.spartaclub.orderplatform.domain.category.domain.model.Category;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
-import com.spartaclub.orderplatform.domain.review.entity.Review;
+import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
@@ -31,6 +31,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
 
 @Entity
 @Table(name = "p_stores")

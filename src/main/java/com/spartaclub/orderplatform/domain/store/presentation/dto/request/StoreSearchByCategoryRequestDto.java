@@ -1,6 +1,6 @@
 package com.spartaclub.orderplatform.domain.store.presentation.dto.request;
 
-import com.spartaclub.orderplatform.domain.category.entity.CategoryType;
+import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -1,6 +1,6 @@
 package com.spartaclub.orderplatform.domain.store.infrastructure.scheduler;
 
-import com.spartaclub.orderplatform.domain.review.repository.ReviewRepository;
+import com.spartaclub.orderplatform.domain.review.infrastructure.repository.ReviewRepository;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import jakarta.transaction.Transactional;
