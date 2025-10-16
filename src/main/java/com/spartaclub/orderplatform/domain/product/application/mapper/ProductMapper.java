@@ -5,6 +5,7 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGr
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionMap;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
+import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 
@@ -61,4 +62,7 @@ public interface ProductMapper {
     @Mapping(source = "user.username", target = "username")
     @Mapping(source = "user.nickname", target = "nickName")
     ProductReviewResponseDto toReviewDto(Review review);
+
+
+    ProductStoreSearchResponseDto toProductStoreSearchResponseDto(Store store);
 }

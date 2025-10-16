@@ -10,6 +10,7 @@ import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.Address;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
@@ -141,7 +142,7 @@ public class ProductService {
 
 
     // 검색 키워드와 사용자 배송지 정보로 상점 검색
-    public Page<StoreSearchResponseDto> getStoreListByProductNameAndAddressId(String keyword, UUID addressId, Pageable pageable) {
+    public PageResponseDto<ProductStoreSearchResponseDto> getStoreListByProductNameAndAddressId(String keyword, UUID addressId, Pageable pageable) {
         // 1. 사용자의 배송지 조회
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new BusinessException(ProductErrorCode.ADDRESS_NOT_EXIST));
@@ -152,8 +153,13 @@ public class ProductService {
         // 3. 키워드로 찾은 상품과 연계된 가게 중 배송지 주소 근처인 가게 조회
         Page<Store> storePage = storeRepository.findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable);
 
+        List<ProductStoreSearchResponseDto> storeList = storePage.getContent().stream()
+                .map(productMapper::toProductStoreSearchResponseDto)
+                .toList();
+
+        PageMetaDto pageMetaDto = productMapper.toPageDto(storePage);
         // 3. entity -> dto 후 반환
-        return storePage.map(storeMapper::toStoreSearchResponseDto);
+        return new PageResponseDto<>(storeList, pageMetaDto);
     }
 
 

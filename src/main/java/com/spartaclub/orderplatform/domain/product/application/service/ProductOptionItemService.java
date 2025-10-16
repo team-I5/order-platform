@@ -39,7 +39,7 @@ public class ProductOptionItemService {
                 productOptionItemRequestDto.getAdditionalPrice());
 
         // 3. 그룹의 아이템 리스트에 추가
-        productOptionGroup.getOptionItems().add(item);
+        productOptionGroup.addItem(item);
 
         // 4. 옵션 group, item은 persist 상태에서 자동 저장
 
