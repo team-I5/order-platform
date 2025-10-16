@@ -150,25 +150,50 @@ public class ReviewController {
      *
      * @param userDetails 인증된 사용자 정보
      * @param rating      별점
-     * @param keyword     리뷰 키워드
      * @param pageable    페이징 처리
      * @return 조건별 리뷰 목록 정보
      */
-    @Operation(summary = "리뷰 조건별 조회", description = "인증된 사용자 리뷰 조건별로 조회합니다.")
-    @GetMapping("/search/condition")
-    public ResponseEntity<ApiResponse<Page<ReviewSearchResponseDto>>> searchConditionReview(
+    @Operation(summary = "리뷰 조건별 조회1", description = "인증된 사용자 리뷰 별점 별로 조회합니다.")
+    @GetMapping("/search/condition1")
+    public ResponseEntity<ApiResponse<Page<ReviewSearchResponseDto>>> searchConditionReviewOne(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam("rating") Integer rating,
+        Pageable pageable
+    ) {
+        // 사용자 객체 받아옴
+        User user = userDetails.getUser();
+        log.info("Review condition search Controller rating : {} , pageable: {}",
+            rating, pageable);
+        // 리뷰 조건별 조회
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(ApiResponse.success(
+                reviewService.searchConditionReviewOne(user, rating, pageable)));
+    }
+
+    /**
+     * 리뷰 조건별 조회 API - 파리미터 조건별 리뷰 조회
+     *
+     * @param userDetails 인증된 사용자 정보
+     * @param keyword     리뷰 내용 키워드
+     * @param pageable    페이징 처리
+     * @return 조건별 리뷰 목록 정보
+     */
+    @Operation(summary = "리뷰 조건별 조회2", description = "인증된 사용자 리뷰 키워드로 조회합니다.")
+    @GetMapping("/search/condition2")
+    public ResponseEntity<ApiResponse<Page<ReviewSearchResponseDto>>> searchConditionReviewTwo(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam("keyword") String keyword,
         Pageable pageable
     ) {
         // 사용자 객체 받아옴
         User user = userDetails.getUser();
-        log.info("Review condition search Controller rating : {} , keyword : {}, pageable: {}",
-            rating, keyword, pageable);
+        log.info("Review condition search Controller keyword : {}, pageable: {}",
+            keyword, pageable);
         // 리뷰 조건별 조회
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponse.success(
-                reviewService.searchConditionReview(user, rating, keyword, pageable)));
+                reviewService.searchConditionReviewTwo(user, keyword, pageable)));
     }
+
+
 }

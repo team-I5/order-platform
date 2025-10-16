@@ -129,7 +129,7 @@ public class ReviewService {
         return reviewRepository.findAllBy(pageable)
             .map(reviewMapper::toReviewSearchResponseDto);
     }
-    
+
     // 리뷰 상세 조회
     // 지연 로딩이라서 트랜잭션 붙였는데, 성능 향상 위해 readonly 옵션 true로 설정
     @Transactional(readOnly = true)
@@ -138,18 +138,25 @@ public class ReviewService {
         return reviewMapper.toReviewSearchResponseDto(review);
     }
 
-    // 리뷰 조건별 조회
+    // 리뷰 조건별 조회 1
     @Transactional(readOnly = true)
-    public Page<ReviewSearchResponseDto> searchConditionReview(
+    public Page<ReviewSearchResponseDto> searchConditionReviewOne(
         User user, Integer rating,
-        String keyword,
         Pageable pageable) {
         if (rating != null) {
             return reviewRepository.findByRatingAndDeletedAtIsNull(rating, pageable)
                 .map(reviewMapper::toReviewSearchResponseDto);
-        } else if (keyword != null) {
-            return reviewRepository.findByContentsContainingAndDeletedAtIsNull(keyword,
-                    pageable)
+        }
+        return Page.empty();
+    }
+
+    // 리뷰 조건별 조회 2
+    @Transactional(readOnly = true)
+    public Page<ReviewSearchResponseDto> searchConditionReviewTwo(
+        User user, String keyword,
+        Pageable pageable) {
+        if (keyword != null) {
+            return reviewRepository.findByContentsContainingAndDeletedAtIsNull(keyword, pageable)
                 .map(reviewMapper::toReviewSearchResponseDto);
         }
         return Page.empty();

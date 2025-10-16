@@ -5,8 +5,6 @@ import com.spartaclub.orderplatform.domain.category.domain.model.Category;
 import com.spartaclub.orderplatform.domain.category.infrastructure.repository.CategoryRepository;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategoryRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.List;
 import java.util.UUID;
@@ -65,13 +63,9 @@ public class CategoryService {
 
     // 카테고리 목록 조회
     @Transactional(readOnly = true)
-    public PageResponseDto<CategoryResponseDto> searchCategoryList(Pageable pageable) {
-//        return categoryRepository.findAll().stream().map(categoryMapper::toCategoryResponseDto)
-//            .toList();
-        List<CategoryResponseDto> categoryList = categoryRepository.findAll().stream()
-            .map(categoryMapper::toCategoryResponseDto)
+    public List<CategoryResponseDto> searchCategoryList(Pageable pageable) {
+        return categoryRepository.findAll().stream().map(categoryMapper::toCategoryResponseDto)
             .toList();
-        return new PageResponseDto<>(categoryList, (PageMetaDto) pageable);
     }
 
     // 카테고리 수정

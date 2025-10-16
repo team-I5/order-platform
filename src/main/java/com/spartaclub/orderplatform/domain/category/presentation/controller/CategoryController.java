@@ -3,13 +3,13 @@ package com.spartaclub.orderplatform.domain.category.presentation.controller;
 import com.spartaclub.orderplatform.domain.category.application.service.CategoryService;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategoryRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -122,9 +122,9 @@ public class CategoryController {
     @Operation(summary = "카테고리 목록 조회", description = "카테고리 목록 조회합니다.")
     @PreAuthorize("hasAnyRole({'MASTER','MANAGER'})")
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<PageResponseDto<CategoryResponseDto>>> searchCategoryList(
+    public ResponseEntity<ApiResponse<List<CategoryResponseDto>>> searchCategoryList(
         @ParameterObject Pageable pageable) {
-        PageResponseDto<CategoryResponseDto> categories = categoryService
+        List<CategoryResponseDto> categories = categoryService
             .searchCategoryList(pageable);
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponse.success(categories));
