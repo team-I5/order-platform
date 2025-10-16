@@ -1,11 +1,15 @@
 package com.spartaclub.orderplatform.domain.payment.application;
 
+import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus.AUTHORIZED;
+import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus.CAPTURED;
+import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus.FAILED;
+import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus.REFUNDED;
+
 import com.spartaclub.orderplatform.domain.order.application.OrderService;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.payment.application.dto.query.PaymentQuery;
 import com.spartaclub.orderplatform.domain.payment.application.mapper.PaymentMapper;
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
-import com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus;
 import com.spartaclub.orderplatform.domain.payment.domain.repository.PaymentRepository;
 import com.spartaclub.orderplatform.domain.payment.exception.PaymentErrorCode;
 import com.spartaclub.orderplatform.domain.payment.infrastructure.pg.TossPaymentsClient;
@@ -16,8 +20,8 @@ import com.spartaclub.orderplatform.domain.payment.presentation.dto.request.Init
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.InitPaymentResponseDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentDetailResponseDto;
 import com.spartaclub.orderplatform.domain.payment.presentation.dto.response.PaymentsListResponseDto;
-import com.spartaclub.orderplatform.global.exception.BusinessException;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -64,24 +68,13 @@ public class PaymentService {
         String PgOrderId = redirectUrlParts[2];
 
         if (result.equals("success")) {
-            Payment payment = Payment.builder()
-                .order(order)
-                .paymentAmount(requestDto.amount())
-                .status(PaymentStatus.AUTHORIZED)
-                .pgPaymentKey(PgPaymentKey)
-                .pgOrderId(PgOrderId)
-                .build();
-
+            Payment payment = Payment.ofStatus(order, AUTHORIZED, requestDto.amount(),
+                PgPaymentKey, PgOrderId);
             paymentRepository.save(payment);
             return new InitPaymentResponseDto(payment.getPaymentId(), redirectUrl, PgPaymentKey,
                 PgOrderId);
         } else {
-            Payment payment = Payment.builder()
-                .order(order)
-                .paymentAmount(requestDto.amount())
-                .status(PaymentStatus.FAILED)
-                .build();
-
+            Payment payment = Payment.ofStatus(order, FAILED, requestDto.amount());
             paymentRepository.save(payment);
             return new InitPaymentResponseDto(payment.getPaymentId(), redirectUrl, null, null);
         }
@@ -105,7 +98,7 @@ public class PaymentService {
             requestDto.pgOrderId(), requestDto.amount());
 
         if (success) {
-            payment.changeStatus(PaymentStatus.CAPTURED);
+            payment.changeStatus(CAPTURED);
         }
 //        else {
 //            payment.changeStatus(PaymentStatus.FAILED);
@@ -123,7 +116,7 @@ public class PaymentService {
         boolean success = tossPaymentsClient.cancelPayment(requestDto.pgPaymentKey(),
             requestDto.cancelReason());
         if (success) {
-            payment.changeStatus(PaymentStatus.REFUNDED);
+            payment.changeStatus(REFUNDED);
         }
     }
 
