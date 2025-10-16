@@ -2,7 +2,7 @@ package com.spartaclub.orderplatform.domain.order.infrastructure.repository;
 
 import com.spartaclub.orderplatform.domain.order.domain.repository.ProductReaderRepository;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductJPARepository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class ProductReaderRepositoryImpl implements ProductReaderRepository {
 
-    private final ProductRepository productJpaRepository;
+    private final ProductJPARepository productJpaRepository;
 
 
     @Override

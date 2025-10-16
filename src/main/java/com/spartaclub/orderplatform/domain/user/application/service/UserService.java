@@ -2,6 +2,8 @@ package com.spartaclub.orderplatform.domain.user.application.service;
 
 import com.spartaclub.orderplatform.global.auth.jwt.JwtUtil;
 import com.spartaclub.orderplatform.domain.user.application.mapper.UserMapper;
+import com.spartaclub.orderplatform.domain.user.exception.UserErrorCode;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import com.spartaclub.orderplatform.domain.user.domain.entity.RefreshToken;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
@@ -88,26 +90,26 @@ public class UserService {
     private void validateDuplicateData(UserSignupRequestDto requestDto) {
 
         if (userRepository.existsActiveByEmail(requestDto.getEmail())) {
-            throw new RuntimeException("이미 존재하는 이메일입니다.");
+            throw new BusinessException(UserErrorCode.DUPLICATE_EMAIL);
         }
 
         if (userRepository.existsActiveByUsername(requestDto.getUsername())) {
-            throw new RuntimeException("이미 존재하는 사용자명입니다.");
+            throw new BusinessException(UserErrorCode.DUPLICATE_USERNAME);
         }
 
         if (userRepository.existsActiveByNickname(requestDto.getNickname())) {
-            throw new RuntimeException("이미 존재하는 닉네임입니다.");
+            throw new BusinessException(UserErrorCode.DUPLICATE_NICKNAME);
         }
 
         if (userRepository.existsActiveByPhoneNumber(requestDto.getPhoneNumber())) {
-            throw new RuntimeException("이미 존재하는 전화번호입니다.");
+            throw new BusinessException(UserErrorCode.DUPLICATE_PHONE_NUMBER);
         }
 
         // 사업자번호 중복 체크 (입력된 경우에만)
         if (requestDto.getBusinessNumber() != null && !requestDto.getBusinessNumber().trim()
             .isEmpty()) {
             if (userRepository.existsActiveByBusinessNumber(requestDto.getBusinessNumber())) {
-                throw new RuntimeException("이미 존재하는 사업자번호입니다.");
+                throw new BusinessException(UserErrorCode.DUPLICATE_BUSINESS_NUMBER);
             }
         }
     }
@@ -120,7 +122,7 @@ public class UserService {
 
         // 2. 비밀번호 검증
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-            throw new RuntimeException("이메일 또는 비밀번호가 일치하지 않습니다.");
+            throw new BusinessException(UserErrorCode.INVALID_LOGIN_CREDENTIALS);
         }
 
         // 3. JWT 토큰 생성
@@ -155,12 +157,12 @@ public class UserService {
 
         // 1. 리프레시 토큰 유효성 검증
         if (!jwtUtil.validateToken(refreshTokenValue)) {
-            throw new RuntimeException("유효하지 않은 리프레시 토큰입니다.");
+            throw new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         // 2. 리프레시 토큰인지 확인
         if (!jwtUtil.isRefreshToken(refreshTokenValue)) {
-            throw new RuntimeException("유효하지 않은 리프레시 토큰입니다.");
+            throw new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         // 3. DB에서 리프레시 토큰 조회
@@ -172,7 +174,7 @@ public class UserService {
         if (refreshTokenEntity.isExpired()) {
             // 만료된 토큰 삭제
             refreshTokenRepository.delete(refreshTokenEntity);
-            throw new RuntimeException("만료된 리프레시 토큰입니다.");
+            throw new BusinessException(UserErrorCode.EXPIRED_REFRESH_TOKEN);
         }
 
         // 5. 사용자 정보 조회 및 상태 확인
@@ -180,7 +182,7 @@ public class UserService {
         if (user.isDeleted()) {
             // 탈퇴한 사용자의 토큰 삭제
             refreshTokenRepository.delete(refreshTokenEntity);
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
 
         // 6. 새로운 토큰 생성
@@ -280,11 +282,11 @@ public class UserService {
      */
     private void validatePasswordChange(UserUpdateRequestDto requestDto, User user) {
         if (!requestDto.isCurrentPasswordProvided()) {
-            throw new RuntimeException("비밀번호 변경 시 현재 비밀번호는 필수입니다.");
+            throw new BusinessException(UserErrorCode.CURRENT_PASSWORD_REQUIRED);
         }
 
         if (!passwordEncoder.matches(requestDto.getCurrentPassword(), user.getPassword())) {
-            throw new RuntimeException("현재 비밀번호가 일치하지 않습니다.");
+            throw new BusinessException(UserErrorCode.CURRENT_PASSWORD_MISMATCH);
         }
     }
 
@@ -296,7 +298,7 @@ public class UserService {
         if (requestDto.getUsername() != null && !requestDto.getUsername()
             .equals(currentUser.getUsername())) {
             if (userRepository.existsActiveByUsername(requestDto.getUsername())) {
-                throw new RuntimeException("이미 존재하는 사용자명입니다.");
+                throw new BusinessException(UserErrorCode.DUPLICATE_USERNAME);
             }
         }
 
@@ -304,7 +306,7 @@ public class UserService {
         if (requestDto.getNickname() != null && !requestDto.getNickname()
             .equals(currentUser.getNickname())) {
             if (userRepository.existsActiveByNickname(requestDto.getNickname())) {
-                throw new RuntimeException("이미 존재하는 닉네임입니다.");
+                throw new BusinessException(UserErrorCode.DUPLICATE_NICKNAME);
             }
         }
 
@@ -312,7 +314,7 @@ public class UserService {
         if (requestDto.getPhoneNumber() != null && !requestDto.getPhoneNumber()
             .equals(currentUser.getPhoneNumber())) {
             if (userRepository.existsActiveByPhoneNumber(requestDto.getPhoneNumber())) {
-                throw new RuntimeException("이미 존재하는 전화번호입니다.");
+                throw new BusinessException(UserErrorCode.DUPLICATE_PHONE_NUMBER);
             }
         }
 
@@ -321,7 +323,7 @@ public class UserService {
             .equals(currentUser.getBusinessNumber())) {
             if (userRepository.existsActiveByBusinessNumber(
                 requestDto.getBusinessNumber())) {
-                throw new RuntimeException("이미 존재하는 사업자번호입니다.");
+                throw new BusinessException(UserErrorCode.DUPLICATE_BUSINESS_NUMBER);
             }
         }
     }
@@ -331,7 +333,7 @@ public class UserService {
      */
     private void validateBusinessNumberPermission(UserUpdateRequestDto requestDto, User user) {
         if (requestDto.getBusinessNumber() != null && user.getRole().name().equals("CUSTOMER")) {
-            throw new RuntimeException("CUSTOMER 권한으로는 사업자번호를 수정할 수 없습니다.");
+            throw new BusinessException(UserErrorCode.INSUFFICIENT_PERMISSION_FOR_BUSINESS_NUMBER);
         }
     }
 
@@ -382,7 +384,7 @@ public class UserService {
 
         // 2. 비밀번호 확인 (본인 인증)
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+            throw new BusinessException(UserErrorCode.PASSWORD_MISMATCH);
         }
 
         // 3. 소프트 삭제 처리 (deletedAt 설정)
@@ -535,19 +537,19 @@ public class UserService {
     private void validateDuplicateDataForManager(ManagerCreateRequestDto requestDto) {
 
         if (userRepository.existsActiveByEmail(requestDto.getEmail())) {
-            throw new RuntimeException("이미 존재하는 이메일입니다.");
+            throw new BusinessException(UserErrorCode.DUPLICATE_EMAIL);
         }
 
         if (userRepository.existsActiveByUsername(requestDto.getUsername())) {
-            throw new RuntimeException("이미 존재하는 사용자명입니다.");
+            throw new BusinessException(UserErrorCode.DUPLICATE_USERNAME);
         }
 
         if (userRepository.existsActiveByNickname(requestDto.getNickname())) {
-            throw new RuntimeException("이미 존재하는 닉네임입니다.");
+            throw new BusinessException(UserErrorCode.DUPLICATE_NICKNAME);
         }
 
         if (userRepository.existsActiveByPhoneNumber(requestDto.getPhoneNumber())) {
-            throw new RuntimeException("이미 존재하는 전화번호입니다.");
+            throw new BusinessException(UserErrorCode.DUPLICATE_PHONE_NUMBER);
         }
     }
 }

@@ -4,6 +4,8 @@ import com.spartaclub.orderplatform.domain.user.application.mapper.AddressMapper
 import com.spartaclub.orderplatform.domain.user.domain.entity.Address;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.domain.user.domain.repository.AddressRepository;
+import com.spartaclub.orderplatform.domain.user.exception.AddressErrorCode;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -72,7 +74,7 @@ public class AddressService {
      */
     private void validateDuplicateAddressName(String addressName, User user) {
         if (addressRepository.existsByUserAndAddressName(user, addressName)) {
-            throw new RuntimeException("동일한 주소명이 이미 존재합니다.");
+            throw new BusinessException(AddressErrorCode.DUPLICATE_ADDRESS_NAME);
         }
     }
 
@@ -195,7 +197,7 @@ public class AddressService {
                 .orElseThrow(() -> new RuntimeException("주소를 찾을 수 없습니다."));
 
         if (!address.getUser().getUserId().equals(user.getUserId())) {
-            throw new RuntimeException("해당 주소에 접근할 권한이 없습니다.");
+            throw new BusinessException(AddressErrorCode.ACCESS_DENIED);
         }
 
         return address;
@@ -209,7 +211,7 @@ public class AddressService {
      */
     private void validateNotDeleted(Address address) {
         if (address.getDeletedAt() != null) {
-            throw new RuntimeException("삭제된 주소는 수정할 수 없습니다.");
+            throw new BusinessException(AddressErrorCode.CANNOT_EDIT_DELETED);
         }
     }
 
@@ -229,7 +231,7 @@ public class AddressService {
                 .findFirst();
 
         if (existingAddress.isPresent() && !existingAddress.get().getAddressId().equals(excludeId)) {
-            throw new RuntimeException("동일한 주소명이 이미 존재합니다.");
+            throw new BusinessException(AddressErrorCode.DUPLICATE_ADDRESS_NAME);
         }
     }
 
@@ -262,7 +264,7 @@ public class AddressService {
             // 다른 기본 주소가 있는지 확인
             long activeAddressCount = addressRepository.countByUser(user);
             if (activeAddressCount <= 1) {
-                throw new RuntimeException("마지막 주소는 기본 주소를 해제할 수 없습니다.");
+                throw new BusinessException(AddressErrorCode.CANNOT_UNSET_LAST_DEFAULT);
             }
 
             // 다른 주소를 기본 주소로 설정
@@ -332,7 +334,7 @@ public class AddressService {
      */
     private void validateNotAlreadyDeleted(Address address) {
         if (address.getDeletedAt() != null) {
-            throw new RuntimeException("이미 삭제된 주소입니다.");
+            throw new BusinessException(AddressErrorCode.ALREADY_DELETED);
         }
     }
 
@@ -346,7 +348,7 @@ public class AddressService {
     private void validateNotLastAddress(User user) {
         long activeAddressCount = addressRepository.countByUser(user);
         if (activeAddressCount <= 1) {
-            throw new RuntimeException("마지막 주소는 삭제할 수 없습니다.");
+            throw new BusinessException(AddressErrorCode.CANNOT_DELETE_LAST_ADDRESS);
         }
     }
 

@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 /**
  * 상품 Repository
  *
@@ -19,19 +18,17 @@ import org.springframework.stereotype.Repository;
  * @date 2025-10-02(목)
  */
 @Repository
-public interface ProductRepository extends JpaRepository<Product, UUID> {
-
-    Page<Product> findByStore_StoreIdAndIsHiddenFalseAndDeletedAtIsNull(UUID storeId,
-        Pageable pageable);
+public interface ProductJPARepository extends JpaRepository<Product, UUID> {
+    Page<Product> findByStore_StoreIdAndIsHiddenFalseAndDeletedAtIsNull(UUID storeId, Pageable pageable);
 
     @Query("""
-            SELECT DISTINCT p
-            FROM Product p
-            LEFT JOIN FETCH p.productOptionGroupMaps map
-            LEFT JOIN FETCH map.productOptionGroup g
-            LEFT JOIN FETCH g.optionItems i
-            WHERE p.productId = :productId
-        """)
+    SELECT DISTINCT p
+    FROM Product p
+    LEFT JOIN FETCH p.productOptionGroupMaps map
+    LEFT JOIN FETCH map.productOptionGroup g
+    LEFT JOIN FETCH g.optionItems i
+    WHERE p.productId = :productId
+""")
     Optional<Product> findWithOptionGroupsAndItemsByProductId(@Param("productId") UUID productId);
 
     List<Product> findByProductIdIn(Collection<UUID> productIds);

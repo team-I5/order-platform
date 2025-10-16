@@ -3,6 +3,19 @@ package com.spartaclub.orderplatform.domain.store.application.service;
 import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.APPROVED;
 import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.PENDING;
 import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.REJECTED;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.CATEGORY_NOT_EXIST;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.DUPLICATE_CATEGORY;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.DUPLICATE_STORE_NAME;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_EXIST;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_OWNED_STORE_TO_DELETE;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_OWNED_STORE_TO_DELETE_CATEGORY;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_OWNED_STORE_TO_MODIFY_CATEGORY;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_OWNED_STORE_TO_REGISTER_CATEGORY;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_OWNED_STORE_TO_UPDATE;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NO_PERMISSION;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.ONLY_APPROVED_STORE_MODIFIABLE;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.ONLY_PENDING_STORE_APPROVABLE;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.ONLY_REJECTED_STORE_MODIFIABLE;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import com.spartaclub.orderplatform.domain.category.entity.Category;
@@ -26,9 +39,11 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.response.Store
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +51,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -53,7 +69,8 @@ public class StoreService {
             .existsByUserAndStoreName(user, dto.getStoreName());
 
         if (existStoreName) {
-            throw new IllegalArgumentException("이미 같은 이름의 음식점이 존재합니다.");
+            log.warn("[Store] duplicate store name. Store name: {}", dto.getStoreName());
+            throw new BusinessException(DUPLICATE_STORE_NAME);
         }
 
         Store store = storeMapper.toCreateStoreEntity(user, dto);
@@ -67,11 +84,13 @@ public class StoreService {
         Store store = getStore(storeId);
 
         if (!store.getUser().getUserId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("본인의 음식점만 수정할 수 있습니다.");
+            log.warn("[Store] does not own this store");
+            throw new BusinessException(NOT_OWNED_STORE_TO_UPDATE);
         }
 
         if (store.getStatus() != REJECTED) {
-            throw new IllegalArgumentException("승인 거절된 가게만 수정할 수 있습니다.");
+            log.warn("[Store] not rejected");
+            throw new BusinessException(ONLY_REJECTED_STORE_MODIFIABLE);
         }
 
         store.updateStoreInfo(dto);
@@ -88,11 +107,13 @@ public class StoreService {
         Store store = getStore(storeId);
 
         if (!store.getUser().getUserId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("본인의 음식점만 수정할 수 있습니다.");
+            log.warn("[Store] does not own this store");
+            throw new BusinessException(NOT_OWNED_STORE_TO_UPDATE);
         }
 
         if (store.getStatus() != APPROVED) {
-            throw new IllegalArgumentException("승인된 가게만 수정할 수 있습니다.");
+            log.warn("[Store] not approved");
+            throw new BusinessException(ONLY_APPROVED_STORE_MODIFIABLE);
         }
 
         store.updateStoreInfo(dto);
@@ -106,7 +127,8 @@ public class StoreService {
         Store store = getStore(storeId);
 
         if (!store.getUser().getUserId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("본인의 음식점만 삭제할 수 있습니다.");
+            log.warn("[Store] does not own this store");
+            throw new BusinessException(NOT_OWNED_STORE_TO_DELETE);
         }
 
         store.delete(user.getUserId());
@@ -169,18 +191,23 @@ public class StoreService {
         switch (role) {
             case CUSTOMER -> {
                 if (store.getStatus() != APPROVED) {
-                    throw new RuntimeException("권한이 없습니다.");
+                    log.warn("[Store] no permission");
+                    throw new BusinessException(NO_PERMISSION);
                 }
             }
             case OWNER -> {
                 if (!store.getUser().getUserId().equals(user.getUserId())) {
-                    throw new RuntimeException("권한이 없습니다.");
+                    log.warn("[Store] no permission");
+                    throw new BusinessException(NO_PERMISSION);
                 }
             }
             case MANAGER, MASTER -> {
                 // 모든 음식점 조회 가능
             }
-            default -> throw new RuntimeException("권한이 없습니다.");
+            default -> {
+                log.warn("[Store] no permission");
+                throw new BusinessException(NO_PERMISSION);
+            }
         }
 
         return storeMapper.toStoreDetailResponseDto(store, role);
@@ -194,11 +221,13 @@ public class StoreService {
         Store store = getStore(storeId);
 
         if (!store.getUser().getUserId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("본인의 음식점의 카테고리만 등록할 수 있습니다.");
+            log.warn("[Store] does not own this store");
+            throw new BusinessException(NOT_OWNED_STORE_TO_REGISTER_CATEGORY);
         }
 
         if (store.getStatus() != APPROVED) {
-            throw new IllegalArgumentException("승인된 가게만 카테고리를 등록할 수 있습니다.");
+            log.warn("[Store] not approved");
+            throw new BusinessException(ONLY_APPROVED_STORE_MODIFIABLE);
         }
 
         checkCategory(dto, store);
@@ -214,7 +243,8 @@ public class StoreService {
         Store store = getStore(storeId);
 
         if (!store.getUser().getUserId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("본인의 음식점의 카테고리만 수정할 수 있습니다.");
+            log.warn("[Store] does not own this store");
+            throw new BusinessException(NOT_OWNED_STORE_TO_MODIFY_CATEGORY);
         }
 
         // 기존 관계들은 soft deleteProductOptionGroup 처리
@@ -235,12 +265,18 @@ public class StoreService {
         Store store = getStore(storeId);
 
         if (!store.getUser().getUserId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("본인의 음식점의 카테고리만 삭제할 수 있습니다.");
+            log.warn("[Store] does not own this store");
+            throw new BusinessException(NOT_OWNED_STORE_TO_DELETE_CATEGORY);
         }
 
         for (UUID categoryId : dto.getCategoryIds()) {
+
             Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
+                .orElseThrow(() -> {
+                        log.warn("[Store] category not exist");
+                        return new BusinessException(CATEGORY_NOT_EXIST);
+                    }
+                );
             store.removeCategory(user.getUserId(), category);
         }
     }
@@ -268,7 +304,10 @@ public class StoreService {
                 );
             case MANAGER, MASTER -> stores = storeRepository
                 .findAllStoreByCategory(dto.getCategoryType(), pageable);
-            default -> throw new RuntimeException("권한이 없습니다.");
+            default -> {
+                log.warn("[Store] no permission");
+                throw new BusinessException(NO_PERMISSION);
+            }
         }
 
         return stores.map(this::getStoreSearchByCategoryResponseDto);
@@ -316,14 +355,17 @@ public class StoreService {
     // 존재하는 음식점인지 확인
     private Store getStore(UUID storeId) {
         return storeRepository.findById(storeId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 음식점 입니다."));
+            .orElseThrow(() -> {
+                log.warn("[Store] not exist");
+                return new BusinessException(NOT_EXIST);
+            });
     }
 
     // 승인 대기 상태 확인
     private static void checkStatus(Store store) {
         if (store.getStatus() != PENDING) {
-            throw new IllegalArgumentException(
-                "승인 대기 상태의 가게만 승인 상태를 변경할 수 있습니다.");
+            log.warn("[Store] not pending");
+            throw new BusinessException(ONLY_PENDING_STORE_APPROVABLE);
         }
     }
 
@@ -331,7 +373,10 @@ public class StoreService {
     private void checkCategory(StoreCategoryRequestDto dto, Store store) {
         for (UUID categoryId : dto.getCategoryIds()) {
             Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리 입니다."));
+                .orElseThrow(() -> {
+                    log.warn("[Store] category not exist");
+                    return new BusinessException(CATEGORY_NOT_EXIST);
+                });
 
             boolean exist = store.getStoreCategories().stream()
                 .anyMatch(storeCategory ->
@@ -340,7 +385,8 @@ public class StoreService {
                 );
 
             if (exist) {
-                throw new IllegalArgumentException("이미 등록된 카테고리 입니다." + category.getType().name());
+                log.warn("[Store] duplicate category. category: {}", category.getType());
+                throw new BusinessException(DUPLICATE_CATEGORY);
             }
 
             store.addCategory(category);

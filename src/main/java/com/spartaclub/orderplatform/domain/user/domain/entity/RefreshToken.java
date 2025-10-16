@@ -21,6 +21,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AttributeOverrides({
+        @AttributeOverride(name = "createdId", column = @Column(insertable = false, updatable = false)),
+        @AttributeOverride(name = "modifiedId", column = @Column(insertable = false, updatable = false)),
+        @AttributeOverride(name = "deletedId", column = @Column(insertable = false, updatable = false))
+})
 public class RefreshToken extends BaseEntity {
 
     // 리프레시 토큰 고유 ID (기본키)
