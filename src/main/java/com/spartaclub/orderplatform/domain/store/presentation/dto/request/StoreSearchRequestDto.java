@@ -1,27 +1,19 @@
 package com.spartaclub.orderplatform.domain.store.presentation.dto.request;
 
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class StoreSearchRequestDto {
 
+    @Schema(description = "가게 소유자 ID (Manager, Master 사용)", example = "123")
     private Long ownerId;
+
+    @Schema(description = "가게 상태 (Manager, Master 사용)", example = "APPROVED")
     private StoreStatus status;
-
-    private int page = 0;
-    private int size = 10;
-    private Sort.Direction sortDirection = Direction.DESC;
-
-    public void validatePageSize() {
-        if (size != 10 && size != 30 && size != 50) {
-            this.size = 10;
-        }
-    }
 }

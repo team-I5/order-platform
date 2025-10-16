@@ -1,6 +1,5 @@
 package com.spartaclub.orderplatform.domain.store.infrastructure.repository;
 
-import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus;
 import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
@@ -54,19 +53,20 @@ public class StoreRepositoryImpl implements StoreRepository {
     }
 
     @Override
-    public Page<Store> findApprovedStoreByCategory(CategoryType type, Pageable pageable) {
-        return storeJpaRepository.findApprovedStoreByCategory(type, pageable);
+    public Page<Store> findApprovedStoreByCategory(String categoryType, Pageable pageable) {
+        return storeJpaRepository.findApprovedStoreByCategory(categoryType, pageable);
     }
 
     @Override
-    public Page<Store> findOwnerApprovedStoreByCategory(CategoryType type, Long userId,
-        Pageable pageable) {
-        return storeJpaRepository.findOwnerApprovedStoreByCategory(type, userId, pageable);
+    public Page<Store> findOwnerApprovedStoreByCategory(
+        String categoryType, Long userId, Pageable pageable
+    ) {
+        return storeJpaRepository.findOwnerApprovedStoreByCategory(categoryType, userId, pageable);
     }
 
     @Override
-    public Page<Store> findAllStoreByCategory(CategoryType type, Pageable pageable) {
-        return storeJpaRepository.findAllStoreByCategory(type, pageable);
+    public Page<Store> findAllStoreByCategory(String categoryType, Pageable pageable) {
+        return storeJpaRepository.findAllStoreByCategory(categoryType, pageable);
     }
 
     @Override
@@ -91,15 +91,17 @@ public class StoreRepositoryImpl implements StoreRepository {
     }
 
     @Override
-    public Page<Store> findApprovedStoresByStoreName(String storeName, StoreStatus status,
-        Pageable pageable) {
+    public Page<Store> findApprovedStoresByStoreName(
+        String storeName, StoreStatus status, Pageable pageable
+    ) {
         return storeJpaRepository.findApprovedStoresByStoreName(storeName, status, pageable);
     }
 
     @Override
-    public Page<Store> findDistinctByProductNameContainingIgnoreCase(String keyword,
-                                                                     String roadName,
-                                                                     Pageable pageable) {
-        return storeJpaRepository.findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable);
+    public Page<Store> findDistinctByProductNameContainingIgnoreCase(
+        String keyword, String roadName, Pageable pageable
+    ) {
+        return storeJpaRepository
+            .findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable);
     }
 }
