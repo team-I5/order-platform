@@ -3,6 +3,8 @@ package com.spartaclub.orderplatform.domain.user.presentation.controller;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import com.spartaclub.orderplatform.domain.user.application.service.AddressService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressCreateRequestDto;
 import com.spartaclub.orderplatform.domain.user.presentation.dto.AddressCreateResponseDto;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 전우선
  * @date 2025-10-12(일)
  */
+@Tag(name = "Address", description = "주소 관리 API")
 @RestController
 @RequestMapping("/v1/addresses")
 @RequiredArgsConstructor
@@ -46,6 +49,7 @@ public class AddressController {
      * @param requestDto  주소 등록 요청 데이터
      * @return 등록된 주소 정보
      */
+    @Operation(summary = "주소 등록", description = "인증된 사용자의 새로운 주소를 등록합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<AddressCreateResponseDto>> createAddress(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -68,6 +72,7 @@ public class AddressController {
      * @param includeDeleted 삭제된 주소 포함 여부
      * @return 주소 목록과 통계 정보
      */
+    @Operation(summary = "주소 목록 조회", description = "인증된 사용자의 주소 목록을 조회합니다.")
     @GetMapping
     public ResponseEntity<ApiResponse<AddressListPageResponseDto>> getAllAddresses(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -91,6 +96,7 @@ public class AddressController {
      * @param requestDto  주소 수정 요청 데이터
      * @return 수정된 주소 정보
      */
+    @Operation(summary = "주소 수정", description = "인증된 사용자의 기존 주소를 수정합니다.")
     @PutMapping("/{addressId}")
     public ResponseEntity<ApiResponse<AddressUpdateResponseDto>> updateAddress(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -114,6 +120,7 @@ public class AddressController {
      * @param addressId   삭제할 주소 ID
      * @return 삭제된 주소 정보
      */
+    @Operation(summary = "주소 삭제", description = "인증된 사용자의 기존 주소를 소프트 삭제합니다.")
     @DeleteMapping("/{addressId}")
     public ResponseEntity<ApiResponse<AddressDeleteResponseDto>> deleteAddress(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
