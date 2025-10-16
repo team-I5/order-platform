@@ -1,6 +1,6 @@
 package com.spartaclub.orderplatform.domain.order.infrastructure.repository;
 
-import com.spartaclub.orderplatform.domain.order.application.dto.query.OrderQuery;
+import com.spartaclub.orderplatform.domain.order.application.query.OrderQuery;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.repository.OrderRepository;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.spec.OrderSpecs;
@@ -16,11 +16,11 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class OrderRepositoryImpl implements OrderRepository {
 
-    private final OrderJPARepository orderJPARepository;
+    private final OrderJpaRepository orderJpaRepository;
 
     @Override
-    public void save(Order order) {
-        orderJPARepository.save(order);
+    public Order save(Order order) {
+        return orderJpaRepository.save(order);
     }
 
     @Override
@@ -29,11 +29,11 @@ public class OrderRepositoryImpl implements OrderRepository {
         spec = spec
             .and(OrderSpecs.visibleFor(orderQuery.viewer()))
             .and(OrderSpecs.statusIn(orderQuery.status()));
-        return orderJPARepository.findAll(spec, pageable);
+        return orderJpaRepository.findAll(spec, pageable);
     }
 
     @Override
     public Optional<Order> findById(UUID orderId) {
-        return orderJPARepository.findById(orderId);
+        return orderJpaRepository.findById(orderId);
     }
 }
