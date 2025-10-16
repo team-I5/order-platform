@@ -5,10 +5,13 @@ import com.spartaclub.orderplatform.domain.category.domain.model.Category;
 import com.spartaclub.orderplatform.domain.category.infrastructure.repository.CategoryRepository;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategoryRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +36,6 @@ public class CategoryService {
     // 카테고리 생성
     @Transactional
     public CategoryResponseDto createCategory(User user, CategoryRequestDto dto) {
-
         /*
          * ▶고민해본 요소들
          * 가게 이름으로 해당 store행 도출 후 storeId 뽑아옴
@@ -44,10 +46,10 @@ public class CategoryService {
          * 이 카테고리 유형으로 해당되는 모든 음식점ID 뽑아와야 하는 경우 적용 고민
         CategoryType type = CategoryType.getInstance(dto.getName());
         */
-        // 2. requestDto → entity 전환
 //        CategoryType categoryType = CategoryType.getInstance(dto.getName());
 //        Category category = categoryMapper.toCategoryEntity(dto, categoryType);
 //        String type = treatName(dto.getName());
+        // 2. requestDto → entity 전환
         Category category = Category.of(dto.getName());
         // 3. DB 저장 후 entity → responseDto 전환
         return categoryMapper.toCategoryResponseDto(categoryRepository.save(category));
@@ -63,19 +65,21 @@ public class CategoryService {
 
     // 카테고리 목록 조회
     @Transactional(readOnly = true)
-    public List<CategoryResponseDto> searchCategoryList(User user) {
-        return categoryRepository.findAll().stream().map(categoryMapper::toCategoryResponseDto)
+    public PageResponseDto<CategoryResponseDto> searchCategoryList(User user, Pageable pageable) {
+//        return categoryRepository.findAll().stream().map(categoryMapper::toCategoryResponseDto)
+//            .toList();
+        List<CategoryResponseDto> categoryList = categoryRepository.findAll().stream()
+            .map(categoryMapper::toCategoryResponseDto)
             .toList();
+        return new PageResponseDto<>(categoryList, (PageMetaDto) pageable);
     }
 
     // 카테고리 수정
     @Transactional
     public CategoryResponseDto updateCategory(User user, UUID categoryId,
         CategoryRequestDto dto) {
-
         // 2. categoryId로 해당 카테코리 DB존재 확인
         Category category = findCategory(categoryId);
-
         category.updateCategory(dto.getName());
         category = categoryRepository.save(category);
         // 4. entity → responseDto 변환 뒤 반환

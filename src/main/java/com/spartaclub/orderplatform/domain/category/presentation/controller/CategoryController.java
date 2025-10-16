@@ -3,14 +3,15 @@ package com.spartaclub.orderplatform.domain.category.presentation.controller;
 import com.spartaclub.orderplatform.domain.category.application.service.CategoryService;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategoryRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -79,7 +80,8 @@ public class CategoryController {
     }
 
     // 카테고리 상세 조회 API
-    @GetMapping("/{categoryId}")
+    @PreAuthorize("hasAnyRole({'MASTER','MANAGER'})")
+    @GetMapping("/search/{categoryId}")
     public ResponseEntity<ApiResponse<CategoryResponseDto>> searchCategory(
         @PathVariable UUID categoryId
     ) {
@@ -87,14 +89,16 @@ public class CategoryController {
             .body(ApiResponse.success(categoryService.searchCategory(categoryId)));
     }
 
-    // 카테고리 상세 조회 API
+    // 카테고리 목룍 조회 API
     @PreAuthorize("hasAnyRole({'MASTER','MANAGER'})")
-    @GetMapping("")
-    public ResponseEntity<ApiResponse<List<CategoryResponseDto>>> searchCategoryList(
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<PageResponseDto<CategoryResponseDto>>> searchCategoryList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        Pageable pageable
+        @ParameterObject Pageable pageable
     ) {
+        PageResponseDto<CategoryResponseDto> categories = categoryService
+            .searchCategoryList(userDetails.getUser(), pageable);
         return ResponseEntity.status(HttpStatus.OK)
-            .body(ApiResponse.success(categoryService.searchCategoryList(userDetails.getUser())));
+            .body(ApiResponse.success(categories));
     }
 }

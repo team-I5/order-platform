@@ -29,7 +29,4 @@ public class ReviewResponseDto {
     private Integer rating;
     // 리뷰내용
     private String contents;
-
-    // 평점
-
 }

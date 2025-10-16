@@ -9,7 +9,6 @@ import com.spartaclub.orderplatform.domain.review.application.mapper.ReviewMappe
 import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import com.spartaclub.orderplatform.domain.review.infrastructure.repository.ReviewRepository;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewCreateRequestDto;
-import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewSearchRequestDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewResponseDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewSearchResponseDto;
@@ -20,9 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,25 +48,21 @@ public class ReviewService {
     @Transactional
     public ReviewResponseDto createReview(User user,
         ReviewCreateRequestDto requestDto) {
-
         // 1. 주문별 중복 검증
         boolean existReview = reviewRepository.existsByOrder_OrderIdAndDeletedAtIsNull(
             requestDto.getOrderId());
-        log.info(existReview ? "Review already exists" : "Review not exists");
         if (existReview) {
             throw new IllegalArgumentException("리뷰가 존재하는 주문입니다.");
         }
-
+        // 주문 조회
         Order order = orderService.findById(requestDto.getOrderId());
         // 가게 조회
         Store store = storeService.getStore(requestDto.getStoreId());
         // 상품 조회
         Product product = productService.findProductOrThrow(requestDto.getProductId());
-
-        //리뷰 생성
+        // 2. 리뷰 객체 생성 By 정적 팩토리 메서드
         Review review = Review.create(user, store, product, order, requestDto.getRating(),
             requestDto.getContents());
-
         // 3. DB 저장 후 entity → responseDto 전환
         return reviewMapper.toReviewDto(reviewRepository.save(review));
     }
@@ -107,49 +100,40 @@ public class ReviewService {
     // 리뷰 목록 조회
     // 지연 로딩이라서 트랜잭션 붙였는데, 성능 향상 위해 readonly 옵션 true로 설정
     @Transactional(readOnly = true)
-    public Page<ReviewSearchResponseDto> searchReview(User user,
-        ReviewSearchRequestDto searchRequestDto) {
-//        searchRequestDto.isRightPageSize();
-        Pageable pageable = PageRequest.of(
-            searchRequestDto.getPage(), searchRequestDto.getSize(),
-            Sort.by(searchRequestDto.getDirection(), "createdAt")
-        );
-
+    public Page<ReviewSearchResponseDto> searchReview(User user, UUID orderId, String storeName,
+        Pageable pageable) {
         return switch (user.getRole()) {
-            case CUSTOMER -> searchReviewForCustomer(user, pageable, searchRequestDto);
-            case OWNER -> searchReviewForOwner(user, pageable, searchRequestDto);
-            case MANAGER, MASTER -> searchReviewForAdmin(user, pageable);
+            case CUSTOMER -> searchReviewForCustomer(user, orderId, pageable);
+            case OWNER -> searchReviewForOwner(storeName, pageable);
+            case MANAGER, MASTER -> searchReviewForAdmin(pageable);
         };
     }
 
     // 고객 리뷰 조회
     private Page<ReviewSearchResponseDto> searchReviewForCustomer(User user,
-        Pageable pageable, ReviewSearchRequestDto searchRequestDto) {
+        UUID orderId, Pageable pageable) {
         return reviewRepository.findByUser_UserIdAndOrder_OrderIdAndDeletedAtIsNull(
-                user.getUserId(), searchRequestDto.getOrderId(), pageable)
+                user.getUserId(), orderId, pageable)
             .map(reviewMapper::toReviewSearchResponseDto);
     }
 
     // 음식점 주인 리뷰 조회
-    private Page<ReviewSearchResponseDto> searchReviewForOwner(User user,
-        Pageable pageable, ReviewSearchRequestDto searchRequestDto) {
-        return reviewRepository.findByUser_UserIdAndStore_StoreIdAndDeletedAtIsNull(
-                user.getUserId(), searchRequestDto.getStoreId(), pageable)
+    private Page<ReviewSearchResponseDto> searchReviewForOwner(String storeName,
+        Pageable pageable) {
+        return reviewRepository.findByStore_StoreNameAndDeletedAtIsNull(storeName, pageable)
             .map(reviewMapper::toReviewSearchResponseDto);
     }
 
     // MANAGER, MASTER 리뷰 조회
-    private Page<ReviewSearchResponseDto> searchReviewForAdmin(User user,
-        Pageable pageable) {
-        return reviewRepository.findAllByUser_UserId(user.getUserId(), pageable)
+    private Page<ReviewSearchResponseDto> searchReviewForAdmin(Pageable pageable) {
+        return reviewRepository.findAllBy(pageable)
             .map(reviewMapper::toReviewSearchResponseDto);
     }
-
-
+    
     // 리뷰 상세 조회
     // 지연 로딩이라서 트랜잭션 붙였는데, 성능 향상 위해 readonly 옵션 true로 설정
     @Transactional(readOnly = true)
-    public ReviewSearchResponseDto searchDetailReview(User user, UUID reviewId) {
+    public ReviewSearchResponseDto searchDetailReview(UUID reviewId) {
         Review review = findReview(reviewId);
         return reviewMapper.toReviewSearchResponseDto(review);
     }
@@ -177,4 +161,6 @@ public class ReviewService {
         return reviewRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 리뷰입니다."));
     }
+
+
 }

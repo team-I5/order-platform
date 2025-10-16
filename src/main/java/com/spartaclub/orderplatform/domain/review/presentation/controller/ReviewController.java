@@ -2,7 +2,6 @@ package com.spartaclub.orderplatform.domain.review.presentation.controller;
 
 import com.spartaclub.orderplatform.domain.review.application.service.ReviewService;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewCreateRequestDto;
-import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewSearchRequestDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewUpdateRequestDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewResponseDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.response.ReviewSearchResponseDto;
@@ -20,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -80,20 +78,21 @@ public class ReviewController {
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Page<ReviewSearchResponseDto>>> searchReview(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @ModelAttribute ReviewSearchRequestDto dto) {
+        @RequestParam UUID orderId,
+        @RequestParam String storeName,
+        Pageable pageable) {
         User user = userDetails.getUser();
         return ResponseEntity.status(HttpStatus.OK)
-            .body(ApiResponse.success(reviewService.searchReview(user, dto)));
+            .body(ApiResponse.success(
+                reviewService.searchReview(user, orderId, storeName, pageable)));
     }
 
     // 리뷰 상세 조회 API
     @GetMapping("/search/{reviewId}")
     public ResponseEntity<ApiResponse<ReviewSearchResponseDto>> searchDetailReview(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable UUID reviewId) {
-        User user = userDetails.getUser();
         return ResponseEntity.status(HttpStatus.OK)
-            .body(ApiResponse.success(reviewService.searchDetailReview(user, reviewId)));
+            .body(ApiResponse.success(reviewService.searchDetailReview(reviewId)));
     }
 
     // 리뷰 타입별 조회 API
