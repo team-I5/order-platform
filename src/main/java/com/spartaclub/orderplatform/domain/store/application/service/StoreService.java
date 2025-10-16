@@ -18,8 +18,8 @@ import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode
 import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.ONLY_REJECTED_STORE_MODIFIABLE;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
-import com.spartaclub.orderplatform.domain.category.entity.Category;
-import com.spartaclub.orderplatform.domain.category.repository.CategoryRepository;
+import com.spartaclub.orderplatform.domain.category.domain.model.Category;
+import com.spartaclub.orderplatform.domain.category.infrastructure.repository.CategoryRepository;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;
@@ -51,9 +51,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StoreService {
 
     private final StoreRepository storeRepository;
@@ -353,7 +353,7 @@ public class StoreService {
     }
 
     // 존재하는 음식점인지 확인
-    private Store getStore(UUID storeId) {
+    public Store getStore(UUID storeId) {
         return storeRepository.findById(storeId)
             .orElseThrow(() -> {
                 log.warn("[Store] not exist");

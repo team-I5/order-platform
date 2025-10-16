@@ -16,8 +16,6 @@ import jakarta.persistence.Table;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +25,6 @@ import org.hibernate.annotations.UuidGenerator;
 @Table(name = "p_payments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Builder
-@AllArgsConstructor
 @Slf4j
 public class Payment extends BaseEntity {
 
@@ -111,6 +107,25 @@ public class Payment extends BaseEntity {
                 paymentId, pgPaymentKey, requestPgPaymentKey);
             throw new BusinessException(PaymentErrorCode.PG_PAYMENT_KEY_MISMATCH);
         }
+    }
+
+    public static Payment ofStatus(Order order, PaymentStatus status, Long paymentAmount,
+        String PgPaymentKey, String PgOrderId) {
+        Payment payment = new Payment();
+        payment.order = order;
+        payment.status = status;
+        payment.paymentAmount = paymentAmount;
+        payment.pgPaymentKey = PgPaymentKey;
+        payment.pgOrderId = PgOrderId;
+        return payment;
+    }
+
+    public static Payment ofStatus(Order order, PaymentStatus status, Long paymentAmount) {
+        Payment payment = new Payment();
+        payment.order = order;
+        payment.status = status;
+        payment.paymentAmount = paymentAmount;
+        return payment;
     }
 }
 

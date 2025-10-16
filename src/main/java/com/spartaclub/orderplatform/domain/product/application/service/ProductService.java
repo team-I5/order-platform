@@ -7,11 +7,9 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGr
 import com.spartaclub.orderplatform.domain.product.domain.repository.*;
 import com.spartaclub.orderplatform.domain.product.exception.ProductErrorCode;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
-import com.spartaclub.orderplatform.domain.review.entity.Review;
+import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
-import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
-import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.Address;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;

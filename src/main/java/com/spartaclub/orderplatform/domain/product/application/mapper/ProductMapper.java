@@ -4,14 +4,23 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionMap;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
-import com.spartaclub.orderplatform.domain.review.entity.Review;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
-import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 
+import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductDetailResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductReviewResponseDto;
+import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+
 
 /**
  * 상품 Entity <-> Dto 매핑
