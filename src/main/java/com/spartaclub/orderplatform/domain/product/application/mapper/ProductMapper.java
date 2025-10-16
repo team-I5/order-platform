@@ -4,6 +4,7 @@ import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionMap;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
+import com.spartaclub.orderplatform.domain.review.entity.Review;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 
@@ -77,4 +78,6 @@ public interface ProductMapper {
     }
 
     ProductOptionGroupResponseDto toGroupDto(ProductOptionGroup group);
+
+    ProductReviewResponseDto toReviewDto(Review review);
 }
