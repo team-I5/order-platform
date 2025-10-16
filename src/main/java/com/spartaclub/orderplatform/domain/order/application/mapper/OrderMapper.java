@@ -17,7 +17,7 @@ public interface OrderMapper {
     // Order -> OrderDetailResponseDto 변환
     @Mapping(source = "orderProducts", target = "productsList")
     @Mapping(source = "user.userId", target = "userId")
-    @Mapping(source = "store.storeId", target = "storeId")
+    @Mapping(source = "storeId", target = "storeId")
     OrderDetailResponseDto toDto(Order order);
 
     // OrderProduct -> ProductsListItem
@@ -29,7 +29,7 @@ public interface OrderMapper {
 
     // Order -> OrderSummaryDto
     @Mapping(source = "user.userId", target = "userId")
-    @Mapping(source = "store.storeId", target = "storeId")
+    @Mapping(source = "storeId", target = "storeId")
     OrdersResponseDto.OrderSummaryDto toSummaryDto(Order order);
 
     PlaceOrderCommand toCommand(OrderItemRequest requestDto);

@@ -1,7 +1,7 @@
 package com.spartaclub.orderplatform.domain.review.application.service;
 
 
-import com.spartaclub.orderplatform.domain.order.application.OrderService;
+import com.spartaclub.orderplatform.domain.order.application.service.OrderService;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.product.application.service.ProductService;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;

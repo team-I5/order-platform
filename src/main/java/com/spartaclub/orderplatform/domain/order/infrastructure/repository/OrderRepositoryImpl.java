@@ -1,6 +1,6 @@
 package com.spartaclub.orderplatform.domain.order.infrastructure.repository;
 
-import com.spartaclub.orderplatform.domain.order.application.query.OrderQuery;
+import com.spartaclub.orderplatform.domain.order.application.query.OrderSpecQuery;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.order.domain.repository.OrderRepository;
 import com.spartaclub.orderplatform.domain.order.infrastructure.repository.spec.OrderSpecs;
@@ -24,11 +24,11 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Page<Order> findAll(OrderQuery orderQuery, Pageable pageable) {
+    public Page<Order> findAll(OrderSpecQuery orderSpecQuery, Pageable pageable) {
         Specification<Order> spec = (root, query, cb) -> cb.conjunction(); // 초기값
         spec = spec
-            .and(OrderSpecs.visibleFor(orderQuery.viewer()))
-            .and(OrderSpecs.statusIn(orderQuery.status()));
+            .and(OrderSpecs.visibleFor(orderSpecQuery.viewer()))
+            .and(OrderSpecs.statusIn(orderSpecQuery.status()));
         return orderJpaRepository.findAll(spec, pageable);
     }
 
