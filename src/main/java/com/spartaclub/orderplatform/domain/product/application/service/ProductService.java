@@ -35,7 +35,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final ProductStoreReaderRepository storeRepository;
-    private final StoreMapper storeMapper;
     private final ProductAddressReaderRepository addressRepository;
     private final AiService aiService;
     private final ProductOptionGroupRepository productOptionGroupRepository;

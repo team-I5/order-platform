@@ -94,7 +94,7 @@ public class AiService {
     // gemini api 호출
     private String callExternalAi(String prompt) {
         try {
-            String promptWithLimit = "3줄 이내로 답변해주세요.\n" + prompt;
+            String promptWithLimit = "답변은 50글자 또는 3줄 이내로 답변해주세요.\n" + prompt;
 
             GenerateContentResponse response =
                     geminiClient.models.generateContent("gemini-2.5-flash-lite", promptWithLimit, null);
