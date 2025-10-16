@@ -12,9 +12,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -133,15 +135,23 @@ public class ProductController {
     /**
      * 상품 목록 조회 API *
      */
-    @Operation(summary = "상품 목록 조회", description = "특정 상점의 상품 목록을 페이지 단위로 조회합니다.")
+    @Operation(
+            summary = "상품 목록 조회",
+            description = """
+                    특정 상점의 상품 목록을 페이지 단위로 조회합니다.<br><br>
+                    storeId: 상점 ID<br>
+                    page: 페이지 번호 (0부터 시작)<br>
+                    size: 페이지당 아이템 수 (허용값: 10, 30, 50)<br>
+                    sort: 정렬 기준 (예: createdAt,desc / rating,asc)<br>
+                    예) /products?storeId=UUID&page=0&size=10&sort=createdAt,desc
+                    """
+    )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "상품 목록 조회 성공")
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponseDto<ProductResponseDto>>> getProductList(
             @Parameter(description = "상점 ID") @RequestParam UUID storeId,
-            @Parameter(description = "페이지 번호 (기본 0)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "페이지 크기 (기본 10)") @RequestParam(defaultValue = "10") int size
+            @ParameterObject Pageable pageable
     ) {
-        Pageable pageable = PageRequest.of(page, size);
         PageResponseDto<ProductResponseDto> productList = productService.getProductList(storeId, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(productList));
     }
@@ -162,32 +172,49 @@ public class ProductController {
     /**
      * 상품 검색 API *
      */
-    @Operation(summary = "상품 이름으로 상점 검색", description = "입력한 상품 이름과 사용자 주소를 기반으로 배송 가능한 상점을 검색합니다.")
+    @Operation(
+            summary = "상품 이름으로 상점 검색",
+            description = """
+                    입력한 상품 이름과 사용자 주소를 기반으로 배송 가능한 상점을 검색합니다.<br><br>
+                    keyword: 검색 키워드 (상품 이름)<br>
+                    addressId: 사용자 주소 ID (선택)<br>
+                    page: 페이지 번호 (0부터 시작)<br>
+                    size: 페이지당 아이템 수 (허용값: 10, 30, 50)<br>
+                    sort: 정렬 기준 (예: createdAt,desc / rating,asc)<br>
+                    예) /products/search-by-product-name?keyword=커피&page=0&size=10&sort=rating,asc
+                    """
+    )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "상점 검색 성공")
     @GetMapping("/search-by-product-name")
-    public ResponseEntity<ApiResponse<Page<StoreSearchResponseDto>>> searchProductByProductName(
+    public ResponseEntity<ApiResponse<PageResponseDto<ProductStoreSearchResponseDto>>> searchProductByProductName(
             @Parameter(description = "검색 키워드 (상품 이름)") @RequestParam String keyword,
             @Parameter(description = "사용자 주소 ID") @RequestParam(required = false) UUID addressId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @ParameterObject Pageable pageable
     ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<StoreSearchResponseDto> stores = productService.getStoreListByProductNameAndAddressId(keyword, addressId, pageable);
+        PageResponseDto<ProductStoreSearchResponseDto> stores = productService.getStoreListByProductNameAndAddressId(keyword, addressId, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(stores));
     }
 
     /**
      * 상품 별 리뷰 조회 *
      */
-    @Operation(summary = "상품 리뷰 조회", description = "상품에 등록된 리뷰 목록을 조회합니다.")
+    @Operation(
+            summary = "상품 리뷰 조회",
+            description = """
+                    상품에 등록된 리뷰 목록을 조회합니다.<br><br>
+                    productId: 상품 ID<br>
+                    page: 페이지 번호 (0부터 시작)<br>
+                    size: 페이지당 아이템 수<br>
+                    sort: 정렬 기준 (예: createdAt,desc)<br>
+                    예) /product/{productId}/reviews?page=0&size=10&sort=rating,asc
+                    """
+    )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "리뷰 조회 성공")
     @GetMapping("/{productId}/reviews")
     public ResponseEntity<ApiResponse<PageResponseDto<ProductReviewResponseDto>>> getProductReviews(
             @Parameter(description = "상품 ID") @PathVariable UUID productId,
-            @Parameter(description = "페이지 번호 (기본 0)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "페이지 크기 (기본 10)") @RequestParam(defaultValue = "10") int size
+            @ParameterObject Pageable pageable
     ) {
-        Pageable pageable = PageRequest.of(page, size);
         PageResponseDto<ProductReviewResponseDto> reviews = productService.getReviewListByProductId(productId, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(reviews));
     }

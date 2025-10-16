@@ -65,4 +65,8 @@ public class ProductOptionGroup extends BaseEntity {
     public void deleteOptionGroup(Long userId) {
         delete(userId);
     }
+
+    public void addItem(ProductOptionItem productOptionItem) {
+        optionItems.add(productOptionItem);
+    }
 }

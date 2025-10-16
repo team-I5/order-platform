@@ -6,6 +6,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ProductReviewReaderRepository {
-
     Page<Review> findAllByProduct_ProductId(UUID productId, Pageable pageable);
 }

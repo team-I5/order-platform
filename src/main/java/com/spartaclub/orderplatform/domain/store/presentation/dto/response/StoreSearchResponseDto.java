@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class StoreSearchResponseDto {
-
     private String storeName;
     private Double averageRating;
     private Integer reviewCount;

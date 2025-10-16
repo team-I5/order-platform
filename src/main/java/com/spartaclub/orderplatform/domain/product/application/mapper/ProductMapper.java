@@ -3,6 +3,10 @@ package com.spartaclub.orderplatform.domain.product.application.mapper;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionMap;
+import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
+import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import org.springframework.data.domain.Page;
+
 import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductDetailResponseDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupResponseDto;
@@ -16,7 +20,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.springframework.data.domain.Page;
+
 
 /**
  * 상품 Entity <-> Dto 매핑
@@ -43,25 +47,23 @@ public interface ProductMapper {
         }
 
         return PageMetaDto.builder()
-            .pageNumber(productPage.getNumber())
-            .pageSize(productPage.getSize())
-            .totalElements(productPage.getTotalElements())
-            .totalPages(productPage.getTotalPages())
-            .isFirst(productPage.isFirst())
-            .isLast(productPage.isLast())
-            .build();
+                .pageNumber(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .isFirst(productPage.isFirst())
+                .isLast(productPage.isLast())
+                .build();
     }
 
     @Named("productOptionMapListToGroupDtoList")
     default List<ProductOptionGroupResponseDto> productOptionMapListToGroupDtoList(
-        List<ProductOptionMap> maps) {
-        if (maps == null) {
-            return Collections.emptyList();
-        }
+            List<ProductOptionMap> maps) {
+        if (maps == null) return Collections.emptyList();
         return maps.stream()
-            .map(ProductOptionMap::getProductOptionGroup)
-            .map(this::toGroupDto)
-            .collect(Collectors.toList());
+                .map(ProductOptionMap::getProductOptionGroup)
+                .map(this::toGroupDto)
+                .collect(Collectors.toList());
     }
 
     ProductOptionGroupResponseDto toGroupDto(ProductOptionGroup group);
@@ -69,4 +71,7 @@ public interface ProductMapper {
     @Mapping(source = "user.username", target = "username")
     @Mapping(source = "user.nickname", target = "nickName")
     ProductReviewResponseDto toReviewDto(Review review);
+
+
+    ProductStoreSearchResponseDto toProductStoreSearchResponseDto(Store store);
 }
