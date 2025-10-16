@@ -1,6 +1,5 @@
 package com.spartaclub.orderplatform.domain.store.infrastructure.repository;
 
-import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
@@ -32,20 +31,21 @@ public interface StoreJpaRepository extends JpaRepository<Store, UUID> {
            FROM Store s
            JOIN s.storeCategories sc
            JOIN sc.category c
-           WHERE c.type = :type
+           WHERE c.type = :categoryType
            AND s.status = 'APPROVED'
            AND s.deletedAt IS NULL
            AND sc.deletedAt IS NULL
            AND c.deletedAt IS NULL
         """)
-    Page<Store> findApprovedStoreByCategory(@Param("type") CategoryType type, Pageable pageable);
+    Page<Store> findApprovedStoreByCategory(@Param("categoryType") String categoryType,
+        Pageable pageable);
 
     @Query("""
            SELECT DISTINCT s
            FROM Store s
            JOIN s.storeCategories sc
            JOIN sc.category c
-           WHERE c.type = :type
+           WHERE c.type = :categoryType
            AND s.status = 'APPROVED'
            AND s.user.userId = :userId
            AND s.deletedAt IS NULL
@@ -53,7 +53,7 @@ public interface StoreJpaRepository extends JpaRepository<Store, UUID> {
            AND c.deletedAt IS NULL
         """)
     Page<Store> findOwnerApprovedStoreByCategory(
-        @Param("type") CategoryType type,
+        @Param("categoryType") String categoryType,
         @Param("userId") Long userId,
         Pageable pageable
     );
@@ -63,12 +63,13 @@ public interface StoreJpaRepository extends JpaRepository<Store, UUID> {
            FROM Store s
            JOIN s.storeCategories sc
            JOIN sc.category c
-           WHERE c.type = :type
+           WHERE c.type = :categoryType
            AND s.status = 'APPROVED'
            AND sc.deletedAt IS NULL
            AND c.deletedAt IS NULL
         """)
-    Page<Store> findAllStoreByCategory(@Param("type") CategoryType type, Pageable pageable);
+    Page<Store> findAllStoreByCategory(@Param("categoryType") String categoryType,
+        Pageable pageable);
 
     @Query("""
             SELECT s
@@ -85,16 +86,16 @@ public interface StoreJpaRepository extends JpaRepository<Store, UUID> {
 
     /**
      *
-     * @param keyword ex) 마라탕, 치킨, 떡볶이
+     * @param keyword  ex) 마라탕, 치킨, 떡볶이
      * @param roadName ex) 한글비석로, 동일로
      * @param pageable
      * @return 가게 중 메뉴에 keyword가 포함되어 있고, 주소에 roadName이 포함된 가게가 있으면 중복을 제거하고 하나만 반환
      */
     @Query("SELECT DISTINCT s FROM Store s " +
-            "JOIN s.products p " +
-            "WHERE LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "AND s.storeAddress LIKE CONCAT('%', :roadName, '%')")
+        "JOIN s.products p " +
+        "WHERE LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+        "AND s.storeAddress LIKE CONCAT('%', :roadName, '%')")
     Page<Store> findDistinctByProductNameContainingIgnoreCase(@Param("keyword") String keyword,
-                                                              @Param("roadName") String roadName,
-                                                              Pageable pageable);
+        @Param("roadName") String roadName,
+        Pageable pageable);
 }
