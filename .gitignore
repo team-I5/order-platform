@@ -652,3 +652,10 @@ application.properties
 application.yml
 application-*.yml
 application-*.properties
+
+### Environment Variables ###
+.env
+.env.local
+.env.development
+.env.production
+.env.test
