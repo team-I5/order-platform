@@ -16,7 +16,6 @@ import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode
 import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.ONLY_APPROVED_STORE_MODIFIABLE;
 import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.ONLY_PENDING_STORE_APPROVABLE;
 import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.ONLY_REJECTED_STORE_MODIFIABLE;
-import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import com.spartaclub.orderplatform.domain.category.domain.model.Category;
 import com.spartaclub.orderplatform.domain.category.infrastructure.repository.CategoryRepository;
@@ -28,14 +27,12 @@ import com.spartaclub.orderplatform.domain.store.presentation.dto.request.Reject
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreCategoryRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByCategoryRequestDto;
-import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByStoreNameRequestDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByKeywordRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.RejectStoreResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreDetailResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
-import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByCategoryResponseDto;
-import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchByStoreNameResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
@@ -45,9 +42,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,7 +68,7 @@ public class StoreService {
             throw new BusinessException(DUPLICATE_STORE_NAME);
         }
 
-        Store store = storeMapper.toCreateStoreEntity(user, dto);
+        Store store = Store.create(user, dto);
 
         return storeMapper.toStoreResponseDto(storeRepository.save(store));
     }
@@ -168,14 +163,9 @@ public class StoreService {
      *      - manager/master: 전체 음식점, 승인 상태별 / 음식점 주인별
      */
     @Transactional(readOnly = true)
-    public Page<StoreSearchResponseDto> searchStore(StoreSearchRequestDto dto, User user) {
-        dto.validatePageSize();
-
-        Pageable pageable = PageRequest.of(
-            dto.getPage(), dto.getSize(),
-            Sort.by(DESC, "createdAt")
-        );
-
+    public Page<StoreSearchResponseDto> searchStore(
+        StoreSearchRequestDto dto, User user, Pageable pageable
+    ) {
         return switch (user.getRole()) {
             case CUSTOMER -> searchStoreForCustomer(pageable);
             case OWNER -> searchStoreForOwner(user, pageable);
@@ -203,10 +193,6 @@ public class StoreService {
             }
             case MANAGER, MASTER -> {
                 // 모든 음식점 조회 가능
-            }
-            default -> {
-                log.warn("[Store] no permission");
-                throw new BusinessException(NO_PERMISSION);
             }
         }
 
@@ -283,16 +269,9 @@ public class StoreService {
 
     // 음식점 카테고리별 목록 조회
     @Transactional(readOnly = true)
-    public Page<StoreSearchByCategoryResponseDto> searchStoreByCategory(
-        StoreSearchByCategoryRequestDto dto, User user
+    public Page<StoreSearchResponseDto> searchStoreByCategory(
+        StoreSearchByCategoryRequestDto dto, User user, Pageable pageable
     ) {
-        dto.validatePageSize();
-
-        Pageable pageable = PageRequest.of(
-            dto.getPage(), dto.getSize(),
-            Sort.by(DESC, "createdAt")
-        );
-
         Page<Store> stores;
 
         switch (user.getRole()) {
@@ -313,38 +292,32 @@ public class StoreService {
         return stores.map(this::getStoreSearchByCategoryResponseDto);
     }
 
-    // 해당 이름이 들어가는 식당 목록
+    // 해당 키워드가 들어가는 식당 목록
     @Transactional
-    public Page<StoreSearchByStoreNameResponseDto> searchStoreListByStoreName(
-        StoreSearchByStoreNameRequestDto dto
+    public Page<StoreSearchResponseDto> searchStoreListByKeyword(
+        StoreSearchByKeywordRequestDto dto, Pageable pageable
     ) {
-        dto.validatePageSize();
-
-        Pageable pageable = PageRequest.of(
-            dto.getPage(), dto.getSize(),
-            Sort.by(DESC, "createdAt")
-        );
-
         Page<Store> stores = storeRepository
             .findApprovedStoresByStoreName(dto.getStoreName(), APPROVED, pageable);
 
-        return stores.map(storeMapper::toStoreSearchByStoreNameResponseDto);
+        return stores.map(storeMapper::toStoreSearchResponseDto);
     }
 
     // mapper에서 분리한 로직 - 유효한 카테고리만 포함한 dto 변환
-    private StoreSearchByCategoryResponseDto getStoreSearchByCategoryResponseDto(Store store) {
-        StoreSearchByCategoryResponseDto responseDto
-            = storeMapper.toStoreSearchByCategoryResponseDto(store);
+    private StoreSearchResponseDto getStoreSearchByCategoryResponseDto(Store store) {
+        StoreSearchResponseDto responseDto
+            = storeMapper.toStoreSearchResponseDto(store);
 
-        List<Category> categories = store.getStoreCategories().stream()
+        List<String> categories = store.getStoreCategories().stream()
             .filter(storeCategory ->
                 storeCategory.getCategory() != null && !storeCategory.isDeleted()
             )
             .map(StoreCategory::getCategory)
             .filter(category -> !category.isDeleted())
+            .map(Category::getType)
             .toList();
 
-        return new StoreSearchByCategoryResponseDto(
+        return new StoreSearchResponseDto(
             responseDto.getStoreName(),
             responseDto.getAverageRating(),
             responseDto.getReviewCount(),
