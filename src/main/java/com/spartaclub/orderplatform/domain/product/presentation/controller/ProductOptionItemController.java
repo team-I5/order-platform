@@ -3,6 +3,7 @@ package com.spartaclub.orderplatform.domain.product.presentation.controller;
 import com.spartaclub.orderplatform.domain.product.application.service.ProductOptionItemService;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionItemRequestDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionItemResponseDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,13 +19,13 @@ public class ProductOptionItemController {
     private final ProductOptionItemService service;
 
     @PostMapping
-    public ProductOptionItemResponseDto createProductOptionItem(@RequestBody ProductOptionItemRequestDto productOptionItemRequestDto) {
+    public ProductOptionItemResponseDto createProductOptionItem(@Valid @RequestBody ProductOptionItemRequestDto productOptionItemRequestDto) {
         return service.createProductOptionItem(productOptionItemRequestDto);
     }
 
 
     @PutMapping("/{itemId}")
-    public ProductOptionItemResponseDto updateProductOptionItem(@PathVariable UUID itemId, @RequestBody ProductOptionItemRequestDto productOptionItemRequestDto) {
+    public ProductOptionItemResponseDto updateProductOptionItem(@PathVariable UUID itemId, @Valid @RequestBody ProductOptionItemRequestDto productOptionItemRequestDto) {
         return service.updateProductOptionItem(itemId, productOptionItemRequestDto);
     }
 

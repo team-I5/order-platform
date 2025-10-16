@@ -3,6 +3,7 @@ package com.spartaclub.orderplatform.domain.product.presentation.controller;
 import com.spartaclub.orderplatform.domain.product.application.service.ProductOptionGroupService;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupRequestDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupResponseDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,13 +19,13 @@ public class ProductOptionGroupController {
     private final ProductOptionGroupService productOptionGroupService;
 
     @PostMapping
-    public ProductOptionGroupResponseDto createProductOptionGroup(@RequestBody ProductOptionGroupRequestDto productOptionGroupRequestDto) {
+    public ProductOptionGroupResponseDto createProductOptionGroup(@Valid @RequestBody ProductOptionGroupRequestDto productOptionGroupRequestDto) {
         return productOptionGroupService.createProductOptionGroup(productOptionGroupRequestDto);
     }
 
 
     @PutMapping("/{productOptionGroupId}")
-    public ProductOptionGroupResponseDto updateProductOptionGroup(@PathVariable UUID productOptionGroupId, @RequestBody ProductOptionGroupRequestDto productOptionGroupRequestDto) {
+    public ProductOptionGroupResponseDto updateProductOptionGroup(@PathVariable UUID productOptionGroupId, @Valid @RequestBody ProductOptionGroupRequestDto productOptionGroupRequestDto) {
         return productOptionGroupService.updateProductOptionGroup(productOptionGroupId, productOptionGroupRequestDto);
     }
 
