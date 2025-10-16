@@ -26,18 +26,14 @@ import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.auth.UserDetailsImpl;
 import com.spartaclub.orderplatform.global.auth.exception.AuthErrorCode;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -116,13 +112,9 @@ public class OrderService {
     //주문 목록 조회
     @Transactional(readOnly = true)
     public OrdersResponseDto getOrders(GetOrdersRequestDto requestDto,
-        UserDetailsImpl userDetails) {
+        UserDetailsImpl userDetails,
+        Pageable pageable) {
         User viewer = userDetails.getUser();
-
-        Pageable pageable = PageRequest.of(
-            requestDto.page() - 1,
-            requestDto.size(),
-            parseSort(requestDto.sort()));
 
         //조회
         OrderQuery orderQuery = new OrderQuery(requestDto.status(), viewer);
@@ -184,34 +176,6 @@ public class OrderService {
         order.changeStatus(OrderStatus.DELIVERED);
 
         return OrderStatusResponseDto.ofDelivered(orderId);
-    }
-
-    //페이지네이션 Sort 객체 생성
-    private Sort parseSort(List<String> sortParams) {
-        //기본값
-        String defaultProperty = "createdAt";
-        Sort.Direction defaultDir = Sort.Direction.DESC;
-        // 정렬 허용 필드
-        Set<String> allowedProperties = Set.of("createdAt", "totalPrice");
-
-        List<Sort.Order> orders = new ArrayList<>();
-
-        for (String param : sortParams) {
-            if (param == null || param.isBlank()) {
-                continue;
-            }
-
-            String[] parts = param.split(",");
-            String property = parts[0].trim();
-            Sort.Direction direction = (parts.length > 1 && "asc".equalsIgnoreCase(parts[1].trim()))
-                ? Sort.Direction.ASC : Sort.Direction.DESC;
-
-            if (allowedProperties.contains(property)) {
-                orders.add(new Sort.Order(direction, property));
-            }
-        }
-
-        return orders.isEmpty() ? Sort.by(defaultDir, defaultProperty) : Sort.by(orders);
     }
 
     public Order findById(UUID orderId) {
