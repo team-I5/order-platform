@@ -65,7 +65,7 @@ public class CategoryService {
 
     // 카테고리 목록 조회
     @Transactional(readOnly = true)
-    public PageResponseDto<CategoryResponseDto> searchCategoryList(User user, Pageable pageable) {
+    public PageResponseDto<CategoryResponseDto> searchCategoryList(Pageable pageable) {
 //        return categoryRepository.findAll().stream().map(categoryMapper::toCategoryResponseDto)
 //            .toList();
         List<CategoryResponseDto> categoryList = categoryRepository.findAll().stream()
