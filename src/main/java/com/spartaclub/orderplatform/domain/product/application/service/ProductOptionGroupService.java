@@ -2,9 +2,12 @@ package com.spartaclub.orderplatform.domain.product.application.service;
 
 import com.spartaclub.orderplatform.domain.product.application.mapper.ProductOptionGroupMapper;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.exception.ProductErrorCode;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupJPARepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupRequestDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionGroupResponseDto;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +19,7 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class ProductOptionGroupService {
 
-    private final ProductOptionGroupRepository groupRepository;
+    private final ProductOptionGroupRepository productOptionGroupRepository;
     private final ProductOptionGroupMapper productOptionGroupMapper;
 
     @Transactional
@@ -25,7 +28,7 @@ public class ProductOptionGroupService {
         ProductOptionGroup group = productOptionGroupMapper.toEntity(productOptionGroupRequestDto);
 
         // 3. DB 저장
-        ProductOptionGroup saved = groupRepository.save(group);
+        ProductOptionGroup saved = productOptionGroupRepository.save(group);
 
         // 4. -> Dto 후 반환
         return productOptionGroupMapper.toResponseDto(saved);
@@ -55,8 +58,8 @@ public class ProductOptionGroupService {
 
     // 상품 옵션 그룹 조회 공통 메소드
     private ProductOptionGroup getProductOptionGroup(UUID productOptionGroupId) {
-        return groupRepository.findById(productOptionGroupId)
-                .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
+        return productOptionGroupRepository.findById(productOptionGroupId)
+                .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_OPTION_GROUP_NOT_EXIST));
     }
 
 }

@@ -2,11 +2,15 @@ package com.spartaclub.orderplatform.domain.product.application.service;
 
 import com.spartaclub.orderplatform.domain.product.application.mapper.ProductOptionItemMapper;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.ProductOptionGroupRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.ProductOptionItemRepository;
+import com.spartaclub.orderplatform.domain.product.exception.ProductErrorCode;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupJPARepository;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionItemRequestDto;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductOptionItemResponseDto;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionItem;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionItemRepository;
+import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionItemJPARepository;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +30,7 @@ public class ProductOptionItemService {
     public ProductOptionItemResponseDto createProductOptionItem(ProductOptionItemRequestDto productOptionItemRequestDto) {
         // 1. 옵션 그룹 조회
         ProductOptionGroup productOptionGroup = productOptionGroupRepository.findById(productOptionItemRequestDto.getProductOptionGroupId())
-                .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_OPTION_GROUP_NOT_EXIST));
 
         // 2. 아이템 엔티티 생성
         ProductOptionItem item = productOptionItemMapper.toEntity(productOptionGroup, productOptionItemRequestDto);
@@ -65,7 +69,7 @@ public class ProductOptionItemService {
     // 상품 옵션 조회 공통 메소드
     private ProductOptionItem getOptionItem(UUID productOptionItemId) {
         return productOptionItemRepository.findById(productOptionItemId)
-                .orElseThrow(() -> new IllegalArgumentException("옵션 아이템을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_OPTION_ITEM_N0T_EXIST));
     }
 
 }

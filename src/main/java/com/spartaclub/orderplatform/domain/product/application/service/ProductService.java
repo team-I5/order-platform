@@ -4,34 +4,23 @@ import com.spartaclub.orderplatform.domain.ai.application.service.AiService;
 import com.spartaclub.orderplatform.domain.product.application.mapper.ProductMapper;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductOptionGroupRepository;
-import com.spartaclub.orderplatform.domain.product.infrastructure.repository.ProductRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.*;
+import com.spartaclub.orderplatform.domain.product.exception.ProductErrorCode;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
 import com.spartaclub.orderplatform.domain.review.entity.Review;
-import com.spartaclub.orderplatform.domain.review.repository.ReviewRepository;
 import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
-import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.PageMetaDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.PageResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductCreateRequestDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductResponseDto;
-import com.spartaclub.orderplatform.domain.product.presentation.dto.ProductUpdateRequestDto;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import com.spartaclub.orderplatform.domain.user.domain.entity.Address;
-import com.spartaclub.orderplatform.domain.user.domain.repository.AddressRepository;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 상품 Service
@@ -46,12 +35,12 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final StoreRepository storeRepository;
+    private final ProductStoreReaderRepository storeRepository;
     private final StoreMapper storeMapper;
-    private final AddressRepository addressRepository;
+    private final ProductAddressReaderRepository addressRepository;
     private final AiService aiService;
     private final ProductOptionGroupRepository productOptionGroupRepository;
-    private final ReviewRepository reviewRepository;
+    private final ReviewReaderRepository reviewRepository;
 
     // 상품 등록 서비스 로직
     @Transactional
@@ -61,7 +50,7 @@ public class ProductService {
     ) {
         // 1. storeId로 Store 조회
         Store store = storeRepository.findById(productCreateRequestDto.getStoreId())
-                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ProductErrorCode.STORE_NOT_EXIST));
 
         // 2. dto → entity 변환
         Product product = productMapper.toEntity(productCreateRequestDto);
@@ -131,7 +120,7 @@ public class ProductService {
     public ProductDetailResponseDto getProduct(UUID productId) {
         // 1. productId로 상품 조회
         Product product = productRepository.findWithOptionGroupsAndItemsByProductId(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_EXIST));
 
         return productMapper.toResponseDto(product);
     }
@@ -157,7 +146,7 @@ public class ProductService {
     public Page<StoreSearchResponseDto> getStoreListByProductNameAndAddressId(String keyword, UUID addressId, Pageable pageable) {
         // 1. 사용자의 배송지 조회
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "배송지가 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ProductErrorCode.ADDRESS_NOT_EXIST));
 
         // 2. 도로명 주소만 추출
         String roadName = extractRoadName(address.getRoadNameAddress());
@@ -178,7 +167,7 @@ public class ProductService {
         // 2. 상품 옵션 그룹들 조회
         List<ProductOptionGroup> optionGroups = productAddOptionGroupsRequestDto.getProductOptionGroupIds().stream()
                 .map(productOptionGroupId -> productOptionGroupRepository.findById(productOptionGroupId)
-                        .orElseThrow(() -> new IllegalArgumentException("상품 옵션 그룹을 찾을 수 없습니다: " + productOptionGroupId)))
+                        .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_OPTION_GROUP_NOT_EXIST)))
                 .toList();
 
         // 3. 상품에 상품 옵션 그룹 매핑
@@ -189,7 +178,7 @@ public class ProductService {
     }
 
     public PageResponseDto<ProductReviewResponseDto> getReviewListByProductId(UUID productId, Pageable pageable) {
-        Page<Review> reviewPage =  reviewRepository.findAllByProduct_ProductId(productId, pageable);
+        Page<Review> reviewPage = reviewRepository.findAllByProduct_ProductId(productId, pageable);
 
         // 2. 페이지 객체에서 상품 리스트만 추출
         List<ProductReviewResponseDto> reviewList = reviewPage.getContent().stream()
@@ -207,7 +196,7 @@ public class ProductService {
     // --- 상품 공통 조회 메소드 ---
     private Product findProductOrThrow(UUID productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_EXIST));
     }
 
     // 사용자 배송지에서 도로명 주소만 추출하는 메소드
@@ -221,7 +210,4 @@ public class ProductService {
         }
         return ""; // 못 찾은 경우
     }
-
-//    public Page<ProductReviewResponseDto> getReviewListByProductId(UUID productId, Pageable pageable) {
-//    }
 }

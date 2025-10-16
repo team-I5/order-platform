@@ -3,7 +3,6 @@ package com.spartaclub.orderplatform.domain.product.infrastructure.repository;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +17,7 @@ import java.util.UUID;
  * @date 2025-10-02(목)
  */
 @Repository
-public interface ProductRepository extends JpaRepository<Product, UUID> {
+public interface ProductJPARepository extends JpaRepository<Product, UUID> {
     Page<Product> findByStore_StoreIdAndIsHiddenFalseAndDeletedAtIsNull(UUID storeId, Pageable pageable);
 
     @Query("""
