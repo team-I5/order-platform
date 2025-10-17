@@ -19,7 +19,7 @@
 <img width="2087" height="938" alt="Image" src="https://github.com/user-attachments/assets/8dd254cf-5248-488a-9ed3-5ab3c52b95cc" />
 
 ## 도메인 다이어그램
-<img width="1081" height="637" alt="Image" src="https://github.com/user-attachments/assets/9330cb15-004a-4b06-9fa9-ecc327e054eb" />
+![Image](https://github.com/user-attachments/assets/238e175a-8700-420d-8c38-dbe83e1d0b5e)
 
 ## 프로젝트 실행 가이드
 
