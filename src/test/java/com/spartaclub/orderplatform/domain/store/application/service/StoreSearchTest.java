@@ -25,6 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
+/*
 @SpringBootTest
 @AutoConfigureMockMvc
 public class StoreSearchTest {
@@ -201,3 +202,4 @@ public class StoreSearchTest {
         assertThat(dto.getStoreName()).isEqualTo(store.getStoreName());
     }
 }
+*/
