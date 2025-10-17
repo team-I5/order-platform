@@ -111,10 +111,22 @@ Master
 mk@test.com
 ```
 
-## API 명세
+## API
 
-#### API 총 65개 (설계 대비 구현률 : 100 %)
+#### API 총 66개 (설계 대비 구현률 : 100 %)
+| API                   | 개수                   | API                   | 개수                   |
+|-----------------------|------------------------|-----------------------|------------------------|
+| 사용자 (User)         | 8개                     | 인증 및 토큰(Auth)     | 1개                    |
+| 주소(Address)         | 4개                     | 음식점(Store)         | 13개                    |
+| 상품 (Product)        | 9개                     | 상품 설명(AI)          | 1개                    |
+| 상품 옵션(Option)      | 6개                    | 주문(Order)            | 7개                    |
+| 결제(Payment)          | 5개                    | 리뷰(Review)           | 7개                    |
+| 카테고리(Category)     | 5개                    |                        |                        |
 
+#### 상세 내용
+🧾[api 명세 - Notion](https://www.notion.so/teamsparta/27a2dc3ef51481c8b6d7c259cbf25112?v=27a2dc3ef51481c29c04000c20372852&source=copy_link)
+
+ 
 ## 인프라 설계도
 
 <img width="806" height="441" alt="Image" src="https://github.com/user-attachments/assets/bcb43344-c723-4645-b851-57abd5574bb5" />
