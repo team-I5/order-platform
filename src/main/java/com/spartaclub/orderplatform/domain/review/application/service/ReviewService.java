@@ -7,6 +7,7 @@ import com.spartaclub.orderplatform.domain.product.application.service.ProductSe
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.review.application.mapper.ReviewMapper;
 import com.spartaclub.orderplatform.domain.review.domain.model.Review;
+import com.spartaclub.orderplatform.domain.review.exception.ReviewErrorCode;
 import com.spartaclub.orderplatform.domain.review.infrastructure.repository.ReviewRepository;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewCreateRequestDto;
 import com.spartaclub.orderplatform.domain.review.presentation.dto.request.ReviewUpdateRequestDto;
@@ -15,6 +16,8 @@ import com.spartaclub.orderplatform.domain.review.presentation.dto.response.Revi
 import com.spartaclub.orderplatform.domain.store.application.service.StoreService;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.global.auth.exception.AuthErrorCode;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +53,7 @@ public class ReviewService {
         boolean existReview = reviewRepository.existsByOrder_OrderIdAndDeletedAtIsNull(
             requestDto.getOrderId());
         if (existReview) {
-            throw new IllegalArgumentException("리뷰가 존재하는 주문입니다.");
+            throw new BusinessException(ReviewErrorCode.ALREADY_EXIST_IN_REVIEW);
         }
         // 주문 조회
         Order order = orderService.findById(requestDto.getOrderId());
@@ -113,9 +116,6 @@ public class ReviewService {
         return reviewRepository.findByUser_UserIdAndDeletedAtIsNull(
                 user.getUserId(), pageable)
             .map(reviewMapper::toReviewSearchResponseDto);
-//        return reviewRepository.findByUser_UserIdAndOrder_OrderIdAndDeletedAtIsNull(
-//                user.getUserId(), orderId, pageable)
-//            .map(reviewMapper::toReviewSearchResponseDto);
     }
 
     // 음식점 주인 리뷰 조회
@@ -167,7 +167,7 @@ public class ReviewService {
     @Transactional
     public Review findReview(UUID id) {
         return reviewRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 리뷰입니다."));
+            .orElseThrow(() -> new BusinessException(ReviewErrorCode.NOT_EXIST));
     }
 
 

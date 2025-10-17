@@ -2,18 +2,18 @@ package com.spartaclub.orderplatform.domain.category.application.service;
 
 import com.spartaclub.orderplatform.domain.category.application.mapper.CategoryMapper;
 import com.spartaclub.orderplatform.domain.category.domain.model.Category;
+import com.spartaclub.orderplatform.domain.category.exception.CategoryErrorCode;
 import com.spartaclub.orderplatform.domain.category.infrastructure.repository.CategoryRepository;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.request.CategoryRequestDto;
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
+import com.spartaclub.orderplatform.global.exception.BusinessException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 /*
  * Cateogory 서비스 클래스
@@ -116,6 +116,6 @@ public class CategoryService {
     public Category findCategory(UUID id) {
         return categoryRepository.findById(id)
             .orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."));
+                () -> new BusinessException(CategoryErrorCode.NOT_EXIST));
     }
 }
