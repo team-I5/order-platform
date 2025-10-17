@@ -25,8 +25,7 @@
 1. 데이터베이스 설정
 
 ```sql
-#
-Postgresql 데이터베이스 생성
+# Postgresql 데이터베이스 생성
 CREATE
 DATABASE orderplatform;
 ```
