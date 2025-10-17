@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * 주소 수정 요청 DTO
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
  */
 @Schema(description = "주소 수정 요청 정보")
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

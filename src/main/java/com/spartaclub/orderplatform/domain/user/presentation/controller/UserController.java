@@ -184,26 +184,12 @@ public class UserController {
         @PageableDefault(size = 10)
         Pageable pageable) {
 
-        // 페이지 크기 검증 (최대 50)
-        if (pageable.getPageSize() > 50) {
-            throw new BusinessException(UserErrorCode.INVALID_PAGE_SIZE);
-        }
-
-        // 정렬 정보 추출
-        String sortBy = "createdAt"; // 기본 정렬 필드
-        boolean ascending = false; // 기본 내림차순
-        
-        if (pageable.getSort().isSorted()) {
-            sortBy = pageable.getSort().iterator().next().getProperty();
-            ascending = pageable.getSort().iterator().next().isAscending();
-        }
-
         UserListPageResponseDto responseDto = userService.getAllUsers(
             requestDto, 
             pageable.getPageNumber(), 
             pageable.getPageSize(), 
-            sortBy, 
-            ascending
+            pageable.getSort().isSorted() ? pageable.getSort().iterator().next().getProperty() : "createdAt",
+            pageable.getSort().isSorted() ? pageable.getSort().iterator().next().isAscending() : false
         );
 
         return ResponseEntity.ok(ApiResponse.success(responseDto));
