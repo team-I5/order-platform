@@ -1,26 +1,17 @@
 package com.spartaclub.orderplatform.domain.store.presentation.dto.request;
 
-import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class StoreSearchByCategoryRequestDto {
 
-    private CategoryType categoryType;
-
-    private int page = 0;
-    private int size = 10;
-    private Sort.Direction sortDirection = Direction.DESC;
-
-    public void validatePageSize() {
-        if (size != 10 && size != 30 && size != 50) {
-            this.size = 10;
-        }
-    }
+    @Schema(description = "음식점 카테고리", example = "KOREANFOOD")
+    @NotBlank(message = "음식점 카테고리는 필수 입력사항입니다.")
+    private String categoryType;
 }

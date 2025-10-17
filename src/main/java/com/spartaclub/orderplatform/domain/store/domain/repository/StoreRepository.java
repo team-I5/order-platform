@@ -1,6 +1,5 @@
 package com.spartaclub.orderplatform.domain.store.domain.repository;
 
-import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
@@ -27,11 +26,12 @@ public interface StoreRepository {
 
     Page<Store> findByUser_UserId(Long userId, Pageable pageable);
 
-    Page<Store> findApprovedStoreByCategory(CategoryType type, Pageable pageable);
+    Page<Store> findApprovedStoreByCategory(String categoryType, Pageable pageable);
 
-    Page<Store> findOwnerApprovedStoreByCategory(CategoryType type, Long userId, Pageable pageable);
+    Page<Store> findOwnerApprovedStoreByCategory(String categoryType, Long userId,
+        Pageable pageable);
 
-    Page<Store> findAllStoreByCategory(CategoryType type, Pageable pageable);
+    Page<Store> findAllStoreByCategory(String categoryType, Pageable pageable);
 
     Optional<Store> findById(UUID storeId);
 
@@ -44,7 +44,6 @@ public interface StoreRepository {
     Page<Store> findApprovedStoresByStoreName(
         String storeName, StoreStatus status, Pageable pageable);
 
-    Page<Store> findDistinctByProductNameContainingIgnoreCase(String keyword,
-                                                              String roadName,
-                                                              Pageable pageable);
+    Page<Store> findDistinctByProductNameContainingIgnoreCase(
+        String keyword, String roadName, Pageable pageable);
 }
