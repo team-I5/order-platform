@@ -57,17 +57,17 @@ public class SecurityConfig {
             .sessionManagement(
                 session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // HTTP 요청에 대한 인증/인가 규칙 설정
-                .authorizeHttpRequests(auth -> auth
-                        // swagger 접근 가능
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/swagger-ui/**"
-                        ).permitAll()
-                        // 인증 없이 접근 가능한 엔드포인트 (회원가입, 로그인, 토큰 갱신)
-                        .requestMatchers("/v1/users/signup", "/v1/users/login", "/v1/auth/refresh")
-                        .permitAll()
+            // HTTP 요청에 대한 인증/인가 규칙 설정
+            .authorizeHttpRequests(auth -> auth
+                // swagger 접근 가능
+                .requestMatchers(
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
+                    "/swagger-ui/**"
+                ).permitAll()
+                // 인증 없이 접근 가능한 엔드포인트 (회원가입, 로그인, 토큰 갱신)
+                .requestMatchers("/v1/users/signup", "/v1/users/login", "/v1/auth/refresh")
+                .permitAll()
 
                 // 관리자 계정 생성은 MASTER 권한만 접근 가능
                 .requestMatchers("/v1/users/manager").hasRole("MASTER")
@@ -83,6 +83,9 @@ public class SecurityConfig {
 
                 // 주소 관련 기능은 인증된 사용자 모두 접근 가능
                 .requestMatchers("/v1/addresses/**").authenticated()
+
+                // 결제
+                .requestMatchers(HttpMethod.GET, "/v1/payments").hasAnyRole("MANAGER", "MASTER")
 
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
