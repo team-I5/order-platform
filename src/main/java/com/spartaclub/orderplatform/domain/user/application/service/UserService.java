@@ -70,9 +70,30 @@ public class UserService {
         // 2. 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
 
-        // 3. User 엔티티 생성
-        User user = userMapper.toEntity(requestDto);
-        user.setPassword(encodedPassword);
+        // 3. User 엔티티 생성 (정적 팩터리 메서드 사용)
+        User user;
+        if (requestDto.getBusinessNumber() != null && !requestDto.getBusinessNumber().trim().isEmpty()) {
+            // 사업자번호가 있는 경우 (OWNER 등)
+            user = User.createBusinessUser(
+                requestDto.getUsername(),
+                requestDto.getEmail(), 
+                encodedPassword,
+                requestDto.getNickname(),
+                requestDto.getPhoneNumber(),
+                requestDto.getRole(),
+                requestDto.getBusinessNumber()
+            );
+        } else {
+            // 일반 사용자
+            user = User.createUser(
+                requestDto.getUsername(),
+                requestDto.getEmail(),
+                encodedPassword,
+                requestDto.getNickname(),
+                requestDto.getPhoneNumber(),
+                requestDto.getRole()
+            );
+        }
 
         // 4. 데이터베이스 저장
         User savedUser = userRepository.save(user);
@@ -341,31 +362,20 @@ public class UserService {
      * 사용자 필드 선택적 업데이트 null이 아닌 필드만 업데이트
      */
     private void updateUserFields(User user, UserUpdateRequestDto requestDto) {
-        // 사용자명 업데이트
-        if (requestDto.getUsername() != null) {
-            user.setUsername(requestDto.getUsername());
-        }
-
-        // 닉네임 업데이트
-        if (requestDto.getNickname() != null) {
-            user.setNickname(requestDto.getNickname());
-        }
-
-        // 연락처 업데이트
-        if (requestDto.getPhoneNumber() != null) {
-            user.setPhoneNumber(requestDto.getPhoneNumber());
-        }
-
-        // 사업자번호 업데이트 (권한 검증 완료된 경우)
-        if (requestDto.getBusinessNumber() != null) {
-            user.setBusinessNumber(requestDto.getBusinessNumber());
-        }
-
-        // 비밀번호 업데이트 (암호화 처리)
+        // 비밀번호 암호화 처리
+        String encodedPassword = null;
         if (requestDto.isPasswordChangeRequested()) {
-            String encodedPassword = passwordEncoder.encode(requestDto.getNewPassword());
-            user.setPassword(encodedPassword);
+            encodedPassword = passwordEncoder.encode(requestDto.getNewPassword());
         }
+
+        // User 엔티티의 updateProfile 메서드 사용
+        user.updateProfile(
+            requestDto.getUsername(),
+            requestDto.getNickname(),
+            requestDto.getPhoneNumber(),
+            requestDto.getBusinessNumber(),
+            encodedPassword
+        );
     }
 
     /**
@@ -513,9 +523,14 @@ public class UserService {
         // 2. 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
 
-        // 3. User 엔티티 생성 (MapStruct 사용)
-        User user = userMapper.toEntityFromManagerRequest(requestDto);
-        user.setPassword(encodedPassword);
+        // 3. User 엔티티 생성 (정적 팩터리 메서드 사용)
+        User user = User.createManager(
+            requestDto.getUsername(),
+            requestDto.getEmail(),
+            encodedPassword,
+            requestDto.getNickname(),
+            requestDto.getPhoneNumber()
+        );
 
         // 4. 데이터베이스 저장
         User savedUser = userRepository.save(user);
