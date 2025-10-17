@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # PostgreSQL 데이터베이스
   postgres:
-    image: postgres:15-alpine
+    image: postgres:14-alpine
     container_name: ${POSTGRES_CONTAINER_NAME}
     restart: unless-stopped
     environment:
@@ -18,7 +18,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     networks:
-      - ${NETWORK_NAME}
+      - order-platform-network
 
   # Spring Boot 애플리케이션
   app:
@@ -80,7 +80,7 @@ services:
     volumes:
       - app_logs:/app/logs
     networks:
-      - ${NETWORK_NAME}
+      - order-platform-network
 
 # 데이터 볼륨 설정
 volumes:
@@ -91,5 +91,5 @@ volumes:
 
 # 네트워크 설정
 networks:
-  ${NETWORK_NAME}:
+  order-platform-network:
     driver: bridge

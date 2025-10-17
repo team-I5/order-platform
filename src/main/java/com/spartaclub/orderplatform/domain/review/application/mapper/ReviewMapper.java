@@ -22,21 +22,13 @@ public interface ReviewMapper {
      * 주문ID orderId
      * 메뉴ID product_id
      */
-    // RequestDto → Entity 변환
-//    @Mapping(target = "user", ignore = true)
-//    @Mapping(target = "store", ignore = true)
-//    @Mapping(target = "order", ignore = true)
-//    @Mapping(target = "product", ignore = true)
-//    // reviewId DB auto_increment로 자동 생성
-//    @Mapping(target = "reviewId", ignore = true)
-//    Review toReviewEntity(User user, ReviewCreateRequestDto requestDto);
 
     // Entity → ResponseDto 변환
     @Mapping(target = "userId", source = "user.userId")
     @Mapping(target = "storeId", source = "store.storeId")
     @Mapping(target = "orderId", source = "order.orderId")
     @Mapping(target = "productId", source = "product.productId")
-    ReviewResponseDto toReviewDto(Review review);
+    ReviewResponseDto toReviewResponseDto(Review review);
 
     @Mapping(target = "rating", source = "rating")
     @Mapping(target = "contents", source = "contents")

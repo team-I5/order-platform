@@ -1,5 +1,5 @@
 # Multi-stage build를 사용하여 이미지 크기 최적화
-FROM openjdk:17-jdk-slim AS builder
+FROM amazoncorretto:17-alpine AS builder
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -23,10 +23,10 @@ COPY src src
 RUN ./gradlew build -x test --no-daemon
 
 # 실행 단계
-FROM openjdk:17-jre-slim
+FROM amazoncorretto:17-alpine
 
 # 애플리케이션 실행을 위한 사용자 생성 (보안)
-RUN groupadd -r springboot && useradd -r -g springboot springboot
+RUN addgroup -S springboot && adduser -S springboot -G springboot
 
 # 작업 디렉토리 설정
 WORKDIR /app

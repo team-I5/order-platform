@@ -139,7 +139,7 @@ public class OrderController {
             name = "statuses/status",
             required = false
         )
-        @ModelAttribute GetOrdersRequestDto requestDto,
+        @ParameterObject @ModelAttribute GetOrdersRequestDto requestDto,
         @ParameterObject Pageable pageable
     ) {
         return ResponseEntity.ok(

@@ -15,7 +15,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", imports = CategoryType.class)
 public interface CategoryMapper {
 
-
     //    @Mapping(target = "storeId", source = "store.storeId")
     @Mapping(target = "type", expression = "java(category.getType())")
     CategoryResponseDto toCategoryResponseDto(Category category);

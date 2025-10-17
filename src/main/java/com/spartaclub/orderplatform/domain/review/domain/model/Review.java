@@ -41,6 +41,8 @@ public class Review extends BaseEntity {
     // Null 값 허용 안함. 길이 1000자 까지
     @Column(nullable = false, length = 1000)
     private String contents;            // 리뷰 내용
+    @Column(nullable = false)
+    private String storeName;           // 가게 이름으로 조회
 
     // 외래 키 관계 설정
     @ManyToOne(fetch = FetchType.LAZY)  // 리뷰 : 회원 → Many to one
@@ -62,6 +64,7 @@ public class Review extends BaseEntity {
         review.product = product;
         review.rating = rating;
         review.contents = contents;
+        review.storeName = store.getStoreName();
         return review;
     }
 
@@ -75,7 +78,6 @@ public class Review extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)    // 리뷰 : 주문 → One to One
     @JoinColumn(name = "orderId", nullable = false)
     private Order order;
-//    private UUID orderId;
 
     @ManyToOne(fetch = FetchType.LAZY)    // 리뷰 : 상품 → Many to One
     @JoinColumn(name = "productId", nullable = false)
