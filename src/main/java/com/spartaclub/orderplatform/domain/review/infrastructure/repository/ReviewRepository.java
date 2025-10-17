@@ -36,7 +36,9 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     Page<Review> findByDeletedAtIsNull(Pageable pageable); // 관리자 전체 조회
 
     // 중복 검사 메서드 - Spring Data JPA가 메서드 이름으로 자동 쿼리 생성
-    boolean existsByOrder_OrderIdAndDeletedAtIsNull(UUID orderId);              // 주문 리뷰 중복 체크
+    boolean existsByOrder_OrderIdAndDeletedAtIsNull(UUID orderId);            // 주문 리뷰 중복 체크
+
+    Page<Review> findAllByProduct_ProductId(UUID productId, Pageable pageable);
 
     // 평점과 리뷰 개수 가져와는 쿼리 추가
     @Query("""
@@ -47,5 +49,5 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
            GROUP BY s.storeId
         """)
     List<Object[]> findReviewCountAndAverageForAllStores();
-    
+
 }

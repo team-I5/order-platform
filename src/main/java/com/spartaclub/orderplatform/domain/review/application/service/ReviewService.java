@@ -20,10 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 /*
  * Review 서비스 클래스
@@ -48,7 +46,7 @@ public class ReviewService {
     @Transactional
     public ReviewResponseDto createReview(User user,
         ReviewCreateRequestDto requestDto) {
-        // 1. 주문별 중복 검증
+        // 1. 주문별 리뷰 중복 검증
         boolean existReview = reviewRepository.existsByOrder_OrderIdAndDeletedAtIsNull(
             requestDto.getOrderId());
         if (existReview) {
@@ -73,8 +71,8 @@ public class ReviewService {
         // 1. reviewId로 해당 리뷰 DB 존재 확인
         Review review = findReview(reviewId);
         // 2. 리뷰 수정자 일치 확인
-        if (!review.getCreatedId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("본인 작성 리뷰만 수정할 수 있습니다.");
+        if (!review.getUser().getUserId().equals(user.getUserId())) {
+            throw new BusinessException(AuthErrorCode.FORBIDDEN);
         }
         // 3. 리뷰 엔티티 update 함수에서 변경된 값 반영
         review.updateReview(dto.getRating(), dto.getContents());
@@ -90,8 +88,8 @@ public class ReviewService {
         // 1. reviewId로 해당 리뷰 DB 존재 확인
         Review review = findReview(reviewId);
         // 2. 리뷰 삭제자 일치 확인
-        if (!review.getCreatedId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("본인 작성 리뷰만 삭제할 수 있습니다.");
+        if (!review.getUser().getUserId().equals(user.getUserId())) {
+            throw new BusinessException(AuthErrorCode.FORBIDDEN);
         }
         // 3. 리뷰 도메인 삭제 메서드 호출
         review.deleteReview(user.getUserId());
