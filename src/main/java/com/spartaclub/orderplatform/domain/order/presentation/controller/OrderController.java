@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.order.presentation.controller;
 
-import com.spartaclub.orderplatform.domain.order.application.OrderService;
+import com.spartaclub.orderplatform.domain.order.application.service.OrderService;
+import com.spartaclub.orderplatform.domain.order.application.service.query.OrderQueryFacade;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.request.GetOrdersRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.request.PlaceOrderRequestDto;
 import com.spartaclub.orderplatform.domain.order.presentation.dto.response.OrderDetailResponseDto;
@@ -41,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderQueryFacade orderQueryFacade;
 
     // 주문 생성 API
     @Operation(
@@ -108,7 +110,7 @@ public class OrderController {
         @PathVariable UUID orderId
     ) {
         return ResponseEntity.ok(
-            ApiResponse.success(orderService.getOrderDetail(orderId, userDetails)));
+            ApiResponse.success(orderQueryFacade.getOrderDetail(orderId, userDetails.getUser())));
     }
 
     // 주문 목록 조회
@@ -141,7 +143,8 @@ public class OrderController {
         @ParameterObject Pageable pageable
     ) {
         return ResponseEntity.ok(
-            ApiResponse.success(orderService.getOrders(requestDto, userDetails, pageable)));
+            ApiResponse.success(
+                orderQueryFacade.getOrders(requestDto, userDetails.getUser(), pageable)));
     }
 
     // 주문 취소

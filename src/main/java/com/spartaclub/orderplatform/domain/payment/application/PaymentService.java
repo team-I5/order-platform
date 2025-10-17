@@ -5,7 +5,7 @@ import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentSt
 import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus.FAILED;
 import static com.spartaclub.orderplatform.domain.payment.domain.model.PaymentStatus.REFUNDED;
 
-import com.spartaclub.orderplatform.domain.order.application.OrderService;
+import com.spartaclub.orderplatform.domain.order.application.service.OrderService;
 import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.payment.application.dto.query.PaymentQuery;
 import com.spartaclub.orderplatform.domain.payment.application.mapper.PaymentMapper;

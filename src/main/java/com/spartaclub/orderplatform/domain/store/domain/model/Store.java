@@ -6,7 +6,6 @@ import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus
 import static jakarta.persistence.EnumType.STRING;
 
 import com.spartaclub.orderplatform.domain.category.domain.model.Category;
-import com.spartaclub.orderplatform.domain.order.domain.model.Order;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
@@ -47,9 +46,6 @@ public class Store extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Order> orders = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();
