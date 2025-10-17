@@ -64,7 +64,7 @@ public class ReviewService {
         Review review = Review.create(user, store, product, order, requestDto.getRating(),
             requestDto.getContents());
         // 3. DB 저장 후 entity → responseDto 전환
-        return reviewMapper.toReviewDto(reviewRepository.save(review));
+        return reviewMapper.toReviewResponseDto(reviewRepository.save(review));
     }
 
     // 리뷰 수정 로직(update)
@@ -81,7 +81,7 @@ public class ReviewService {
         // 4. dirty checking후 et.commit()이 호출될 때 DB 반영
         // @Transactional안에서 JPA 변경 감지(dirty checking) 되면 entity transaction에 의해 et.commit()이 호출될 때 DB반영
         // 5. entity → responseDto 변환 뒤 반환
-        return reviewMapper.toReviewDto(review);
+        return reviewMapper.toReviewResponseDto(review);
     }
 
     // 리뷰 삭제 로직(delete)
@@ -100,10 +100,10 @@ public class ReviewService {
     // 리뷰 목록 조회
     // 지연 로딩이라서 트랜잭션 붙였는데, 성능 향상 위해 readonly 옵션 true로 설정
     @Transactional(readOnly = true)
-    public Page<ReviewSearchResponseDto> searchReview(User user, UUID orderId, String storeName,
+    public Page<ReviewSearchResponseDto> searchReview(User user, String storeName,
         Pageable pageable) {
         return switch (user.getRole()) {
-            case CUSTOMER -> searchReviewForCustomer(user, orderId, pageable);
+            case CUSTOMER -> searchReviewForCustomer(user, pageable);
             case OWNER -> searchReviewForOwner(storeName, pageable);
             case MANAGER, MASTER -> searchReviewForAdmin(pageable);
         };
@@ -111,10 +111,13 @@ public class ReviewService {
 
     // 고객 리뷰 조회
     private Page<ReviewSearchResponseDto> searchReviewForCustomer(User user,
-        UUID orderId, Pageable pageable) {
-        return reviewRepository.findByUser_UserIdAndOrder_OrderIdAndDeletedAtIsNull(
-                user.getUserId(), orderId, pageable)
+        Pageable pageable) {
+        return reviewRepository.findByUser_UserIdAndDeletedAtIsNull(
+                user.getUserId(), pageable)
             .map(reviewMapper::toReviewSearchResponseDto);
+//        return reviewRepository.findByUser_UserIdAndOrder_OrderIdAndDeletedAtIsNull(
+//                user.getUserId(), orderId, pageable)
+//            .map(reviewMapper::toReviewSearchResponseDto);
     }
 
     // 음식점 주인 리뷰 조회
@@ -126,7 +129,7 @@ public class ReviewService {
 
     // MANAGER, MASTER 리뷰 조회
     private Page<ReviewSearchResponseDto> searchReviewForAdmin(Pageable pageable) {
-        return reviewRepository.findAllBy(pageable)
+        return reviewRepository.findByDeletedAtIsNull(pageable)
             .map(reviewMapper::toReviewSearchResponseDto);
     }
 

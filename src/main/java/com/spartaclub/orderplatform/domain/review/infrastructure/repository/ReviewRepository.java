@@ -33,7 +33,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     Page<Review> findByContentsContainingAndDeletedAtIsNull(String keyboard,
         Pageable pageable);   // 리뷰 내용으로 리뷰 조회
 
-    Page<Review> findAllBy(Pageable pageable); // 관리자 전체 조회
+    Page<Review> findByDeletedAtIsNull(Pageable pageable); // 관리자 전체 조회
 
     // 중복 검사 메서드 - Spring Data JPA가 메서드 이름으로 자동 쿼리 생성
     boolean existsByOrder_OrderIdAndDeletedAtIsNull(UUID orderId);              // 주문 리뷰 중복 체크
@@ -47,5 +47,5 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
            GROUP BY s.storeId
         """)
     List<Object[]> findReviewCountAndAverageForAllStores();
-
+    
 }

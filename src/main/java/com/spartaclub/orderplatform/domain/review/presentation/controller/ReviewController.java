@@ -110,7 +110,6 @@ public class ReviewController {
      * 리뷰 목록 조회 API - 인증된 사용자 주문 리뷰 목록 조회
      *
      * @param userDetails 인증된 사용자 정보
-     * @param orderId     주문ID
      * @param storeName   가게 이름
      * @param pageable    페이징 처리
      * @return 리뷰 목록 정보
@@ -119,7 +118,6 @@ public class ReviewController {
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Page<ReviewSearchResponseDto>>> searchReview(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestParam UUID orderId,
         @RequestParam String storeName,
         Pageable pageable) {
         // 사용자 객체 받아옴
@@ -127,7 +125,7 @@ public class ReviewController {
         // 리뷰 목록 조회
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponse.success(
-                reviewService.searchReview(user, orderId, storeName, pageable)));
+                reviewService.searchReview(user, storeName, pageable)));
     }
 
     /**
