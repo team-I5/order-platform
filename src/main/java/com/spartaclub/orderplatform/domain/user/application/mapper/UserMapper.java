@@ -18,18 +18,6 @@ import org.springframework.data.domain.Page;
 public interface UserMapper {
 
     /**
-     * 회원가입 요청 DTO를 User 엔티티로 변환
-     * password는 별도 암호화 처리 필요
-     */
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "addresses", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "modifiedAt", ignore = true)
-    @Mapping(target = "deletedAt", ignore = true)
-    User toEntity(UserSignupRequestDto requestDto);
-
-    /**
      * User 엔티티를 공통 사용자 정보 DTO로 변환
      */
     @Mapping(target = "role", expression = "java(user.getRole().name())")
@@ -54,20 +42,6 @@ public interface UserMapper {
     @Mapping(target = "role", expression = "java(user.getRole().name())")
     @Mapping(target = "isActive", expression = "java(!user.isDeleted())")
     UserListResponseDto toListResponse(User user);
-
-    /**
-     * 관리자 생성 요청 DTO를 User 엔티티로 변환
-     * password는 별도 암호화 처리 필요
-     */
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "role", expression = "java(UserRole.MANAGER)")
-    @Mapping(target = "businessNumber", ignore = true) // MANAGER는 사업자번호 없음
-    @Mapping(target = "addresses", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "modifiedAt", ignore = true)
-    @Mapping(target = "deletedAt", ignore = true)
-    User toEntityFromManagerRequest(ManagerCreateRequestDto requestDto);
 
     /**
      * User 엔티티를 관리자 생성 응답의 UserInfo로 변환
