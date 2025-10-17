@@ -141,3 +141,11 @@ mk@test.com
 
 ## 회고
 
+## 팀원 소개
+
+| 김한결 | 류형선 | 이준성 | 이현주 | 전우선 |
+|---|---|---|---|---|
+| <img src="https://avatars.githubusercontent.com/u/50177492?v=4" width="250"> | <img src="https://avatars.githubusercontent.com/u/115407275?v=4" width="250"> </div> | <img src="https://avatars.githubusercontent.com/u/58545479?v=4" width="250"> </div> | <img src="https://avatars.githubusercontent.com/u/124776145?v=4" width="250"> </div> | <img src="https://avatars.githubusercontent.com/u/150002756?v=4" width="250"> </div> |
+| <div align="center"><a href="https://github.com/kmr5326" target="_blank">@kmr5326</a></div> | <div align="center"><a href="https://github.com/ooinl77" target="_blank">@ooinl77</a></div> | <div align="center"><a href="https://github.com/junes7" target="_blank">@junes7</a></div> | <div align="center"><a href="https://github.com/guswnee00" target="_blank">@guswnee00</a></div> | <div align="center"><a href="https://github.com/wooxexn" target="_blank">@wooxexn</a></div> |
+|<div align="center">Order, Payment</div>|<div align="center">Product, Option, AI</div>|<div align="center">Review, Category</div>|<div align="center">Store</div>|<div align="center">User, Address, Auth</div>|
+
