@@ -3,8 +3,7 @@ package com.spartaclub.orderplatform.domain.product.presentation.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,8 +11,10 @@ import java.util.UUID;
 /**
  * 상품에 옵션 그룹을 한 번에 연결하기 위한 요청 DTO
  */
+@Builder
 @Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductAddOptionGroupsRequestDto {
 
     @NotNull(message = "상품 ID는 필수입니다.")

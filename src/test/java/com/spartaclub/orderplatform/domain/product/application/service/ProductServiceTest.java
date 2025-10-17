@@ -4,23 +4,21 @@ import com.spartaclub.orderplatform.domain.ai.application.service.AiService;
 import com.spartaclub.orderplatform.domain.product.application.mapper.ProductMapper;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
-import com.spartaclub.orderplatform.domain.product.domain.repository.ProductRepository;
-import com.spartaclub.orderplatform.domain.product.domain.repository.ProductStoreReaderRepository;
+import com.spartaclub.orderplatform.domain.product.domain.repository.*;
 import com.spartaclub.orderplatform.domain.product.exception.ProductErrorCode;
 import com.spartaclub.orderplatform.domain.product.presentation.dto.*;
 import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.user.domain.entity.Address;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -28,378 +26,495 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.*;
 
-/**
- * ProductService 단위 테스트 (AssertJ + BDDMockito)
- */
 @DisplayName("ProductService 단위 테스트")
+@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
-
-
-    @Mock
-    private ProductRepository productRepository;
-
-    @Mock
-    private ProductStoreReaderRepository storeRepository;
-
-    @Mock
-    private ProductMapper productMapper;
-
-    @Mock
-    private AiService aiService;
 
     @InjectMocks
     private ProductService productService;
 
+    @Mock
+    private ProductRepository productRepository;
+    @Mock
+    private ProductMapper productMapper;
+    @Mock
+    private ProductStoreReaderRepository storeRepository;
+    @Mock
+    private ProductAddressReaderRepository addressRepository;
+    @Mock
+    private AiService aiService;
+    @Mock
+    private ProductOptionGroupRepository productOptionGroupRepository;
+    @Mock
+    private ProductReviewReaderRepository reviewRepository;
+
+    // 공통 테스트 데이터
+    private Long createdId;
+    private Long userId;
     private UUID storeId;
     private UUID productId;
+    private UUID addressId;
+    private UUID optionGroupId;
+
     private Store store;
     private Product product;
-    private ProductResponseDto productResponse;
+    private Address address;
+    private ProductOptionGroup optionGroup;
+    private Review review;
+
+    private ProductCreateRequestDto productCreateRequestDto;
+    private ProductUpdateRequestDto updateRequestDto;
+
+    private ProductResponseDto productResponseDto;
+    private ProductStoreSearchResponseDto productStoreSearchResponseDto;
+    private ProductDetailResponseDto productDetailResponseDto;
+    private ProductReviewResponseDto productReviewResponseDto;
+
+    private Pageable pageable;
+    private PageMetaDto pageMetaDto;
+    private Page<Product> productPage;
+    private Page<Store> storePage;
+    private Page<Review> reviewPage;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        createdId = 1L;
+        userId = 1L;
         storeId = UUID.randomUUID();
         productId = UUID.randomUUID();
+        addressId = UUID.randomUUID();
+        optionGroupId = UUID.randomUUID();
+
         store = mock(Store.class);
         product = mock(Product.class);
-        productResponse = mock(ProductResponseDto.class);
+        address = mock(Address.class);
+        optionGroup = mock(ProductOptionGroup.class);
+        review = mock(Review.class);
+
+        productCreateRequestDto = ProductCreateRequestDto.builder()
+                .productName("테스트상품")
+                .price(1000L)
+                .productDescription("테스트상품 설명")
+                .storeId(storeId)
+                .build();
+        updateRequestDto = ProductUpdateRequestDto.builder()
+                .productName("수정상품")
+                .price(2000L)
+                .productDescription("수정상품 설명")
+                .build();
+
+        productResponseDto = mock(ProductResponseDto.class);
+        productDetailResponseDto = mock(ProductDetailResponseDto.class);
+        productStoreSearchResponseDto = mock(ProductStoreSearchResponseDto.class);
+        productReviewResponseDto = mock(ProductReviewResponseDto.class);
+
+        pageable = Pageable.ofSize(10); // 테스트용 페이지 객체
+        pageMetaDto = mock(PageMetaDto.class);
+        productPage = mock(Page.class);
+        storePage = mock(Page.class);
+        reviewPage = mock(Page.class);
     }
 
-    // ==============================================
-    // 상품 등록 테스트
-    // ==============================================
     @Nested
-    @DisplayName("상품 등록 테스트")
+    @DisplayName("상품 생성 기능 테스트")
     class CreateProductTest {
 
         @Test
-        @DisplayName("상품 등록 성공")
+        @DisplayName("상품 생성 성공 시 DTO 반환")
         void createProduct_success() {
-            // Given
-            ProductCreateRequestDto request = new ProductCreateRequestDto(storeId, "치즈버거", 12000L, "맛있는 치즈버거", false);
+            // given
             given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
             given(productRepository.save(any(Product.class))).willReturn(product);
-            given(productMapper.toDto(product)).willReturn(productResponse);
+            given(product.getProductId()).willReturn(productId);
+            given(product.getCreatedId()).willReturn(createdId);
+            given(productMapper.toDto(product)).willReturn(productResponseDto);
 
-            // When
-            ProductResponseDto result = productService.createProduct(request, 1L);
+            // when
+            ProductResponseDto result = productService.createProduct(productCreateRequestDto, createdId);
 
-            // Then
-            assertThat(result).isNotNull();
-            then(storeRepository).should(times(1)).findById(storeId);
-            then(productRepository).should(times(1)).save(any(Product.class));
-            then(aiService).should(times(1))
-                    .saveAiLogsIfNeeded(eq(1L), any(UUID.class), any(Long.class), eq("맛있는 치즈버거"));
+            // then
+            assertThat(result).isEqualTo(productResponseDto);
+            then(aiService).should().saveOrUpdateAiLogs(createdId, productId, "테스트상품 설명", false);
         }
 
         @Test
-        @DisplayName("스토어가 존재하지 않을 때 상품 등록 실패")
-        void createProduct_storeNotFound_fail() {
-            // Given
-            ProductCreateRequestDto request = new ProductCreateRequestDto(storeId, "치즈버거", 12000L, "맛있는 치즈버거", false);
+        @DisplayName("상품 생성 실패 - 상점이 존재하지 않음")
+        void createProduct_storeNotExist() {
+            // given
+            ProductCreateRequestDto requestDto = ProductCreateRequestDto.builder()
+                    .storeId(storeId)
+                    .build();
+
             given(storeRepository.findById(storeId)).willReturn(Optional.empty());
 
-            // When & Then
-            assertThatThrownBy(() -> productService.createProduct(request, 1L))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ProductErrorCode.STORE_NOT_EXIST);
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> productService.createProduct(requestDto, createdId));
+
+            assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.STORE_NOT_EXIST);
         }
     }
 
-    // ==============================================
-    // 상품 수정 테스트
-    // ==============================================
     @Nested
-    @DisplayName("상품 수정 테스트")
+    @DisplayName("상품 수정 기능 테스트")
     class UpdateProductTest {
 
         @Test
         @DisplayName("상품 수정 성공")
         void updateProduct_success() {
-            // Given
-            ProductUpdateRequestDto request = new ProductUpdateRequestDto("불고기버거", 15000L, "맛있는 불고기버거");
+            // given
             given(productRepository.findById(productId)).willReturn(Optional.of(product));
-            given(productMapper.toDto(product)).willReturn(productResponse);
+            given(productMapper.toDto(product)).willReturn(productResponseDto);
 
-            // When
-            ProductResponseDto result = productService.updateProduct(productId, request);
+            // when
+            ProductResponseDto result = productService.updateProduct(userId, productId, updateRequestDto);
 
-            // Then
-            assertThat(result).isNotNull();
-            then(product).should(times(1)).updateProduct(request);
+            // then
+            then(product).should().updateProduct(updateRequestDto); // 도메인 메서드 호출 확인
+            assertThat(result).isEqualTo(productResponseDto);
+            then(aiService).should().saveOrUpdateAiLogs(createdId, productId, "테스트상품 설명", true);
         }
 
         @Test
-        @DisplayName("상품이 존재하지 않을 때 수정 실패")
-        void updateProduct_notFound_fail() {
-            // Given
-            ProductUpdateRequestDto request = new ProductUpdateRequestDto("불고기버거", 15000L, "맛있는 불고기버거");
+        @DisplayName("상품 수정 실패 - 상품 존재하지 않음")
+        void updateProduct_productNotExist() {
+            // given
             given(productRepository.findById(productId)).willReturn(Optional.empty());
 
-            // When & Then
-            assertThatThrownBy(() -> productService.updateProduct(productId, request))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ProductErrorCode.PRODUCT_NOT_EXIST);
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> productService.updateProduct(userId, productId, updateRequestDto));
+
+            assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.PRODUCT_NOT_EXIST);
         }
     }
 
-    // ==============================================
-    // 상품 삭제 테스트
-    // ==============================================
     @Nested
-    @DisplayName("상품 삭제 테스트")
+    @DisplayName("상품 삭제 기능 테스트")
     class DeleteProductTest {
 
         @Test
         @DisplayName("상품 삭제 성공")
         void deleteProduct_success() {
-            // Given
+            // given
             given(productRepository.findById(productId)).willReturn(Optional.of(product));
 
-            // When
-            productService.deleteProduct(1L, productId);
+            // when
+            productService.deleteProduct(userId, productId);
 
-            // Then
-            then(product).should(times(1)).deleteProduct(1L);
+            // then
+            then(product).should().deleteProduct(userId);
         }
 
         @Test
-        @DisplayName("상품이 존재하지 않을 때 삭제 실패")
-        void deleteProduct_notFound_fail() {
-            // Given
+        @DisplayName("상품 삭제 실패 - 상품 존재하지 않음")
+        void updateProduct_productNotExist() {
+            // given
             given(productRepository.findById(productId)).willReturn(Optional.empty());
 
-            // When & Then
-            assertThatThrownBy(() -> productService.deleteProduct(1L, productId))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ProductErrorCode.PRODUCT_NOT_EXIST);
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> productService.deleteProduct(userId, productId));
+
+            assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.PRODUCT_NOT_EXIST);
         }
     }
 
-    // =====================================================
-    // 상품 상세 조회
-    // =====================================================
     @Nested
-    @DisplayName("상품 상세 조회 테스트")
+    @DisplayName("상품 목록 조회 기능 테스트")
+    class GetProductListTest {
+
+        @Test
+        @DisplayName("상품 목록 조회 성공")
+        void getProductList_success() {
+            // given
+            Product product1 = mock(Product.class);
+            Product product2 = mock(Product.class);
+
+            ProductResponseDto dto1 = mock(ProductResponseDto.class);
+            ProductResponseDto dto2 = mock(ProductResponseDto.class);
+
+            List<Product> products = List.of(product1, product2);
+            List<ProductResponseDto> dtos = List.of(dto1, dto2);
+
+            given(productRepository.findByStore_StoreIdAndIsHiddenFalseAndDeletedAtIsNull(storeId, pageable))
+                    .willReturn(productPage);
+            given(productPage.getContent()).willReturn(products);
+            given(productMapper.toDto(product1)).willReturn(dto1);
+            given(productMapper.toDto(product2)).willReturn(dto2);
+
+            PageMetaDto pageMetaDto = mock(PageMetaDto.class);
+            given(productMapper.toPageDto(productPage)).willReturn(pageMetaDto);
+
+            // when
+            PageResponseDto<ProductResponseDto> result = productService.getProductList(storeId, pageable);
+
+            // then
+            assertThat(result.getContent()).isEqualTo(dtos);
+            assertThat(result.getMeta()).isEqualTo(pageMetaDto);
+        }
+
+        @Test
+        @DisplayName("조회된 상품이 없을 때 빈 리스트 반환")
+        void getProductList_empty() {
+            // given
+            given(productPage.getContent()).willReturn(List.of());
+            given(productMapper.toPageDto(productPage)).willReturn(mock(PageMetaDto.class));
+            given(productRepository.findByStore_StoreIdAndIsHiddenFalseAndDeletedAtIsNull(storeId, pageable))
+                    .willReturn(productPage);
+
+            // when
+            PageResponseDto<ProductResponseDto> result = productService.getProductList(storeId, pageable);
+
+            // then
+            assertThat(result.getContent()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Pageable이 null일 때 NPE 발생")
+        void getProductList_pageableNull() {
+            // when & then
+            assertThrows(NullPointerException.class, () -> productService.getProductList(storeId, null));
+        }
+    }
+
+    @Nested
+    @DisplayName("상품 상세 조회 기능 테스트")
     class GetProductDetailTest {
 
         @Test
         @DisplayName("상품 상세 조회 성공")
         void getProduct_success() {
-            // Given
+            // given
             given(productRepository.findWithOptionGroupsAndItemsByProductId(productId))
                     .willReturn(Optional.of(product));
-            given(productMapper.toResponseDto(product)).willReturn(ProductDetailResponseDto);
+            given(productMapper.toResponseDto(product)).willReturn(productDetailResponseDto);
 
-            // When
+            // when
             ProductDetailResponseDto result = productService.getProduct(productId);
 
-            // Then
-            assertThat(result).isNotNull();
-            then(productRepository).should(times(1))
-                    .findWithOptionGroupsAndItemsByProductId(productId);
+            // then
+            assertThat(result).isEqualTo(productDetailResponseDto);
         }
 
         @Test
-        @DisplayName("상품 상세 조회 실패 - 존재하지 않는 상품")
-        void getProduct_notFound_fail() {
-            // Given
+        @DisplayName("상품 상세 조회 실패 - 상품 존재하지 않음")
+        void getProduct_productNotExist() {
+            // given
             given(productRepository.findWithOptionGroupsAndItemsByProductId(productId))
                     .willReturn(Optional.empty());
 
-            // When & Then
-            assertThatThrownBy(() -> productService.getProduct(productId))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ProductErrorCode.PRODUCT_NOT_EXIST);
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> productService.getProduct(productId));
+
+            assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.PRODUCT_NOT_EXIST);
         }
     }
 
-    // =====================================================
-    // 상품 공개/숨김 전환
-    // =====================================================
     @Nested
-    @DisplayName("상품 공개/숨김 전환 테스트")
+    @DisplayName("상품 공개/숨김 수정 기능 테스트")
     class UpdateProductVisibilityTest {
 
         @Test
-        @DisplayName("상품 공개/숨김 전환 성공")
+        @DisplayName("상품 공개/숨김 수정 성공")
         void updateProductVisibility_success() {
-            // Given
+            // given
             given(productRepository.findById(productId)).willReturn(Optional.of(product));
-            ProductResponseDto responseDto = mock(ProductResponseDto.class);
-            given(productMapper.toDto(product)).willReturn(responseDto);
+            given(productMapper.toDto(product)).willReturn(productResponseDto);
 
-            // When
+            // when
             ProductResponseDto result = productService.updateProductVisibility(productId);
 
-            // Then
-            assertThat(result).isNotNull();
-            then(product).should(times(1)).updateVisibility();
+            // then
+            then(product).should().updateVisibility(); // 도메인 메서드 호출 검증
+            assertThat(result).isEqualTo(productResponseDto);
         }
 
         @Test
-        @DisplayName("상품 공개/숨김 전환 실패 - 존재하지 않는 상품")
-        void updateProductVisibility_notFound_fail() {
-            // Given
+        @DisplayName("상품 공개/숨김 수정 실패 - 상품 존재하지 않음")
+        void updateProductVisibility_productNotExist() {
+            // given
             given(productRepository.findById(productId)).willReturn(Optional.empty());
 
-            // When & Then
-            assertThatThrownBy(() -> productService.updateProductVisibility(productId))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ProductErrorCode.PRODUCT_NOT_EXIST);
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> productService.updateProductVisibility(productId));
+
+            assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.PRODUCT_NOT_EXIST);
         }
     }
 
-    // =====================================================
-    // 상품명 + 배송지 기반 상점 검색
-    // =====================================================
     @Nested
-    @DisplayName("상품명 + 배송지 기반 상점 검색 테스트")
-    class GetStoreListByProductNameAndAddressTest {
+    @DisplayName("상품 연관 상점 검색 기능 테스트")
+    class GetStoreListByProductNameAndAddressIdTest {
 
-        @Test
-        @DisplayName("상품명과 배송지 기반 상점 검색 성공")
-        void getStoreList_success() {
-            // Given
-            String keyword = "치킨";
-            Address address = new Address();
-            address.setRoadNameAddress("서울특별시 노원구 한글비석로 24");
-            given(addressRepository.findById(addressId)).willReturn(Optional.of(address));
+        private String keyword;
 
-            Store store = mock(Store.class);
-            Page<Store> storePage = new PageImpl<>(List.of(store));
-            given(storeRepository.findDistinctByProductNameContainingIgnoreCase(eq(keyword), anyString(), any(Pageable.class)))
-                    .willReturn(storePage);
-
-            ProductStoreSearchResponseDto responseDto = mock(ProductStoreSearchResponseDto.class);
-            given(productMapper.toProductStoreSearchResponseDto(store)).willReturn(responseDto);
-            given(productMapper.toPageDto(storePage)).willReturn(mock(PageMetaDto.class));
-
-            // When
-            PageResponseDto<ProductStoreSearchResponseDto> result =
-                    productService.getStoreListByProductNameAndAddressId(keyword, addressId, PageRequest.of(0, 10));
-
-            // Then
-            assertThat(result.getData()).isNotEmpty();
-            then(addressRepository).should(times(1)).findById(addressId);
-            then(storeRepository).should(times(1))
-                    .findDistinctByProductNameContainingIgnoreCase(eq(keyword), anyString(), any(Pageable.class));
+        @BeforeEach
+        void setUpStoreSearch() {
+            keyword = "테스트";
         }
 
         @Test
-        @DisplayName("배송지 주소가 존재하지 않을 때 실패")
-        void getStoreList_addressNotFound_fail() {
-            // Given
+        @DisplayName("상품 연관 상점 검색 성공")
+        void getStoreList_success() {
+            // given
+            given(addressRepository.findById(addressId)).willReturn(Optional.of(address));
+            given(address.getRoadNameAddress()).willReturn("서울특별시 노원구 한글비석로 24");
+            given(storeRepository.findDistinctByProductNameContainingIgnoreCase(keyword, "한글비석로", pageable))
+                    .willReturn(storePage);
+            given(storePage.getContent()).willReturn(List.of(store));
+            given(productMapper.toProductStoreSearchResponseDto(store)).willReturn(productStoreSearchResponseDto);
+            given(productMapper.toPageDto(storePage)).willReturn(pageMetaDto);
+
+            // when
+            PageResponseDto<ProductStoreSearchResponseDto> result = productService
+                    .getStoreListByProductNameAndAddressId(keyword, addressId, pageable);
+
+            // then
+            assertThat(result.getContent()).containsExactly(productStoreSearchResponseDto);
+            assertThat(result.getMeta()).isEqualTo(pageMetaDto);
+        }
+
+        @Test
+        @DisplayName("상품 연관 상점 검색 실패 - 주소 존재하지 않음")
+        void getStoreList_addressNotExist() {
+            // given
             given(addressRepository.findById(addressId)).willReturn(Optional.empty());
 
-            // When & Then
-            assertThatThrownBy(() ->
-                    productService.getStoreListByProductNameAndAddressId("치킨", addressId, PageRequest.of(0, 10)))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ProductErrorCode.ADDRESS_NOT_EXIST);
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> productService.getStoreListByProductNameAndAddressId(keyword, addressId, pageable));
+
+            assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.ADDRESS_NOT_EXIST);
+        }
+
+        @Test
+        @DisplayName("주소에서 도로명 추출 실패 시 빈 문자열 반환")
+        void extractRoadName_notFound() {
+            // given
+            given(addressRepository.findById(addressId)).willReturn(Optional.of(address));
+            given(address.getRoadNameAddress()).willReturn("서울특별시 노원구 123"); // "로"나 "길" 없음
+            given(storeRepository.findDistinctByProductNameContainingIgnoreCase(keyword, "", pageable))
+                    .willReturn(storePage);
+            given(storePage.getContent()).willReturn(List.of());
+            given(productMapper.toPageDto(storePage)).willReturn(mock(PageMetaDto.class));
+
+            // when
+            PageResponseDto<ProductStoreSearchResponseDto> result = productService
+                    .getStoreListByProductNameAndAddressId(keyword, addressId, pageable);
+
+            // then
+            assertThat(result.getContent()).isEmpty(); // 데이터 없음
+        }
+
+        @Test
+        @DisplayName("조회된 상점이 없는 경우 빈 리스트 반환")
+        void getStoreList_noStores() {
+            // given
+            given(addressRepository.findById(addressId)).willReturn(Optional.of(address));
+            given(address.getRoadNameAddress()).willReturn("서울특별시 노원구 한글비석로 24");
+            given(storeRepository.findDistinctByProductNameContainingIgnoreCase(keyword, "한글비석로", pageable))
+                    .willReturn(storePage);
+            given(storePage.getContent()).willReturn(List.of());
+            given(productMapper.toPageDto(storePage)).willReturn(mock(PageMetaDto.class));
+
+            // when
+            PageResponseDto<ProductStoreSearchResponseDto> result = productService
+                    .getStoreListByProductNameAndAddressId(keyword, addressId, pageable);
+
+            // then
+            assertThat(result.getContent()).isEmpty(); // 조회 결과 없음
         }
     }
 
-    // =====================================================
-    // 상품에 옵션 그룹 추가
-    // =====================================================
+
     @Nested
-    @DisplayName("상품에 옵션 그룹 추가 테스트")
-    class AddGroupToProductTest {
+    @DisplayName("상품 옵션 그룹 추가 기능 테스트")
+    class AddOptionGroupTest {
 
         @Test
         @DisplayName("상품에 옵션 그룹 추가 성공")
         void addGroupToProduct_success() {
-            // Given
-            UUID optionGroupId = UUID.randomUUID();
-            ProductAddOptionGroupsRequestDto request =
-                    new ProductAddOptionGroupsRequestDto(productId, List.of(optionGroupId));
-
-            ProductOptionGroup optionGroup = mock(ProductOptionGroup.class);
+            // given
             given(productRepository.findById(productId)).willReturn(Optional.of(product));
             given(productOptionGroupRepository.findById(optionGroupId)).willReturn(Optional.of(optionGroup));
 
-            // When
-            productService.addGroupToProduct(request);
+            ProductAddOptionGroupsRequestDto requestDto = ProductAddOptionGroupsRequestDto.builder()
+                    .productId(productId)
+                    .productOptionGroupIds(List.of(optionGroupId))
+                    .build();
 
-            // Then
-            then(product).should(times(1)).addOptionGroup(optionGroup);
-            then(productRepository).should(times(1)).save(product);
+            // when
+            productService.addGroupToProduct(requestDto);
+
+            // then
+            then(product).should().addOptionGroup(optionGroup);
+            then(productRepository).should().save(product);
         }
 
         @Test
-        @DisplayName("존재하지 않는 상품일 때 실패")
-        void addGroupToProduct_productNotFound_fail() {
-            // Given
-            UUID optionGroupId = UUID.randomUUID();
-            ProductAddOptionGroupsRequestDto request =
-                    new ProductAddOptionGroupsRequestDto(productId, List.of(optionGroupId));
-            given(productRepository.findById(productId)).willReturn(Optional.empty());
-
-            // When & Then
-            assertThatThrownBy(() -> productService.addGroupToProduct(request))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ProductErrorCode.PRODUCT_NOT_EXIST);
-        }
-
-        @Test
-        @DisplayName("존재하지 않는 옵션 그룹일 때 실패")
-        void addGroupToProduct_optionGroupNotFound_fail() {
-            // Given
-            UUID optionGroupId = UUID.randomUUID();
-            ProductAddOptionGroupsRequestDto request =
-                    new ProductAddOptionGroupsRequestDto(productId, List.of(optionGroupId));
+        @DisplayName("상품에 옵션 그룹 추가 실패 - 옵션 그룹이 존재하지 않음")
+        void addGroupToProduct_optionGroupNotExist() {
+            // given
             given(productRepository.findById(productId)).willReturn(Optional.of(product));
             given(productOptionGroupRepository.findById(optionGroupId)).willReturn(Optional.empty());
 
-            // When & Then
-            assertThatThrownBy(() -> productService.addGroupToProduct(request))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ProductErrorCode.PRODUCT_OPTION_GROUP_NOT_EXIST);
+            ProductAddOptionGroupsRequestDto requestDto = ProductAddOptionGroupsRequestDto.builder()
+                    .productId(productId)
+                    .productOptionGroupIds(List.of(optionGroupId))
+                    .build();
+
+            // when & then
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> productService.addGroupToProduct(requestDto));
+
+            assertThat(exception.getErrorCode()).isEqualTo(ProductErrorCode.PRODUCT_OPTION_GROUP_NOT_EXIST);
         }
     }
 
-    // =====================================================
-    // 상품 리뷰 리스트 조회
-    // =====================================================
     @Nested
-    @DisplayName("상품 리뷰 리스트 조회 테스트")
-    class GetReviewListTest {
+    @DisplayName("상품 리뷰 조회 기능 테스트")
+    class GetReviewListByProductIdTest {
 
         @Test
-        @DisplayName("상품 리뷰 리스트 조회 성공")
+        @DisplayName("상품 리뷰 조회 성공")
         void getReviewList_success() {
-            // Given
-            Review review = mock(Review.class);
-            Page<Review> reviewPage = new PageImpl<>(List.of(review));
-            given(reviewRepository.findAllByProduct_ProductId(eq(productId), any(Pageable.class)))
-                    .willReturn(reviewPage);
+            // given
+            given(reviewRepository.findAllByProduct_ProductId(productId, pageable)).willReturn(reviewPage);
+            given(reviewPage.getContent()).willReturn(List.of(review));
+            given(productMapper.toReviewDto(review)).willReturn(productReviewResponseDto);
+            given(productMapper.toPageDto(reviewPage)).willReturn(pageMetaDto);
 
-            ProductReviewResponseDto reviewDto = mock(ProductReviewResponseDto.class);
-            given(productMapper.toReviewDto(review)).willReturn(reviewDto);
+            // when
+            PageResponseDto<ProductReviewResponseDto> result = productService
+                    .getReviewListByProductId(productId, pageable);
+
+            // then
+            assertThat(result.getContent()).containsExactly(productReviewResponseDto);
+            assertThat(result.getMeta()).isEqualTo(pageMetaDto);
+        }
+
+        @Test
+        @DisplayName("상품 리뷰 조회 실패 - 리뷰 없음")
+        void getReviewList_noReviews() {
+            // given
+            given(reviewRepository.findAllByProduct_ProductId(productId, pageable)).willReturn(reviewPage);
+            given(reviewPage.getContent()).willReturn(List.of());
             given(productMapper.toPageDto(reviewPage)).willReturn(mock(PageMetaDto.class));
 
-            // When
-            PageResponseDto<ProductReviewResponseDto> result =
-                    productService.getReviewListByProductId(productId, PageRequest.of(0, 5));
+            // when
+            PageResponseDto<ProductReviewResponseDto> result = productService
+                    .getReviewListByProductId(productId, pageable);
 
-            // Then
-            assertThat(result.getData()).isNotEmpty();
-            then(reviewRepository).should(times(1))
-                    .findAllByProduct_ProductId(eq(productId), any(Pageable.class));
+            // then
+            assertThat(result.getContent()).isEmpty(); // 리뷰 리스트 비어있음
         }
     }
-}
+
+
 }
