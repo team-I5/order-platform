@@ -26,7 +26,7 @@ RUN ./gradlew build -x test --no-daemon
 FROM amazoncorretto:17-alpine
 
 # 애플리케이션 실행을 위한 사용자 생성 (보안)
-RUN groupadd -r springboot && useradd -r -g springboot springboot
+RUN addgroup -S springboot && adduser -S springboot -G springboot
 
 # 작업 디렉토리 설정
 WORKDIR /app
