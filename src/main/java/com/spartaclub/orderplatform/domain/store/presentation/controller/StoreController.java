@@ -42,6 +42,7 @@ public class StoreController {
     @Operation(summary = "음식점 목록 조회", description = "사용자의 권한에 따라 음식점의 목록을 조회합니다.")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "음식점 목록 조회 성공", content = @Content(schema = @Schema(implementation = StoreSearchResponseDto.class)))
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
     public ResponseEntity<ApiResponse<Page<StoreSearchResponseDto>>> searchStore(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @ParameterObject StoreSearchRequestDto dto,
@@ -60,6 +61,7 @@ public class StoreController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한이 없습니다."),
     })
     @GetMapping("/search/{storeId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
     public ResponseEntity<ApiResponse<StoreDetailResponseDto>> searchStoreDetail(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable UUID storeId
@@ -78,6 +80,7 @@ public class StoreController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한이 없습니다."),
     })
     @GetMapping("/search-category")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
     public ResponseEntity<ApiResponse<Page<StoreSearchResponseDto>>> searchStoreCategory(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @ModelAttribute StoreSearchByCategoryRequestDto dto,
