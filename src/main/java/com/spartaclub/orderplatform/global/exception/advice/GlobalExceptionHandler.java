@@ -1,5 +1,6 @@
 package com.spartaclub.orderplatform.global.exception.advice; // 패키지 선언 - global.exception 패키지에 위치
 
+import com.spartaclub.orderplatform.global.auth.exception.AuthErrorCode;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
 import com.spartaclub.orderplatform.global.exception.ErrorCode;
 import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
@@ -44,14 +45,11 @@ public class GlobalExceptionHandler { // 전역 예외 처리를 담당하는 �
             .body(ApiResponse.error(finalMessage)); // 상세 에러 메시지와 함께 에러 응답
     }
 
-    /**
-     * 일반 예외 처리 메서드 모든 예외를 포괄적으로 처리 (최종 안전망 역할)
-     */
-    @ExceptionHandler(Exception.class) // Exception 타입의 예외가 발생했을 때 이 메서드가 실행되도록 설정
-    public ResponseEntity<ApiResponse<Void>> handleException(
-        Exception e) { // Exception을 처리하는 핸들러 메서드
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR) // HTTP 500 상태코드로 응답 설정
-            .body(ApiResponse.error("에러 발생: " + e.getMessage())); // 에러 메시지와 함께 실패 응답 반환
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(
+        org.springframework.security.access.AccessDeniedException ex) {
+        ApiResponse<Void> body = ApiResponse.error(AuthErrorCode.FORBIDDEN.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
     /**
@@ -65,5 +63,15 @@ public class GlobalExceptionHandler { // 전역 예외 처리를 담당하는 �
             errorCode.getStatus(), errorCode.getCode(), errorCode.getMessage());
         return ResponseEntity.status(errorCode.getStatus())
             .body(ApiResponse.error("요청 오류: " + errorCode.getMessage())); // 에러 메시지와 함께 실패 응답 반환
+    }
+
+    /**
+     * 일반 예외 처리 메서드 모든 예외를 포괄적으로 처리 (최종 안전망 역할)
+     */
+    @ExceptionHandler(Exception.class) // Exception 타입의 예외가 발생했을 때 이 메서드가 실행되도록 설정
+    public ResponseEntity<ApiResponse<Void>> handleException(
+        Exception e) { // Exception을 처리하는 핸들러 메서드
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR) // HTTP 500 상태코드로 응답 설정
+            .body(ApiResponse.error("에러 발생: " + e.getMessage())); // 에러 메시지와 함께 실패 응답 반환
     }
 }
