@@ -211,6 +211,9 @@ main.java.com.spartaclub.orderplatform
 
 ## 핵심 기능
 
+## 인증 · 인가 흐름에 대한 도식화
+![](https://cdn.discordapp.com/attachments/1413215340514640041/1428647586193084437/2025-10-17_4.34.32.png?ex=68f3433f&is=68f1f1bf&hm=04920b177a0fdd3acd50cfeb140ff5c4151b1c1f63ab3f20b345afdb52c64f06)
+
 
 ## 트러블 슈팅
 ### Mapstruct 맵핑 중 발생한 Bean 문제 해결
