@@ -1,10 +1,10 @@
 package com.spartaclub.orderplatform.domain.order.domain.repository;
 
-import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.order.domain.repository.dto.StoreSummary;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface StoreReaderRepository {
 
-    Optional<Store> findById(UUID storeId);
+    Optional<StoreSummary> loadStoreSummaryInfo(UUID storeId);
 }
