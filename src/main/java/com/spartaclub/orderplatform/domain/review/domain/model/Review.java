@@ -44,7 +44,6 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private String storeName;           // 가게 이름으로 조회
 
-
     // 외래 키 관계 설정
     @ManyToOne(fetch = FetchType.LAZY)  // 리뷰 : 회원 → Many to one
     @JoinColumn(name = "userId", nullable = false)

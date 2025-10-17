@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /*
  * 리뷰 수정 요청 Dto 클래스
@@ -15,6 +16,7 @@ import lombok.NoArgsConstructor;
  */
 @Schema(description = "리뷰 수정 요청 정보")
 @Getter
+@Setter
 @NoArgsConstructor // 기본 생성자
 @AllArgsConstructor // 값 수정 반영 위해 모든 필드 파라미터 생성자 적용
 public class ReviewUpdateRequestDto {

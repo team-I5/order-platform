@@ -13,9 +13,11 @@ import jakarta.validation.constraints.Size;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Schema(description = "리뷰 요청 정보 ")
 @Getter
+@Setter
 @NoArgsConstructor
 public class ReviewCreateRequestDto {
 
