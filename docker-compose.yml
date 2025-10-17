@@ -18,7 +18,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     networks:
-      - ${NETWORK_NAME}
+      - order-platform-network
 
   # Spring Boot 애플리케이션
   app:
@@ -80,7 +80,7 @@ services:
     volumes:
       - app_logs:/app/logs
     networks:
-      - ${NETWORK_NAME}
+      - order-platform-network
 
 # 데이터 볼륨 설정
 volumes:
@@ -91,5 +91,5 @@ volumes:
 
 # 네트워크 설정
 networks:
-  ${NETWORK_NAME}:
+  order-platform-network:
     driver: bridge
