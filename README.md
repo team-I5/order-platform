@@ -214,7 +214,11 @@ main.java.com.spartaclub.orderplatform
 
 ### (한결)
 
-### (형선)
+### AI API 요청 및 응답 저장 흐름 설계
+<img width="968" height="500" alt="image" src="https://github.com/user-attachments/assets/5e699278-f496-485d-bb83-c336fd8f219e" />
+<img width="1010" height="448" alt="image" src="https://github.com/user-attachments/assets/4156279e-bc5a-49ef-9017-bffc08f6c03a" />
+요청을 받으면 AI에 응답 생성 요청을 보내고, 받은 값을 캐시에 저장한다. 캐시는 userId로 구분한다.
+상품이 저장된 후 캐시를 DB에 저장한다. 저장된 상품 설명과 캐시의 마지막에 저장된 응답이 일치하면 로그의 상태를 USED로 변경 후 DB에 저장한다.
 
 ### (준성)
 
