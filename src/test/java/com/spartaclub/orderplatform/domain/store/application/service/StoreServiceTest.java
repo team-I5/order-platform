@@ -1,314 +1,485 @@
 package com.spartaclub.orderplatform.domain.store.application.service;
 
 
+import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.APPROVED;
+import static com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus.REJECTED;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.CATEGORY_NOT_EXIST;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.DUPLICATE_CATEGORY;
 import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.DUPLICATE_STORE_NAME;
-import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_OWNED_STORE_TO_DELETE;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_OWNED_STORE_TO_DELETE_CATEGORY;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_OWNED_STORE_TO_MODIFY_CATEGORY;
+import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_OWNED_STORE_TO_REGISTER_CATEGORY;
 import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.NOT_OWNED_STORE_TO_UPDATE;
 import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.ONLY_APPROVED_STORE_MODIFIABLE;
 import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.ONLY_PENDING_STORE_APPROVABLE;
 import static com.spartaclub.orderplatform.domain.store.exception.StoreErrorCode.ONLY_REJECTED_STORE_MODIFIABLE;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
+import com.spartaclub.orderplatform.domain.category.domain.model.Category;
+import com.spartaclub.orderplatform.domain.category.infrastructure.repository.CategoryRepository;
+import com.spartaclub.orderplatform.domain.store.application.mapper.StoreMapper;
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
+import com.spartaclub.orderplatform.domain.store.domain.model.StoreCategory;
 import com.spartaclub.orderplatform.domain.store.domain.model.StoreStatus;
 import com.spartaclub.orderplatform.domain.store.domain.repository.StoreRepository;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.RejectStoreRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreCategoryRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreRequestDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.request.StoreSearchByKeywordRequestDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.RejectStoreResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreCategoryResponseDto;
 import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreResponseDto;
+import com.spartaclub.orderplatform.domain.store.presentation.dto.response.StoreSearchResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.domain.user.domain.entity.UserRole;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
 
-/*
-@SpringBootTest
-@Transactional
-@AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 class StoreServiceTest {
 
-    @Autowired
+    @InjectMocks
     private StoreService storeService;
 
-    @Autowired
+    @Mock
     private StoreRepository storeRepository;
 
+    @Mock
+    private StoreMapper storeMapper;
+
+    @Mock
+    private CategoryRepository categoryRepository;
+
+    private Store store;
+    private UUID storeId;
+    private UUID categoryId;
     private User owner;
+    private User otherUser;
+    private Category category;
     private User manager;
-    private StoreRequestDto requestDto;
-    private StoreRequestDto updateRequestDto;
-    private StoreRequestDto reapplyRequestDto;
-    private StoreCategoryRequestDto storeCategoryRequestDto;
+    private StoreRequestDto storeRequestDto;
+    private StoreResponseDto storeResponseDto;
+    private RejectStoreRequestDto rejectStoreRequestDto;
 
     @BeforeEach
     void setUp() {
-        owner = new User();
-        owner.setUserId(1L);
-        owner.setUsername("owner1");
-        owner.setEmail("owner@example.com");
-        owner.setPassword("encodedPassword");
-        owner.setNickname("오너");
-        owner.setPhoneNumber("01012345678");
-        owner.setRole(UserRole.OWNER);
+        manager = User.createManager("manager1", "manager1@email.com", "encodedPassword",
+            "manager1", "01012345678");
 
-        manager = new User();
-        manager.setUserId(100L);
-        manager.setUsername("manager1");
-        manager.setEmail("manager@example.com");
-        manager.setPassword("encodedPassword");
-        manager.setNickname("매니저");
-        manager.setPhoneNumber("01087654321");
-        manager.setRole(UserRole.MANAGER);
+        owner = User.createBusinessUser("owner1", "owner1@email.com", "encodedPassword", "owner1",
+            "01099999999", UserRole.OWNER, "1234567890");
+        ReflectionTestUtils.setField(owner, "userId", 1L);
 
-        requestDto = new StoreRequestDto();
-        //requestDto.setStoreName("Test Store");
-        requestDto.setStoreName("Test Store " + UUID.randomUUID().toString().substring(0, 8));
-        requestDto.setStoreAddress("서울시 강남구");
-        requestDto.setStoreNumber("0212345678");
-        requestDto.setStoreDescription("Test Description");
+        otherUser = User.createBusinessUser("other", "other@email.com",
+            "pw", "other", "01000000000", UserRole.OWNER, "9999999999");
+        ReflectionTestUtils.setField(otherUser, "userId", 2L);
 
-        updateRequestDto = new StoreRequestDto();
-        updateRequestDto.setStoreName("Update Test Store");
-        updateRequestDto.setStoreAddress("서울시 성동구");
-        updateRequestDto.setStoreNumber("0212341234");
-        updateRequestDto.setStoreDescription("Update Test Description");
+        category = Category.of("KOREAN");
+        ReflectionTestUtils.setField(category, "categoryId", categoryId);
 
-        reapplyRequestDto = new StoreRequestDto();
-        reapplyRequestDto.setStoreName("Reapply Test Store");
-        reapplyRequestDto.setStoreAddress("서울시 성동구");
-        reapplyRequestDto.setStoreNumber("0212341234");
-        reapplyRequestDto.setStoreDescription("Reapply Test Description");
+        storeId = UUID.randomUUID();
+        categoryId = UUID.randomUUID();
 
-        storeCategoryRequestDto = new StoreCategoryRequestDto();
-        storeCategoryRequestDto.setCategoryIds(List.of(UUID.randomUUID()));
+        storeRequestDto = new StoreRequestDto();
+        storeRequestDto.setStoreName("MyStore");
+        storeRequestDto.setStoreAddress("address1");
+        storeRequestDto.setStoreNumber("01234567890");
+        storeRequestDto.setStoreDescription("store1");
+
+        rejectStoreRequestDto = new RejectStoreRequestDto();
+        rejectStoreRequestDto.setRejectReason("REJECTED");
+
+        store = Store.create(owner, storeRequestDto);
+
+        storeResponseDto = new StoreResponseDto("MyStore", APPROVED);
     }
 
     @Test
-    @WithMockUser(username = "owner1", roles = {"OWNER"})
     @DisplayName("음식점 생성 성공")
     void createStore_success() {
-        StoreResponseDto responseDto = storeService.createStore(owner, requestDto);
+        given(storeRepository.existsByUserAndStoreName(owner, storeRequestDto.getStoreName()))
+            .willReturn(false);
+        given(storeRepository.save(any(Store.class))).willReturn(store);
+        given(storeMapper.toStoreResponseDto(any(Store.class))).willReturn(storeResponseDto);
 
-        assertThat(responseDto.getStatus()).isEqualTo(StoreStatus.PENDING);
-        boolean exists = storeRepository.existsByUserAndStoreName(owner, requestDto.getStoreName());
+        StoreResponseDto result = storeService.createStore(owner, storeRequestDto);
 
-        assertThat(exists).isTrue();
+        AssertionsForClassTypes.assertThat(result.getStoreName()).isEqualTo("MyStore");
+        verify(storeRepository).save(any(Store.class));
+        verify(storeMapper).toStoreResponseDto(any(Store.class));
     }
 
     @Test
-    @WithMockUser(username = "owner1", roles = {"OWNER"})
-    @DisplayName("음식점 생성 실패 - 이미 같은 이름의 가게가 존재할 경우 예외 발생")
-    void createStore_fail_duplicateName() {
-        storeService.createStore(owner, requestDto);
+    @DisplayName("음식점 생성 - 음식점 이름 중복")
+    void createStore_duplicateName() {
+
+        given(storeRepository.existsByUserAndStoreName(owner, storeRequestDto.getStoreName()))
+            .willReturn(true);
 
         BusinessException exception = assertThrows(
             BusinessException.class,
-            () -> storeService.createStore(owner, requestDto)
+            () -> storeService.createStore(owner, storeRequestDto)
         );
 
-        assertThat(exception.getErrorCode()).isEqualTo(DUPLICATE_STORE_NAME);
-    }
-
-
-    @Test
-    @WithMockUser(username = "owner1", roles = {"OWNER"})
-    @DisplayName("승인된 음식점 수정 성공")
-    void updateStore_success() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
-        store.approve();        // 승인 상태로 변경
-
-        StoreResponseDto responseDto = storeService
-            .updateApprovedStore(owner, store.getStoreId(), updateRequestDto);
-
-        assertThat(responseDto.getStoreName()).isEqualTo("Update Test Store");
-        Store updatedStore = storeRepository.findById(store.getStoreId()).orElseThrow();
-        assertThat(updatedStore.getStoreAddress()).isEqualTo("서울시 성동구");
-        assertThat(updatedStore.getStoreDescription()).isEqualTo("Update Test Description");
+        AssertionsForClassTypes.assertThat(exception.getErrorCode())
+            .isEqualTo(DUPLICATE_STORE_NAME);
     }
 
     @Test
-    @WithMockUser(username = "owner1", roles = {"OWNER"})
-    @DisplayName("승인된 음식점 수정 실패 - 다른 유저가 음식점 수정시 예외 발생")
-    void updateStore_fail_wrongUser() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
-        store.approve();
-
-        User otherOwner = new User();
-        otherOwner.setUserId(2L);
-
-        BusinessException exception = assertThrows(
-            BusinessException.class,
-            () -> storeService.updateApprovedStore(otherOwner, store.getStoreId(), updateRequestDto)
-        );
-        assertThat(exception.getErrorCode()).isEqualTo(NOT_OWNED_STORE_TO_UPDATE);
-
-    }
-
-    @Test
-    @WithMockUser(username = "owner1", roles = {"OWNER"})
-    @DisplayName("승인된 음식점 수정 실패 - 승인되지 않은 음식점 수정 시 예외 발생")
-    void updateStore_fail_notApproved() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
-
-        store.requestReapproval();  // 승인 상태 PENDING
-
-        BusinessException exception = assertThrows(
-            BusinessException.class,
-            () -> storeService.updateApprovedStore(owner, store.getStoreId(), updateRequestDto)
-        );
-        assertThat(exception.getErrorCode()).isEqualTo(ONLY_APPROVED_STORE_MODIFIABLE);
-    }
-
-    @Test
-    @WithMockUser(username = "owner1", roles = {"OWNER"})
-    @DisplayName("승인 거절된 음식점 재승인 성공")
+    @DisplayName("음식점 재승인 신청 성공")
     void reapplyStore_success() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
-        store.reject("Reject Reason");
+        ReflectionTestUtils.setField(store, "status", REJECTED);
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
+        given(storeMapper.toStoreResponseDto(store)).willReturn(storeResponseDto);
 
-        StoreResponseDto responseDto = storeService
-            .reapplyStore(owner, store.getStoreId(), reapplyRequestDto);
+        StoreResponseDto result = storeService.reapplyStore(owner, storeId, storeRequestDto);
 
-        assertThat(responseDto.getStoreName()).isEqualTo("Reapply Test Store");
-        Store reapplyStore = storeRepository.findById(store.getStoreId()).orElseThrow();
-        assertThat(reapplyStore.getStatus()).isEqualTo(StoreStatus.PENDING);
-        assertThat(reapplyStore.getStoreAddress()).isEqualTo("서울시 성동구");
-        assertThat(reapplyStore.getStoreDescription()).isEqualTo("Reapply Test Description");
+        assertThat(store.getStatus()).isEqualTo(StoreStatus.PENDING);
+        assertThat(result).isEqualTo(storeResponseDto);
     }
 
     @Test
-    @WithMockUser(username = "owner1", roles = {"OWNER"})
-    @DisplayName("승인 거절된 음식점 재승인 실패 - 다른 유저가 음식점 재신청 시 예외 발생")
-    void reapplyStore_fail_wrongUser() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
-        store.reject("Reject Reason");
+    @DisplayName("재승인 신청 - 다른 사용자가 요청")
+    void reapplyStore_notOwner() {
+        ReflectionTestUtils.setField(store, "status", REJECTED);
+        User otherUser = User.createBusinessUser("other", "other@email.com", "pw", "other",
+            "01000000000", UserRole.OWNER, "1111111111");
+        ReflectionTestUtils.setField(otherUser, "userId", 2L);
 
-        User otherOwner = new User();
-        otherOwner.setUserId(2L);
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
-        BusinessException exception = assertThrows(
-            BusinessException.class,
-            () -> storeService.reapplyStore(otherOwner, store.getStoreId(), updateRequestDto)
-        );
+        BusinessException exception = assertThrows(BusinessException.class,
+            () -> storeService.reapplyStore(otherUser, storeId, storeRequestDto));
 
         assertThat(exception.getErrorCode()).isEqualTo(NOT_OWNED_STORE_TO_UPDATE);
     }
 
     @Test
-    @WithMockUser(username = "owner1", roles = {"OWNER"})
-    @DisplayName("승인 거절된 음식점 재승인 실패 - 승인 거절 상태 외 재신청 시 예외 발생")
-    void reapplyStore_fail_notRejectedYet() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
+    @DisplayName("재승인 신청 - 상태가 REJECTED가 아닌 경우")
+    void reapplyStore_notRejected() {
+        ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
-        BusinessException exception = assertThrows(
-            BusinessException.class,
-            () -> storeService.reapplyStore(owner, store.getStoreId(), updateRequestDto)
-        );
+        BusinessException exception = assertThrows(BusinessException.class,
+            () -> storeService.reapplyStore(owner, storeId, storeRequestDto));
 
         assertThat(exception.getErrorCode()).isEqualTo(ONLY_REJECTED_STORE_MODIFIABLE);
     }
 
     @Test
-    @WithMockUser(username = "owner1", roles = {"OWNER"})
+    @DisplayName("승인된 음식점 수정 성공")
+    void updateApprovedStore_success() {
+        ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
+        given(storeMapper.toStoreResponseDto(store)).willReturn(storeResponseDto);
+
+        StoreResponseDto result = storeService.updateApprovedStore(owner, storeId, storeRequestDto);
+
+        assertThat(result).isEqualTo(storeResponseDto);
+    }
+
+    @Test
+    @DisplayName("음식점 수정 - 승인되지 않은 음식점 수정")
+    void updateApprovedStore_notApproved() {
+        ReflectionTestUtils.setField(store, "status", StoreStatus.PENDING);
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+            () -> storeService.updateApprovedStore(owner, storeId, storeRequestDto));
+
+        assertThat(exception.getErrorCode()).isEqualTo(ONLY_APPROVED_STORE_MODIFIABLE);
+    }
+
+    @Test
+    @DisplayName("음식점 수정 - 소유하지 않은 음식점 수정")
+    void updateApprovedStore_notOwner() {
+        // given
+        ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
+
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class,
+            () -> storeService.updateApprovedStore(otherUser, storeId, storeRequestDto));
+
+        assertThat(exception.getErrorCode()).isEqualTo(NOT_OWNED_STORE_TO_UPDATE);
+    }
+
+    @Test
+    @DisplayName("음식점 승인 성공")
+    void approveStore_success() {
+        Store pendingStore = mock(Store.class);
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(pendingStore));
+        given(pendingStore.getStatus()).willReturn(StoreStatus.PENDING);
+        given(storeMapper.toStoreResponseDto(any(Store.class))).willReturn(storeResponseDto);
+
+        storeService.approveStore(storeId);
+
+        verify(pendingStore).approve();
+        verify(storeMapper).toStoreResponseDto(any(Store.class));
+    }
+
+    @Test
+    @DisplayName("음식점 승인 - 승인 불가 상태")
+    void approveStore_notPending() {
+        Store notPendingStore = mock(Store.class);
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(notPendingStore));
+        given(notPendingStore.getStatus()).willReturn(APPROVED);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+            () -> storeService.approveStore(storeId));
+
+        AssertionsForClassTypes.assertThat(exception.getErrorCode())
+            .isEqualTo(ONLY_PENDING_STORE_APPROVABLE);
+    }
+
+    @Test
+    @DisplayName("음식점 승인 거절 성공")
+    void rejectStore_success() {
+        Store pendingStore = mock(Store.class);
+        RejectStoreRequestDto rejectDto = new RejectStoreRequestDto();
+        rejectDto.setRejectReason("REJECTED");
+
+        RejectStoreResponseDto responseDto = new RejectStoreResponseDto("MyStore", REJECTED,
+            "REJECTED");
+
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(pendingStore));
+        given(pendingStore.getStatus()).willReturn(StoreStatus.PENDING);
+        given(storeMapper.toRejectStoreResponseDto(pendingStore)).willReturn(responseDto);
+
+        RejectStoreResponseDto result = storeService.rejectStore(storeId, rejectDto);
+
+        verify(pendingStore).reject("REJECTED");
+        assertThat(result).isEqualTo(responseDto);
+    }
+
+    @Test
     @DisplayName("음식점 삭제 성공")
     void deleteStore_success() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
-        storeService.deleteStore(owner, store.getStoreId());
+        storeService.deleteStore(owner, storeId);
 
-        Store deleteStore = storeRepository.findById(store.getStoreId()).orElseThrow();
-        assertThat(deleteStore.getDeletedId()).isEqualTo(owner.getUserId());
+        assertThat(store.isDeleted()).isTrue();
+        verify(storeRepository).findById(storeId);
     }
 
     @Test
-    @WithMockUser(username = "owner1", roles = {"OWNER"})
-    @DisplayName("음식점 삭제 실패 - 본인의 소유가 아닌 음식점 삭제 시 예외 발생")
-    void deleteStore_fail_notOwned() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
+    @DisplayName("카테고리 등록 성공")
+    void addCategoryToStore_success() {
+        ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
 
-        User otherOwner = new User();
-        otherOwner.setUserId(2L);
+        StoreCategoryRequestDto dto = new StoreCategoryRequestDto();
+        dto.setCategoryIds(List.of(categoryId));
+
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
+
+        StoreCategoryResponseDto responseDto = new StoreCategoryResponseDto(store.getStoreName(),
+            List.of("KOREAN"));
+        given(storeMapper.toStoreCategoryResponseDto(store)).willReturn(responseDto);
+
+        StoreCategoryResponseDto result = storeService.addCategoryToStore(storeId, owner, dto);
+
+        assertThat(result).isEqualTo(responseDto);
+    }
+
+    @Test
+    @DisplayName("카테고리 등록 - 중복 카테고리")
+    void addCategoryToStore_duplicateCategory() {
+        Category category = Category.of("KOREAN");
+        ReflectionTestUtils.setField(category, "categoryId", categoryId);
+
+        StoreCategory storeCategory = mock(StoreCategory.class);
+        given(storeCategory.getCategory()).willReturn(category);
+        given(storeCategory.isDeleted()).willReturn(false);
+
+        ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
+
+        store.getStoreCategories().add(storeCategory);
+
+        StoreCategoryRequestDto categoryDto = new StoreCategoryRequestDto();
+        categoryDto.setCategoryIds(List.of(categoryId));
+
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
 
         BusinessException exception = assertThrows(
             BusinessException.class,
-            () -> storeService.deleteStore(otherOwner, store.getStoreId())
+            () -> storeService.addCategoryToStore(storeId, owner, categoryDto)
         );
-        assertThat(exception.getErrorCode()).isEqualTo(NOT_OWNED_STORE_TO_DELETE);
+
+        assertThat(exception.getErrorCode()).isEqualTo(DUPLICATE_CATEGORY);
     }
 
     @Test
-    @WithMockUser(username = "manager1", roles = {"MANAGER"})
-    @DisplayName("매니저 음식점 승인 성공")
-    void approveStore_success() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
+    @DisplayName("카테고리 등록 - 승인되지 않은 음식점에 카테고리 등록")
+    void addCategoryToStore_storeNotApproved() {
+        ReflectionTestUtils.setField(store, "status", StoreStatus.PENDING);
 
-        store.requestReapproval();  // 승인 상태 PENDING
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
 
-        StoreResponseDto approved = storeService.approveStore(store.getStoreId());
-
-        assertThat(approved.getStatus()).isEqualTo(StoreStatus.APPROVED);
-        Store approveStore = storeRepository.findById(store.getStoreId()).orElseThrow();
-        assertThat(approveStore.getStatus()).isEqualTo(StoreStatus.APPROVED);
-        assertThat(approveStore.getRejectReason()).isNull();
-    }
-
-    @Test
-    @WithMockUser(username = "manager1", roles = {"MANAGER"})
-    @DisplayName("매니저 음식점 승인 실패- 이미 승인된 음식점 승인 시 예외 발생")
-    void approveStore_fail_alreadyApproved() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
-        store.approve();
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
         BusinessException exception = assertThrows(
             BusinessException.class,
-            () -> storeService.approveStore(store.getStoreId())
+            () -> storeService.addCategoryToStore(storeId, owner, storeCategoryRequestDto)
         );
 
-        assertThat(exception.getErrorCode()).isEqualTo(ONLY_PENDING_STORE_APPROVABLE);
+        assertThat(exception.getErrorCode()).isEqualTo(ONLY_APPROVED_STORE_MODIFIABLE);
     }
 
     @Test
-    @WithMockUser(username = "manager1", roles = {"MANAGER"})
-    @DisplayName("매니저 음식점 승인 거절 성공")
-    void rejectStore_success() {
-        storeService.createStore(owner, requestDto);
-        Store store = storeRepository.findAll(PageRequest.of(0, 1)).getContent().get(0);
+    @DisplayName("카테고리 등록 - 다른 사용자가 음식점에 카테고리 등록")
+    void addCategoryToStore_notOwnedStore() {
+        ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
 
-        store.requestReapproval();  // 승인 상태 PENDING
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
 
-        RejectStoreRequestDto rejectStoreRequestDto = new RejectStoreRequestDto();
-        rejectStoreRequestDto.setRejectReason("reject");
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
-        RejectStoreResponseDto rejectStoreResponseDto = storeService
-            .rejectStore(store.getStoreId(), rejectStoreRequestDto);
+        BusinessException exception = assertThrows(
+            BusinessException.class,
+            () -> storeService.addCategoryToStore(storeId, otherUser, storeCategoryRequestDto)
+        );
 
-        assertThat(rejectStoreResponseDto.getRejectReason()).isEqualTo("reject");
-        Store rejectedStore = storeRepository.findById(store.getStoreId()).orElseThrow();
-        assertThat(rejectedStore.getStatus()).isEqualTo(StoreStatus.REJECTED);
-        assertThat(rejectedStore.getRejectReason()).isEqualTo("reject");
+        assertThat(exception.getErrorCode()).isEqualTo(NOT_OWNED_STORE_TO_REGISTER_CATEGORY);
+    }
+
+    @Test
+    @DisplayName("카테고리 수정 성공")
+    void updateCategoryToStore_success() {
+        UUID newCategoryId = UUID.randomUUID();
+        Category newCategory = Category.of("JAPANESE");
+
+        Category existingCategory = Category.of("KOREAN");
+        ReflectionTestUtils.setField(existingCategory, "categoryId", categoryId);
+        StoreCategory existingStoreCategory = mock(StoreCategory.class);
+        given(existingStoreCategory.getDeletedId()).willReturn(null);
+        given(existingStoreCategory.getCategory()).willReturn(existingCategory);
+
+        ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
+        store.getStoreCategories().add(existingStoreCategory);
+
+        ReflectionTestUtils.setField(newCategory, "categoryId", newCategoryId);
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(newCategoryId));
+
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
+        given(categoryRepository.findById(newCategoryId)).willReturn(Optional.of(newCategory));
+
+        StoreCategoryResponseDto responseDto = new StoreCategoryResponseDto(store.getStoreName(),
+            List.of("JAPANESE"));
+        given(storeMapper.toStoreCategoryResponseDto(store)).willReturn(responseDto);
+
+        StoreCategoryResponseDto result = storeService.updateCategoryToStore(storeId, owner,
+            storeCategoryRequestDto);
+
+        verify(existingStoreCategory).scSoftDelete(owner.getUserId());
+        assertThat(result).isEqualTo(responseDto);
+    }
+
+    @Test
+    @DisplayName("카테고리 수정 - 권한 없음")
+    void updateCategoryToStore_notOwner() {
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
+
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+            () -> storeService.updateCategoryToStore(storeId, otherUser, storeCategoryRequestDto));
+
+        assertThat(exception.getErrorCode()).isEqualTo(NOT_OWNED_STORE_TO_MODIFY_CATEGORY);
+    }
+
+    @Test
+    @DisplayName("키워드로 승인된 가게 검색 성공")
+    void searchStoreListByKeyword_success() {
+        StoreSearchByKeywordRequestDto storeSearchByKeywordRequestDto = new StoreSearchByKeywordRequestDto();
+        storeSearchByKeywordRequestDto.setStoreName("MyStore");
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Store> stores = new PageImpl<>(List.of(store));
+
+        given(storeRepository.findApprovedStoresByStoreName("MyStore", APPROVED, pageable))
+            .willReturn(stores);
+        given(storeMapper.toStoreSearchResponseDto(any(Store.class)))
+            .willReturn(new StoreSearchResponseDto("MyStore", 4.5, 10, List.of("KOREAN")));
+
+        Page<StoreSearchResponseDto> result = storeService.searchStoreListByKeyword(
+            storeSearchByKeywordRequestDto, pageable);
+
+        assertThat(result.getContent().get(0).getStoreName()).isEqualTo("MyStore");
+        verify(storeRepository).findApprovedStoresByStoreName("MyStore", APPROVED, pageable);
+    }
+
+    @Test
+    @DisplayName("카테고리 삭제 성공")
+    void deleteCategoryFromStore_success() {
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
+
+        Store mockStore = mock(Store.class);
+        given(mockStore.getUser()).willReturn(owner);
+
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(mockStore));
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
+
+        storeService.deleteCategoryFromStore(storeId, owner, storeCategoryRequestDto);
+
+        verify(mockStore).removeCategory(owner.getUserId(), category);
+    }
+
+    @Test
+    @DisplayName("카테고리 삭제 - 가게 소유자가 아니면 예외 발생")
+    void deleteCategoryFromStore_notOwner() {
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
+
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+            () -> storeService.deleteCategoryFromStore(storeId, otherUser,
+                storeCategoryRequestDto));
+
+        assertThat(exception.getErrorCode()).isEqualTo(NOT_OWNED_STORE_TO_DELETE_CATEGORY);
+    }
+
+    @Test
+    @DisplayName("카테고리 삭제 - 카테고리 존재하지 않으면 예외 발생")
+    void deleteCategoryFromStore_categoryNotExist() {
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
+
+        given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
+
+        BusinessException exception = assertThrows(BusinessException.class,
+            () -> storeService.deleteCategoryFromStore(storeId, owner, storeCategoryRequestDto));
+
+        assertThat(exception.getErrorCode()).isEqualTo(CATEGORY_NOT_EXIST);
     }
 }
-*/

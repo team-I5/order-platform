@@ -194,7 +194,7 @@ public class AddressService {
      */
     private Address findAddressAndValidateOwner(UUID addressId, User user) {
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new RuntimeException("주소를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(AddressErrorCode.ADDRESS_NOT_FOUND));
 
         if (!address.getUser().getUserId().equals(user.getUserId())) {
             throw new BusinessException(AddressErrorCode.ACCESS_DENIED);

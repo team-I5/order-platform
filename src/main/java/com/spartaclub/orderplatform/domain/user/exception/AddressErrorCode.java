@@ -6,6 +6,9 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum AddressErrorCode implements ErrorCode {
+    // 주소 조회 관련
+    ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "주소를 찾을 수 없습니다."),
+    
     // 주소 중복 관련
     DUPLICATE_ADDRESS_NAME(HttpStatus.CONFLICT, "동일한 주소명이 이미 존재합니다."),
     
