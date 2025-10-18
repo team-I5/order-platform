@@ -245,7 +245,7 @@ main.java.com.spartaclub.orderplatform
 
 ### 사용자 권한 별로 리뷰 목록 조회가 달라지도록 구현
 
-![img.png](img.png)
+<img width="527" height="510" alt="image" src="https://github.com/user-attachments/assets/0e39cb64-7af7-4d6d-aee9-7d389ad07506" />
 
 CUSTOMER 권한 → 해당 고객이 작성한 리뷰 목록 조회
 OWNER 권한 → 본인 소유 가게 기준 리뷰 목록 조회
