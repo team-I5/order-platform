@@ -75,6 +75,8 @@ class StoreServiceTest {
     private UUID storeId;
     private UUID categoryId;
     private User owner;
+    private User otherUser;
+    private Category category;
     private User manager;
     private StoreRequestDto storeRequestDto;
     private StoreResponseDto storeResponseDto;
@@ -84,10 +86,17 @@ class StoreServiceTest {
     void setUp() {
         manager = User.createManager("manager1", "manager1@email.com", "encodedPassword",
             "manager1", "01012345678");
+
         owner = User.createBusinessUser("owner1", "owner1@email.com", "encodedPassword", "owner1",
             "01099999999", UserRole.OWNER, "1234567890");
-
         ReflectionTestUtils.setField(owner, "userId", 1L);
+
+        otherUser = User.createBusinessUser("other", "other@email.com",
+            "pw", "other", "01000000000", UserRole.OWNER, "9999999999");
+        ReflectionTestUtils.setField(otherUser, "userId", 2L);
+
+        category = Category.of("KOREAN");
+        ReflectionTestUtils.setField(category, "categoryId", categoryId);
 
         storeId = UUID.randomUUID();
         categoryId = UUID.randomUUID();
@@ -146,14 +155,13 @@ class StoreServiceTest {
 
         StoreResponseDto result = storeService.reapplyStore(owner, storeId, storeRequestDto);
 
-        assertThat(store.getStatus()).isEqualTo(StoreStatus.PENDING); // 상태 변화 확인
+        assertThat(store.getStatus()).isEqualTo(StoreStatus.PENDING);
         assertThat(result).isEqualTo(storeResponseDto);
     }
 
     @Test
     @DisplayName("재승인 신청 - 다른 사용자가 요청")
     void reapplyStore_notOwner() {
-        // given
         ReflectionTestUtils.setField(store, "status", REJECTED);
         User otherUser = User.createBusinessUser("other", "other@email.com", "pw", "other",
             "01000000000", UserRole.OWNER, "1111111111");
@@ -161,7 +169,6 @@ class StoreServiceTest {
 
         given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
-        // when & then
         BusinessException exception = assertThrows(BusinessException.class,
             () -> storeService.reapplyStore(otherUser, storeId, storeRequestDto));
 
@@ -209,9 +216,6 @@ class StoreServiceTest {
     void updateApprovedStore_notOwner() {
         // given
         ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
-        User otherUser = User.createBusinessUser("other", "other@email.com", "pw", "other",
-            "01011112222", UserRole.OWNER, "0987654321");
-        ReflectionTestUtils.setField(otherUser, "userId", 2L);
 
         given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
@@ -266,8 +270,8 @@ class StoreServiceTest {
 
         RejectStoreResponseDto result = storeService.rejectStore(storeId, rejectDto);
 
-        verify(pendingStore).reject("REJECTED"); // store.reject 호출 확인
-        assertThat(result).isEqualTo(responseDto); // mapper 반환 확인
+        verify(pendingStore).reject("REJECTED");
+        assertThat(result).isEqualTo(responseDto);
     }
 
     @Test
@@ -284,9 +288,6 @@ class StoreServiceTest {
     @Test
     @DisplayName("카테고리 등록 성공")
     void addCategoryToStore_success() {
-        Category category = Category.of("KOREAN");
-        ReflectionTestUtils.setField(category, "categoryId", categoryId);
-
         ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
 
         StoreCategoryRequestDto dto = new StoreCategoryRequestDto();
@@ -337,14 +338,14 @@ class StoreServiceTest {
     void addCategoryToStore_storeNotApproved() {
         ReflectionTestUtils.setField(store, "status", StoreStatus.PENDING);
 
-        StoreCategoryRequestDto dto = new StoreCategoryRequestDto();
-        dto.setCategoryIds(List.of(UUID.randomUUID()));
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
 
         given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
         BusinessException exception = assertThrows(
             BusinessException.class,
-            () -> storeService.addCategoryToStore(storeId, owner, dto)
+            () -> storeService.addCategoryToStore(storeId, owner, storeCategoryRequestDto)
         );
 
         assertThat(exception.getErrorCode()).isEqualTo(ONLY_APPROVED_STORE_MODIFIABLE);
@@ -353,18 +354,16 @@ class StoreServiceTest {
     @Test
     @DisplayName("카테고리 등록 - 다른 사용자가 음식점에 카테고리 등록")
     void addCategoryToStore_notOwnedStore() {
-        User otherUser = User.createBusinessUser("other", "other@email.com", "pw", "other",
-            "01000000000", UserRole.OWNER, "1111111111");
         ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
 
-        StoreCategoryRequestDto dto = new StoreCategoryRequestDto();
-        dto.setCategoryIds(List.of(UUID.randomUUID()));
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
 
         given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
         BusinessException exception = assertThrows(
             BusinessException.class,
-            () -> storeService.addCategoryToStore(storeId, otherUser, dto)
+            () -> storeService.addCategoryToStore(storeId, otherUser, storeCategoryRequestDto)
         );
 
         assertThat(exception.getErrorCode()).isEqualTo(NOT_OWNED_STORE_TO_REGISTER_CATEGORY);
@@ -374,6 +373,7 @@ class StoreServiceTest {
     @DisplayName("카테고리 수정 성공")
     void updateCategoryToStore_success() {
         UUID newCategoryId = UUID.randomUUID();
+        Category newCategory = Category.of("JAPANESE");
 
         Category existingCategory = Category.of("KOREAN");
         ReflectionTestUtils.setField(existingCategory, "categoryId", categoryId);
@@ -384,10 +384,9 @@ class StoreServiceTest {
         ReflectionTestUtils.setField(store, "status", StoreStatus.APPROVED);
         store.getStoreCategories().add(existingStoreCategory);
 
-        Category newCategory = Category.of("JAPANESE");
         ReflectionTestUtils.setField(newCategory, "categoryId", newCategoryId);
-        StoreCategoryRequestDto dto = new StoreCategoryRequestDto();
-        dto.setCategoryIds(List.of(newCategoryId));
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(newCategoryId));
 
         given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
         given(categoryRepository.findById(newCategoryId)).willReturn(Optional.of(newCategory));
@@ -396,7 +395,8 @@ class StoreServiceTest {
             List.of("JAPANESE"));
         given(storeMapper.toStoreCategoryResponseDto(store)).willReturn(responseDto);
 
-        StoreCategoryResponseDto result = storeService.updateCategoryToStore(storeId, owner, dto);
+        StoreCategoryResponseDto result = storeService.updateCategoryToStore(storeId, owner,
+            storeCategoryRequestDto);
 
         verify(existingStoreCategory).scSoftDelete(owner.getUserId());
         assertThat(result).isEqualTo(responseDto);
@@ -405,17 +405,13 @@ class StoreServiceTest {
     @Test
     @DisplayName("카테고리 수정 - 권한 없음")
     void updateCategoryToStore_notOwner() {
-        User otherUser = User.createBusinessUser("other", "other@email.com", "pwd", "other",
-            "01011111111", UserRole.OWNER, "9999999999");
-        ReflectionTestUtils.setField(otherUser, "userId", 2L);
-
-        StoreCategoryRequestDto dto = new StoreCategoryRequestDto();
-        dto.setCategoryIds(List.of(UUID.randomUUID()));
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
 
         given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
         BusinessException exception = assertThrows(BusinessException.class,
-            () -> storeService.updateCategoryToStore(storeId, otherUser, dto));
+            () -> storeService.updateCategoryToStore(storeId, otherUser, storeCategoryRequestDto));
 
         assertThat(exception.getErrorCode()).isEqualTo(NOT_OWNED_STORE_TO_MODIFY_CATEGORY);
     }
@@ -423,8 +419,8 @@ class StoreServiceTest {
     @Test
     @DisplayName("키워드로 승인된 가게 검색 성공")
     void searchStoreListByKeyword_success() {
-        StoreSearchByKeywordRequestDto dto = new StoreSearchByKeywordRequestDto();
-        dto.setStoreName("MyStore");
+        StoreSearchByKeywordRequestDto storeSearchByKeywordRequestDto = new StoreSearchByKeywordRequestDto();
+        storeSearchByKeywordRequestDto.setStoreName("MyStore");
         Pageable pageable = PageRequest.of(0, 10);
         Page<Store> stores = new PageImpl<>(List.of(store));
 
@@ -433,7 +429,8 @@ class StoreServiceTest {
         given(storeMapper.toStoreSearchResponseDto(any(Store.class)))
             .willReturn(new StoreSearchResponseDto("MyStore", 4.5, 10, List.of("KOREAN")));
 
-        Page<StoreSearchResponseDto> result = storeService.searchStoreListByKeyword(dto, pageable);
+        Page<StoreSearchResponseDto> result = storeService.searchStoreListByKeyword(
+            storeSearchByKeywordRequestDto, pageable);
 
         assertThat(result.getContent().get(0).getStoreName()).isEqualTo("MyStore");
         verify(storeRepository).findApprovedStoresByStoreName("MyStore", APPROVED, pageable);
@@ -442,19 +439,16 @@ class StoreServiceTest {
     @Test
     @DisplayName("카테고리 삭제 성공")
     void deleteCategoryFromStore_success() {
-        StoreCategoryRequestDto dto = new StoreCategoryRequestDto();
-        dto.setCategoryIds(List.of(categoryId));
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
 
         Store mockStore = mock(Store.class);
         given(mockStore.getUser()).willReturn(owner);
 
-        Category category = Category.of("KOREAN");
-        ReflectionTestUtils.setField(category, "categoryId", categoryId);
-
         given(storeRepository.findById(storeId)).willReturn(Optional.of(mockStore));
         given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
 
-        storeService.deleteCategoryFromStore(storeId, owner, dto);
+        storeService.deleteCategoryFromStore(storeId, owner, storeCategoryRequestDto);
 
         verify(mockStore).removeCategory(owner.getUserId(), category);
     }
@@ -462,20 +456,14 @@ class StoreServiceTest {
     @Test
     @DisplayName("카테고리 삭제 - 가게 소유자가 아니면 예외 발생")
     void deleteCategoryFromStore_notOwner() {
-        Category category = Category.of("KOREAN");
-        ReflectionTestUtils.setField(category, "categoryId", categoryId);
-
-        StoreCategoryRequestDto dto = new StoreCategoryRequestDto();
-        dto.setCategoryIds(List.of(categoryId));
-
-        User otherUser = User.createBusinessUser("other", "other@email.com",
-            "pw", "other", "01000000000", UserRole.OWNER, "9999999999");
-        ReflectionTestUtils.setField(otherUser, "userId", 2L);
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
 
         given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
 
         BusinessException exception = assertThrows(BusinessException.class,
-            () -> storeService.deleteCategoryFromStore(storeId, otherUser, dto));
+            () -> storeService.deleteCategoryFromStore(storeId, otherUser,
+                storeCategoryRequestDto));
 
         assertThat(exception.getErrorCode()).isEqualTo(NOT_OWNED_STORE_TO_DELETE_CATEGORY);
     }
@@ -483,14 +471,14 @@ class StoreServiceTest {
     @Test
     @DisplayName("카테고리 삭제 - 카테고리 존재하지 않으면 예외 발생")
     void deleteCategoryFromStore_categoryNotExist() {
-        StoreCategoryRequestDto dto = new StoreCategoryRequestDto();
-        dto.setCategoryIds(List.of(categoryId));
+        StoreCategoryRequestDto storeCategoryRequestDto = new StoreCategoryRequestDto();
+        storeCategoryRequestDto.setCategoryIds(List.of(categoryId));
 
         given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
         given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
 
         BusinessException exception = assertThrows(BusinessException.class,
-            () -> storeService.deleteCategoryFromStore(storeId, owner, dto));
+            () -> storeService.deleteCategoryFromStore(storeId, owner, storeCategoryRequestDto));
 
         assertThat(exception.getErrorCode()).isEqualTo(CATEGORY_NOT_EXIST);
     }
