@@ -139,7 +139,7 @@ public class UserService {
     public UserLoginResponseDto login(UserLoginRequestDto requestDto) {
         // 1. 이메일로 사용자 조회 (탈퇴하지 않은 사용자만)
         User user = userRepository.findActiveByEmail(requestDto.getEmail())
-            .orElseThrow(() -> new RuntimeException("이메일 또는 비밀번호가 일치하지 않습니다."));
+            .orElseThrow(() -> new BusinessException(UserErrorCode.INVALID_LOGIN_CREDENTIALS));
 
         // 2. 비밀번호 검증
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
@@ -189,7 +189,7 @@ public class UserService {
         // 3. DB에서 리프레시 토큰 조회
         RefreshToken refreshTokenEntity = refreshTokenRepository.findActiveByToken(
                 refreshTokenValue)
-            .orElseThrow(() -> new RuntimeException("유효하지 않은 리프레시 토큰입니다."));
+            .orElseThrow(() -> new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN));
 
         // 4. 토큰 만료 여부 확인
         if (refreshTokenEntity.isExpired()) {
@@ -257,7 +257,7 @@ public class UserService {
     public UserProfileResponseDto getUserProfile(Long userId) {
         // 1. DB에서 최신 사용자 정보 조회 (실시간 정보 반영)
         User user = userRepository.findActiveById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         // 2. MapStruct를 사용한 응답 DTO 생성 및 반환 (민감정보 제외)
         return userMapper.toProfileResponse(user);
@@ -275,7 +275,7 @@ public class UserService {
     public UserUpdateResponseDto updateUserProfile(Long userId, UserUpdateRequestDto requestDto) {
         // 1. 사용자 조회
         User user = userRepository.findActiveById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         // 2. 비밀번호 변경 검증
         if (requestDto.isPasswordChangeRequested()) {
@@ -390,7 +390,7 @@ public class UserService {
     public UserDeleteResponseDto deleteUser(Long userId, UserDeleteRequestDto requestDto) {
         // 1. 사용자 조회
         User user = userRepository.findActiveById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         // 2. 비밀번호 확인 (본인 인증)
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
