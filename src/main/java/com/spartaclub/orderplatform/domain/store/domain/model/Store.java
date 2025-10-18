@@ -137,7 +137,7 @@ public class Store extends BaseEntity {
         this.storeCategories.stream()
             .filter(storeCategory ->
                 storeCategory.getCategory().equals(category)
-                    && storeCategory.getDeletedId() != null)
+                    && storeCategory.getDeletedId() == null)
             .findFirst()
             .ifPresent(storeCategory -> {
                 storeCategory.scSoftDelete(userId);
