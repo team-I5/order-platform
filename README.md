@@ -227,8 +227,14 @@ main.java.com.spartaclub.orderplatform
 실시간 계산 대신 스케줄링을 사용해 성능 부담 감소   
 집계 쿼리 + 일괄 업데이트로 불필요한 연산을 줄이고  N+1 문제 방지  
 
-### (우선)
+### 기본 주소 관리 시스템(Address)
+<img width="491" height="470" alt="스크린샷 2025-10-17 오후 10 02 33" src="https://github.com/user-attachments/assets/0160acad-2e94-42ae-9241-e666fb4dc69b" />
+<img width="654" height="275" alt="스크린샷 2025-10-17 오후 9 45 30" src="https://github.com/user-attachments/assets/60ec7872-7908-40bc-aedc-d1cc71997425" />
 
+- 자동 기본 주소 설정: 사용자의 첫 번째 주소는 자동으로 기본 주소로 설정하여 사용자 편의성 극대화
+- 기본 주소 유일성 보장: 새로운 기본 주소 등록 시 기존 기본 주소를 자동으로 해제하여 데이터 일관성 유지
+- 최소 주소 보장: 사용자는 최소 1개의 활성 주소를 필수로 보유하도록 비즈니스 규칙을 강제 적용
+- 기본 주소 연속성: 기본 주소 삭제 시 가장 최근 생성된 주소로 자동 재할당하여 서비스 중단 없이 연속성 보장
 
 ## 인증 · 인가 흐름에 대한 도식화
 ![](https://cdn.discordapp.com/attachments/1413215340514640041/1428647586193084437/2025-10-17_4.34.32.png?ex=68f3433f&is=68f1f1bf&hm=04920b177a0fdd3acd50cfeb140ff5c4151b1c1f63ab3f20b345afdb52c64f06)
