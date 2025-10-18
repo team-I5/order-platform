@@ -4,9 +4,6 @@ import com.spartaclub.orderplatform.domain.order.application.command.PlaceOrderC
 import com.spartaclub.orderplatform.domain.order.exception.OrderErrorCode;
 import com.spartaclub.orderplatform.domain.payment.domain.model.Payment;
 import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
-import com.spartaclub.orderplatform.domain.store.domain.model.Store;
-import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
-import com.spartaclub.orderplatform.global.exception.BusinessException;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
@@ -51,9 +48,8 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", nullable = false)
-    private Store store;
+    @Column(name = "store_id", nullable = false)
+    private UUID storeId;
 
     @OneToMany(mappedBy = "order",
         cascade = CascadeType.ALL,        // Order 저장/삭제 시 자식도 같이
@@ -156,21 +152,17 @@ public class Order extends BaseEntity {
     }
 
     // User, Store 연관 관계 형성
-    private void link(User user, Store store) {
+    private void link(User user, UUID storeId) {
         this.user = user;
-
-        this.store = store;
-        if (!store.getOrders().contains(this)) {
-            store.getOrders().add(this);
-        }
+        this.storeId = storeId;
     }
 
     //주문 생성 정적 팩토리 메서드
-    public static Order place(User user, Store store, List<PlaceOrderCommand> commands,
+    public static Order place(User user, UUID storeId, List<PlaceOrderCommand> commands,
         Map<UUID, Product> products, String address, String memo) {
 
         Order order = new Order();
-        order.link(user, store);
+        order.link(user, storeId);
         order.status = OrderStatus.PAYMENT_PENDING;
         order.address = address;
         order.memo = memo;

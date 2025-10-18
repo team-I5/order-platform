@@ -14,15 +14,9 @@ import org.springframework.stereotype.Repository;
 public interface OrderJpaRepository extends JpaRepository<Order, UUID>,
     JpaSpecificationExecutor<Order> {
 
-    @EntityGraph(attributePaths = {"store", "user"})
-    Page<Order> findByUser_UserId(Long userId, Pageable pageable);
-
-    @EntityGraph(attributePaths = {"store", "user"})
-    Page<Order> findByStore_User_UserId(Long userId, Pageable pageable);
-
-    @EntityGraph(attributePaths = {"store", "user"})
+    @EntityGraph(attributePaths = {"user"})
     Page<Order> findAll(Pageable pageable);
 
-    @EntityGraph(attributePaths = {"store", "user"})
+    @EntityGraph(attributePaths = {"user"})
     Page<Order> findAll(Specification<Order> specification, Pageable pageable);
 }
