@@ -64,7 +64,15 @@ public class Review extends BaseEntity {
         review.product = product;
         review.rating = rating;
         review.contents = contents;
-        review.storeName = store.getStoreName();
+        review.storeName = store.getStoreName() == null ? "" : store.getStoreName();
+        return review;
+    }
+
+    // 정적 팩토리 메서드(테스트용)
+    public static Review create_test(Integer rating, String contents) {
+        Review review = new Review();
+        review.rating = rating;
+        review.contents = contents;
         return review;
     }
 

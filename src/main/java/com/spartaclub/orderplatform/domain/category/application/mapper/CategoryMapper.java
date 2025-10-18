@@ -16,6 +16,7 @@ import org.mapstruct.Mapping;
 public interface CategoryMapper {
 
     //    @Mapping(target = "storeId", source = "store.storeId")
-    @Mapping(target = "type", expression = "java(category.getType())")
+//    @Mapping(target = "type", expression = "java(category.getType())")
+    @Mapping(target = "type", source = "type")
     CategoryResponseDto toCategoryResponseDto(Category category);
 }

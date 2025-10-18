@@ -41,14 +41,6 @@ public class ReviewCreateRequestDto {
     @Size(max = 1000, message = "리뷰는 1000자 이내로 작성해주세요.")
     private String contents;
 
-//    public ReviewCreateRequestDto(UUID storeId, UUID orderId, UUID productId,
-//        Integer rating, String contents) {
-//        this.storeId = storeId;
-//        this.orderId = orderId;
-//        this.productId = productId;
-//        this.rating = rating;
-//        this.contents = contents;
-//    }
 
     public static ReviewCreateRequestDto of(UUID storeId, UUID orderId, UUID productId,
         Integer rating, String contents) {
