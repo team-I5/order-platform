@@ -32,7 +32,7 @@ public class PageableHandler implements HandlerMethodArgumentResolver {
     private final List<Integer> ALLOWED_SIZES = Arrays.asList(10, 30, 50);
 
     // 허용된 정렬 기준
-    private static final List<String> ALLOWED_SORT_FIELDS = Arrays.asList("createdAt", "rating", "totalPrice", "paymentAmount");
+    private static final List<String> ALLOWED_SORT_FIELDS = Arrays.asList("createdAt", "rating", "totalPrice", "paymentAmount", "averageRating", "reviewCount");
 
     // 기본 정렬 기준
     private static final Sort DEFAULT_SORT = Sort.by(Sort.Direction.DESC, "createdAt");

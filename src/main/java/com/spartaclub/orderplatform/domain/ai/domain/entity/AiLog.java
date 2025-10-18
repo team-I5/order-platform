@@ -1,5 +1,7 @@
 package com.spartaclub.orderplatform.domain.ai.domain.entity;
 
+import com.spartaclub.orderplatform.domain.product.domain.entity.Product;
+import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.global.domain.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,8 +18,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_ai_logs")
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AiLog extends BaseEntity {
 
@@ -40,5 +40,15 @@ public class AiLog extends BaseEntity {
     @Setter
     @Column(length = 20)
     private String status;
+
+    // 정적 팩토리 메소드
+    public static AiLog create(UUID productId, String prompt, String generatedText, String status) {
+        AiLog aiLog = new AiLog();
+        aiLog.productId = productId;
+        aiLog.prompt = prompt;
+        aiLog.generatedText = generatedText;
+        aiLog.status = status;
+        return aiLog;
+    }
 }
 

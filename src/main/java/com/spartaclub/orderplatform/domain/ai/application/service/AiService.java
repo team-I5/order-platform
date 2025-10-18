@@ -83,12 +83,12 @@ public class AiService {
             boolean isLast = (i == responses.size() - 1);
             response.setUsed(isLast && response.getGeneratedText().equals(description));
 
-            AiLog aiLog = AiLog.builder()
-                    .productId(productId)
-                    .prompt(response.getPrompt())
-                    .generatedText(response.getGeneratedText())
-                    .status(response.isUsed() ? "USED" : "NO_USE")
-                    .build();
+            AiLog aiLog = AiLog.create(
+                    productId,
+                    response.getPrompt(),
+                    response.getGeneratedText(),
+                    response.isUsed() ? "USED" : "NO_USE"
+            );
 
             aiLogRepository.save(aiLog);
         }

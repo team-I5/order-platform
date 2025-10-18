@@ -129,7 +129,6 @@ class ProductServiceTest {
             given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
             given(productRepository.save(any(Product.class))).willReturn(product);
             given(product.getProductId()).willReturn(productId);
-            given(product.getCreatedId()).willReturn(createdId);
             given(productMapper.toDto(product)).willReturn(productResponseDto);
 
             // when
@@ -137,7 +136,7 @@ class ProductServiceTest {
 
             // then
             assertThat(result).isEqualTo(productResponseDto);
-            then(aiService).should().saveOrUpdateAiLogs(createdId, productId, "테스트상품 설명", false);
+            then(aiService).should().saveOrUpdateAiLogs(userId, productId, "테스트상품 설명", false);
         }
 
         @Test
@@ -175,7 +174,7 @@ class ProductServiceTest {
             // then
             then(product).should().updateProduct(updateRequestDto); // 도메인 메서드 호출 확인
             assertThat(result).isEqualTo(productResponseDto);
-            then(aiService).should().saveOrUpdateAiLogs(createdId, productId, "테스트상품 설명", true);
+            then(aiService).should().saveOrUpdateAiLogs(userId, productId, "수정상품 설명", true);
         }
 
         @Test
