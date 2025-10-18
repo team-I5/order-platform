@@ -121,6 +121,12 @@ public class ReviewControllerTest {
     }
 
     @Test
+    @DisplayName("리뷰 목록 조회")
+    public void searchReview_success() {
+
+    }
+
+    @Test
     @DisplayName("리뷰 상세 조회")
     public void searchDetailsReview_success() {
         UUID reviewId = UUID.randomUUID();
