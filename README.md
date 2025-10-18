@@ -6,6 +6,7 @@
 4계층 아키텍처(Controller–Service–Domain–Infrastructure)적용, DDD(Domain-Driven Design) 관점에서 도메인 로직을 명확히 분리하여 응집도 강화   
 OCP(개방-폐쇄 원칙) 와 DIP(의존 역전 원칙) 을 적용하여 인프라 계층의 기술 의존성을 최소화하고, 확장성과 유지보수성을 강화
 
+<br/>
 
 ## 개발 환경
 
@@ -19,18 +20,24 @@ OCP(개방-폐쇄 원칙) 와 DIP(의존 역전 원칙) 을 적용하여 인프�
 | Development Tool | Swagger, Postman, Mockito                                                     |
 | Collaboration    | Discord, Notion, Zep                                                          |
 
+<br/>
+
 ## ERD
 
 <img width="2087" height="938" alt="Image" src="https://github.com/user-attachments/assets/8dd254cf-5248-488a-9ed3-5ab3c52b95cc" />
 
+<br/>
+
 ## 도메인 다이어그램
 ![Image](https://github.com/user-attachments/assets/238e175a-8700-420d-8c38-dbe83e1d0b5e)
+
+<br/>
 
 ## 프로젝트 실행 가이드
 
 ### 환경 설정
 
-1. 데이터베이스 설정
+#### 1. 데이터베이스 설정
 
 ```sql
 # Postgresql 데이터베이스 생성
@@ -38,7 +45,7 @@ CREATE
 DATABASE orderplatform;
 ```
 
-2. 환경변수 설정 (.env.example)
+#### 2. 환경변수 설정 (.env.example)
 
 ```bash
 # 데이터베이스 설정
@@ -76,7 +83,7 @@ APP_CONTAINER_NAME=order-platform-app
 NETWORK_NAME=order-platform-network
 ```
 
-3. 애플리케이션 실행
+#### 3. 애플리케이션 실행
 
 ```bash
 # docker
@@ -95,11 +102,11 @@ docker compose ps
 
 ```
 
-4. docker-compose
+#### 4. docker-compose
 
 📄 [docker-compose.yml ](https://github.com/team-I5/order-platform/blob/develop/docker-compose.yml)
 
-5. 초기 데이터 유저 목록
+#### 5. 초기 데이터 유저 목록
 
 ```
 유저 목록 / 비밀번호: Asd123456!
@@ -116,6 +123,8 @@ Master
 mk@test.com
 ```
 
+<br/>
+
 ## API
 
 #### API 총 66개 (설계 대비 구현률 : 100 %)
@@ -131,7 +140,8 @@ mk@test.com
 #### 상세 내용
 🧾[API 명세 - Notion](https://www.notion.so/teamsparta/27a2dc3ef51481c8b6d7c259cbf25112?v=27a2dc3ef51481c29c04000c20372852&source=copy_link)
 
- 
+<br/>
+
 ## 인프라 설계도
 
 <img width="806" height="441" alt="Image" src="https://github.com/user-attachments/assets/bcb43344-c723-4645-b851-57abd5574bb5" />
@@ -148,6 +158,7 @@ mk@test.com
 
 ### 코드 스타일
 📝[java-google 코드 스타일](https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml)
+   
 
 ### Package Structure
 ```
@@ -210,11 +221,17 @@ main.java.com.spartaclub.orderplatform
      └─ util
 ```
 
+<br/>
+
 ## 핵심 기능
 
 ### (한결)
 
-### (형선)
+### AI API 요청 및 응답 저장 흐름 설계
+<img width="968" height="500" alt="image" src="https://github.com/user-attachments/assets/5e699278-f496-485d-bb83-c336fd8f219e" />
+<img width="1010" height="448" alt="image" src="https://github.com/user-attachments/assets/4156279e-bc5a-49ef-9017-bffc08f6c03a" />
+요청을 받으면 AI에 응답 생성 요청을 보내고, 받은 값을 캐시에 저장, 캐시는 userId로 구분
+상품이 저장된 후 캐시를 DB에 저장, 저장된 상품 설명과 캐시의 마지막에 저장된 응답이 일치하면 로그의 상태를 USED로 변경 후 DB에 저장
 
 ### (준성)
 
@@ -236,9 +253,12 @@ main.java.com.spartaclub.orderplatform
 - 최소 주소 보장: 사용자는 최소 1개의 활성 주소를 필수로 보유하도록 비즈니스 규칙을 강제 적용
 - 기본 주소 연속성: 기본 주소 삭제 시 가장 최근 생성된 주소로 자동 재할당하여 서비스 중단 없이 연속성 보장
 
+<br/>
+
 ## 인증 · 인가 흐름에 대한 도식화
 ![](https://cdn.discordapp.com/attachments/1413215340514640041/1428647586193084437/2025-10-17_4.34.32.png?ex=68f3433f&is=68f1f1bf&hm=04920b177a0fdd3acd50cfeb140ff5c4151b1c1f63ab3f20b345afdb52c64f06)
 
+<br/>
 
 ## 트러블 슈팅
 ### 원플로우 이벤트 기반 처리 → 단계별 API 분리
@@ -249,7 +269,7 @@ main.java.com.spartaclub.orderplatform
 주문-결제 도메인 간 강한 결합 → 요청/응답 흐름 복잡, 응답 지연 증가
 #### 개선 방향
 API를 명확히 분리하고 상태 전이를 각 도메인에 응집 → 도메인 간 의존성 약화 결합도↓ 응집도↑, 응답 속도 단축, 장애 격리성 개선
-
+   
 ### AI 요청 로그 저장 방식 최적화
 #### 문제 상황 
 AI 상품 설명 요청 시마다 로그를 DB에 즉시 저장하도록 설계    
@@ -264,7 +284,7 @@ AI 상품 설명 요청 시마다 로그를 DB에 즉시 저장하도록 설계
  2. 상품 저장 후 캐시에 저장된 해당 상품의 로그 중 마지막 요청을 비교
  3. 상품에 저장된 설명과 로그의 응답 설명이 같으면 USED로 변경
  4. DB에 로그 저장 후 캐시 비움
-
+   
 ### Mapstruct 맵핑 중 발생한 Bean 문제 해결
 #### 문제 상황
 Entity 생성할 때 Mapstruct를 사용해서 requestDto에서 받아온 값들을 service에서 toEntity 메서드 통해 entity로 전달 하는데 Bean관련 오류 발생
@@ -273,7 +293,7 @@ Entity 객체로 정보 전달할 때 온전하게 외래 키 관계 Entity 객�
 #### 해결 방법 
 외래 키와 findById 메서드 활용해 외래 키 엔티티 받아와 생성할 정적 팩터리 메서드에 파라미터로 넣어 전달한 후,      
 Entity 클래스에서 온전한 하나의 행으로 DB에 반영되도록 엔티티 객체 생성하도록 하여 해결
-
+   
 ### N+1 문제 예방 및 리뷰 집계 스케줄링
 #### 문제상황
 음식점 목록 조회 시 각 음식점에 연결된 리뷰엔티티를 통해 리뷰 평점과 리뷰 수를 실시간으로 계산하려고 하면, 반복적으로 DB 조회하게 되어 N+1문제 발생할 수 있음
@@ -281,7 +301,7 @@ Entity 클래스에서 온전한 하나의 행으로 DB에 반영되도록 엔�
 반복문 안에서 각 음식점의 연관 리뷰를 접근하면 쿼리 반복 실행, 매 요청 시마다 집계 쿼리를 실행하면 트래픽이 많은 시간대에 DB 부하 발생할 수 있음
 #### 해결 방법
 LEFT JOIN과 GROUP BY를 활용해 모든 리뷰 한번에 집계해 반복문 안에서는 필드만 수정하고 Lazy 연관 접근하지 않아 N+1 문제 방지 
-
+   
 ### EC2 Docker 배포 시 OpenJDK 이미지 문제 해결
 #### 문제 상황 
 EC2에서 openjdk:17-jre-slim 이미지 빌드 실패     
@@ -293,13 +313,14 @@ Alpine 기반 이미지에서 사용자 생성 명령어 차이로 추가 오류
 Base Image 변경: amazoncorretto:17-alpine      
 Alpine 환경에 맞게 사용자 생성 명령어 수정 : addgroup -S springboot / adduser -S springboot -G springboot
 
+<br/>
 
 ## 공통 관심사항
 ### 공통 엔티티 관리(BaseEntity)
 - createdAt/modifiedAt, createdId/modifiedId: 생성 및 수정 시각, ID(자동 관리, JPA Auditing 사용)
 - deletedAt, deletedId: 소프트 삭제 시각, ID
 - 작성/수정 정보 관리 자동화, 코드 중복 제거 및 데이터 무결성 확보
-  
+     
 ### 엔티티 작성/수정 관리(AuditorAwareImpl)
 - @EnableJpaAuditing(auditorAwareRef = “빈의 이름”)
   - AuditorAware 빈 참조 이름을 지정해 Auditing을 활성화
@@ -309,10 +330,10 @@ Alpine 환경에 맞게 사용자 생성 명령어 수정 : addgroup -S springbo
   - Entity가 persist/update 될 때 자동으로 호출해 어노테이션 처리
 - AuditorAware<t>
   - 현재 감사자를 반환하는 인터페이스. getCurrentAuditor()를 통해 Optional로 받아온다.
-
+   
 ### 웹 요청(WebConfig)
 - WebMvcConfigurer의 구현체인 WebConfig의 addArgumentResolvers 메서드에서 HandlerMethodArgumentResolver 목록에 사용자 정의 resolver를 추가
-
+   
 ### 페이지네이션 정책(PageableHandler)
 - HandlerMethodArgumentResolver를 구현해 Pageable 타입 파라미터를 바인딩
 - supportsParameter: 파라미터 타입이 Pageable이면 true
@@ -322,11 +343,11 @@ Alpine 환경에 맞게 사용자 생성 명령어 수정 : addgroup -S springbo
   - 기본 page: 0
   - 허용 sort fields: createdAt, rating, totoalPrice, paymentAmount, averageRating, reviewCount
   - 기본 sort: createdAt, DESC
-
+   
 ### API 응답 통일(ApiResponse)
 - 모든 API 응답을 통일된 구조로 반환
 - 에러 메세지 및 데이터 구조 일관성 유지
-
+   
 ### 전역 예외 처리(GlobalExceptionHandler)
 - 모든 컨트롤러에서 발생하는 예외 전역 처리
 - 처리 범위:
@@ -334,27 +355,29 @@ Alpine 환경에 맞게 사용자 생성 명령어 수정 : addgroup -S springbo
   - BusinessException: 비즈니스 로직 예외
   - Exeption: 기타 모든 예외
 
+<br/>
 
 ## 회고
 ### 잘한 점
 - 공통 예외 처리 정책을 구성하고 적용한 점
 - SOLID 원칙을 고려하며 코드를 구성한 점
 - Builder와 Setter를 제거하고 정적 팩토리 메서드로 엔티티 생성 책임을 명확히 분리하여 불변성을 강화한 점
-
+   
 ### 어려웠던 점
 - 글로만 보았던 디자인 패턴을 직접 코드에 적용하는 과정에서의 어려움
 - 각자 작업한 코드를 통합하면서 충돌과 오류가 발생해 이를 해결하는 과정의 어려움
 - DTO를 Entity로 변환할 때 외래 키 관계와 의존성 관리 문제의 어려움
-
+   
 ### 한계점과 발전 계획
 - 도메인간 결합도를 느슨하게 하기 위해 직접 참조 방식에서 간접 참조로 변경
 - 공통 로깅 정책을 적용해 모든 API 요청/응답과 예외상황을 일관되게 기록
 - 서비스 안정성을 높이기 위해 헬스체크와 모니터링 체계를 적용
-
+   
 ### 협업에서 아쉬운 부분
 - 팀원 간 작업 속도 차이로 인해 공통 모듈이나 기능 개발이 지연됨 → 느린 진행을 조기에 파악하고, 페어 프로그래밍 지원   
 - 느린 진행 때문에 다른 기능 개발이나 테스트 일정에도 영향을 줌  → 작업 단위를 세분화하고 우선순위에 따라 계획 조정 
 
+<br/>
 
 ## 팀원 소개
 
