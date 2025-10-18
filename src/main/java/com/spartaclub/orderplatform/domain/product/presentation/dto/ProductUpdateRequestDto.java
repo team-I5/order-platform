@@ -4,9 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * 상품 수정 요청 Dto
@@ -14,7 +12,8 @@ import lombok.NoArgsConstructor;
  * @author 류형선
  * @date 2025-10-02(목)
  */
-@Data
+@Builder
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductUpdateRequestDto {
