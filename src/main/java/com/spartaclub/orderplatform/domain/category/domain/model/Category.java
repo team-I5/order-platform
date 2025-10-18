@@ -58,9 +58,11 @@ public class Category extends BaseEntity {
         delete(userId);
     }
 
+    // 일반 정적 팩토리 메서드
     public static Category of(String type) {
         Category category = new Category();
         category.type = type;
         return category;
     }
+
 }

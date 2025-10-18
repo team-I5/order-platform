@@ -8,9 +8,9 @@ import com.spartaclub.orderplatform.domain.category.presentation.dto.request.Cat
 import com.spartaclub.orderplatform.domain.category.presentation.dto.response.CategoryResponseDto;
 import com.spartaclub.orderplatform.domain.user.domain.entity.User;
 import com.spartaclub.orderplatform.global.exception.BusinessException;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,9 +63,8 @@ public class CategoryService {
 
     // 카테고리 목록 조회
     @Transactional(readOnly = true)
-    public List<CategoryResponseDto> searchCategoryList(Pageable pageable) {
-        return categoryRepository.findAll().stream().map(categoryMapper::toCategoryResponseDto)
-            .toList();
+    public Page<CategoryResponseDto> searchCategoryList(Pageable pageable) {
+        return categoryRepository.findAll(pageable).map(categoryMapper::toCategoryResponseDto);
     }
 
     // 카테고리 수정

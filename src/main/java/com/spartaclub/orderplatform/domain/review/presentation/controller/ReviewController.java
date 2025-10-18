@@ -151,7 +151,7 @@ public class ReviewController {
      * @param pageable    페이징 처리
      * @return 조건별 리뷰 목록 정보
      */
-    @Operation(summary = "리뷰 조건별 조회1", description = "인증된 사용자 리뷰 별점 별로 조회합니다.")
+    @Operation(summary = "리뷰 별점 별 조회", description = "인증된 사용자 리뷰 별점 별로 조회합니다.")
     @GetMapping("/search/condition1")
     public ResponseEntity<ApiResponse<Page<ReviewSearchResponseDto>>> searchConditionReviewOne(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -176,7 +176,7 @@ public class ReviewController {
      * @param pageable    페이징 처리
      * @return 조건별 리뷰 목록 정보
      */
-    @Operation(summary = "리뷰 조건별 조회2", description = "인증된 사용자 리뷰 키워드로 조회합니다.")
+    @Operation(summary = "리뷰 내용 키워드 별 조회", description = "인증된 사용자 리뷰 키워드로 조회합니다.")
     @GetMapping("/search/condition2")
     public ResponseEntity<ApiResponse<Page<ReviewSearchResponseDto>>> searchConditionReviewTwo(
         @AuthenticationPrincipal UserDetailsImpl userDetails,

@@ -1,7 +1,6 @@
 package com.spartaclub.orderplatform.domain.category.infrastructure.repository;
 
 import com.spartaclub.orderplatform.domain.category.domain.model.Category;
-import com.spartaclub.orderplatform.domain.category.domain.model.CategoryType;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +16,6 @@ import org.springframework.stereotype.Repository;
 @Repository // spring 레포지토리 컴포넌트로 등록
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
-    Page<Category> findByTypeAndDeletedAtIsNull(CategoryType type, Pageable pageable);
+    Page<Category> findAll(Pageable pageable);
 
 }

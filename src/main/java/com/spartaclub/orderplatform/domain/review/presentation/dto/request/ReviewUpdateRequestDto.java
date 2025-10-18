@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /*
  * 리뷰 수정 요청 Dto 클래스
@@ -16,7 +15,6 @@ import lombok.Setter;
  */
 @Schema(description = "리뷰 수정 요청 정보")
 @Getter
-@Setter
 @NoArgsConstructor // 기본 생성자
 @AllArgsConstructor // 값 수정 반영 위해 모든 필드 파라미터 생성자 적용
 public class ReviewUpdateRequestDto {
@@ -30,4 +28,8 @@ public class ReviewUpdateRequestDto {
     @Size(min = 1, max = 1000, message = "키워드는 1자 이상 1000자 이내로 작성해주세요")
     @Size(max = 1000, message = "리뷰는 1000자를 초과할 수 없습니다.")
     private String contents;
+
+    public static ReviewUpdateRequestDto of(Integer rating, String contents) {
+        return new ReviewUpdateRequestDto(rating, contents);
+    }
 }
