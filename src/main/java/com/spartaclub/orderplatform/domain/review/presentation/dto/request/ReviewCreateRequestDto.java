@@ -11,14 +11,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Schema(description = "리뷰 요청 정보 ")
 @Getter
-@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class ReviewCreateRequestDto {
 
     // 외래키 ID
@@ -40,4 +40,18 @@ public class ReviewCreateRequestDto {
     @Schema(description = "리뷰 내용", example = "친절해서 좋았습니다.")
     @Size(max = 1000, message = "리뷰는 1000자 이내로 작성해주세요.")
     private String contents;
+
+//    public ReviewCreateRequestDto(UUID storeId, UUID orderId, UUID productId,
+//        Integer rating, String contents) {
+//        this.storeId = storeId;
+//        this.orderId = orderId;
+//        this.productId = productId;
+//        this.rating = rating;
+//        this.contents = contents;
+//    }
+
+    public static ReviewCreateRequestDto of(UUID storeId, UUID orderId, UUID productId,
+        Integer rating, String contents) {
+        return new ReviewCreateRequestDto(storeId, orderId, productId, rating, contents);
+    }
 }
