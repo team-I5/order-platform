@@ -29,13 +29,11 @@ class ProductRepositoryImplTest {
 
     private UUID storeId;
     private UUID productId1;
-    private UUID productId2;
 
     @BeforeEach
     void setUp() {
         storeId = UUID.randomUUID();
         productId1 = UUID.randomUUID();
-        productId2 = UUID.randomUUID();
     }
 
     // --------------------------------------------------------------------
@@ -99,7 +97,6 @@ class ProductRepositoryImplTest {
 
             assertThat(found).isPresent();
             assertThat(found.get().getProductName()).isEqualTo("상품1");
-            then(productJPARepository).should(times(1)).findById(productId1);
         }
     }
 
@@ -115,12 +112,10 @@ class ProductRepositoryImplTest {
             given(productJPARepository.findWithOptionGroupsAndItemsByProductId(productId1))
                     .willReturn(Optional.of(product));
 
-            Optional<Product> found = productRepository.findWithOptionGroupsAndItemsByProductId(productId1);
+            Optional<Product> result = productRepository.findWithOptionGroupsAndItemsByProductId(productId1);
 
-            assertThat(found).isPresent();
-            assertThat(found.get().getProductId()).isEqualTo(productId1);
-            then(productJPARepository).should(times(1))
-                    .findWithOptionGroupsAndItemsByProductId(productId1);
+            assertThat(result).isPresent();
+            assertThat(result.get().getProductId()).isEqualTo(productId1);
         }
     }
 }

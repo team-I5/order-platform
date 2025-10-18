@@ -1,6 +1,8 @@
 package com.spartaclub.orderplatform.domain.product.infrastructure.repository;
 
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionGroup;
+import com.spartaclub.orderplatform.domain.user.domain.entity.Address;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,16 @@ class ProductOptionGroupRepositoryImplTest {
     @InjectMocks
     private ProductOptionGroupRepositoryImpl productOptionGroupRepository;
 
+    private UUID groupId;
+    private ProductOptionGroup productOptionGroup;
+
+    @BeforeEach
+    void setUp() {
+        groupId = UUID.randomUUID();
+        productOptionGroup = mock(ProductOptionGroup.class);
+    }
+
+
     @Nested
     @DisplayName("findById() - 옵션 그룹 조회")
     class FindByIdTest {
@@ -32,16 +44,14 @@ class ProductOptionGroupRepositoryImplTest {
         @DisplayName("옵션 그룹 ID로 조회 성공")
         void findById() {
             // given
-            UUID groupId = UUID.randomUUID();
-            ProductOptionGroup group = mock(ProductOptionGroup.class);
-            given(productOptionGroupJPARepository.findById(groupId)).willReturn(Optional.of(group));
+            given(productOptionGroupJPARepository.findById(groupId)).willReturn(Optional.of(productOptionGroup));
 
             // when
-            Optional<ProductOptionGroup> found = productOptionGroupRepository.findById(groupId);
+            Optional<ProductOptionGroup> result = productOptionGroupRepository.findById(groupId);
 
             // then
-            assertThat(found).isPresent();
-            then(productOptionGroupJPARepository).should(times(1)).findById(groupId);
+            assertThat(result).isPresent();
+            assertThat(result).contains(productOptionGroup);
         }
     }
 
@@ -52,15 +62,15 @@ class ProductOptionGroupRepositoryImplTest {
         @DisplayName("옵션 그룹이 정상적으로 저장된다")
         void saveOptionGroup() {
             // given
-            ProductOptionGroup group = mock(ProductOptionGroup.class);
-            given(productOptionGroupJPARepository.save(group)).willReturn(group);
+            given(productOptionGroupJPARepository.save(productOptionGroup)).willReturn(productOptionGroup);
 
             // when
-            ProductOptionGroup saved = productOptionGroupRepository.save(group);
+            ProductOptionGroup saved = productOptionGroupRepository.save(productOptionGroup);
 
             // then
             assertThat(saved).isNotNull();
-            then(productOptionGroupJPARepository).should(times(1)).save(group);
+            assertThat(saved).isEqualTo(productOptionGroup);
+            then(productOptionGroupJPARepository).should(times(1)).save(productOptionGroup);
         }
     }
 }

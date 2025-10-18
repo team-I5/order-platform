@@ -1,6 +1,7 @@
 package com.spartaclub.orderplatform.domain.product.infrastructure.repository;
 
 import com.spartaclub.orderplatform.domain.product.domain.entity.ProductOptionItem;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,15 @@ class ProductOptionItemRepositoryImplTest {
     @InjectMocks
     private ProductOptionItemRepositoryImpl productOptionItemRepository;
 
+    private ProductOptionItem productOptionItem;
+    private UUID itemId;
+
+    @BeforeEach
+    void setUp() {
+        itemId = UUID.randomUUID();
+        productOptionItem = mock(ProductOptionItem.class);
+    }
+
     @Nested
     @DisplayName("findById() - 옵션 아이템 조회")
     class FindByIdTest {
@@ -32,23 +42,20 @@ class ProductOptionItemRepositoryImplTest {
         @DisplayName("옵션 아이템 ID로 조회 성공")
         void findById_success() {
             // given
-            UUID itemId = UUID.randomUUID();
-            ProductOptionItem mockItem = mock(ProductOptionItem.class);
-            given(productOptionItemJPARepository.findById(itemId)).willReturn(Optional.of(mockItem));
+            given(productOptionItemJPARepository.findById(itemId)).willReturn(Optional.of(productOptionItem));
 
             // when
-            Optional<ProductOptionItem> found = productOptionItemRepository.findById(itemId);
+            Optional<ProductOptionItem> result = productOptionItemRepository.findById(itemId);
 
             // then
-            assertThat(found).isPresent();
-            then(productOptionItemJPARepository).should(times(1)).findById(itemId);
+            assertThat(result).isPresent();
+            assertThat(result).contains(productOptionItem);
         }
 
         @Test
         @DisplayName("존재하지 않는 옵션 아이템 ID면 Optional.empty()를 반환한다")
         void findById_notFound() {
             // given
-            UUID itemId = UUID.randomUUID();
             given(productOptionItemJPARepository.findById(itemId)).willReturn(Optional.empty());
 
             // when

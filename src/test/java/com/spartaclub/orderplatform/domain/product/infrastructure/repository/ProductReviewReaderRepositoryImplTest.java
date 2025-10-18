@@ -2,6 +2,7 @@ package com.spartaclub.orderplatform.domain.product.infrastructure.repository;
 
 import com.spartaclub.orderplatform.domain.review.domain.model.Review;
 import com.spartaclub.orderplatform.domain.review.infrastructure.repository.ReviewRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,19 @@ class ProductReviewReaderRepositoryImplTest {
     @InjectMocks
     private ProductReviewReaderRepositoryImpl productReviewReaderRepository;
 
+    private UUID productId;
+    private Review review1;
+    private Review review2;
+    private Pageable pageable;
+
+    @BeforeEach
+    void setUp() {
+        productId = UUID.randomUUID();
+        review1 = mock(Review.class);
+        review2 = mock(Review.class);
+        pageable = mock(Pageable.class);
+    }
+
     @Nested
     @DisplayName("findAllByProduct_ProductId() 테스트")
     class FindAllByProductIdTest {
@@ -39,10 +53,6 @@ class ProductReviewReaderRepositoryImplTest {
         @DisplayName("상품 ID로 리뷰 목록 조회 성공")
         void findAllByProductId_success() {
             // given
-            UUID productId = UUID.randomUUID();
-            Pageable pageable = Pageable.unpaged();
-            Review review1 = mock(Review.class);
-            Review review2 = mock(Review.class);
             Page<Review> reviewPage = new PageImpl<>(List.of(review1, review2));
 
             given(reviewRepository.findAllByProduct_ProductId(productId, pageable))
@@ -54,7 +64,8 @@ class ProductReviewReaderRepositoryImplTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(2);
-            then(reviewRepository).should().findAllByProduct_ProductId(productId, pageable);
+            assertThat(result.getContent().get(0)).isEqualTo(review1);
+            assertThat(result.getContent().get(1)).isEqualTo(review2);
         }
     }
 }

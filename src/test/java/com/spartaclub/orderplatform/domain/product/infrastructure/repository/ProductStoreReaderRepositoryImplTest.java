@@ -2,6 +2,7 @@ package com.spartaclub.orderplatform.domain.product.infrastructure.repository;
 
 import com.spartaclub.orderplatform.domain.store.domain.model.Store;
 import com.spartaclub.orderplatform.domain.store.infrastructure.repository.StoreJpaRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,15 @@ class ProductStoreReaderRepositoryImplTest {
     @InjectMocks
     private ProductStoreReaderRepositoryImpl productStoreReaderRepository;
 
+    private Store store;
+    private UUID storeId;
+
+    @BeforeEach
+    void setUp() {
+        storeId = UUID.randomUUID();
+        store = mock(Store.class);
+    }
+
     @Nested
     @DisplayName("findDistinctByProductNameContainingIgnoreCase() 테스트")
     class FindDistinctByProductNameContainingIgnoreCaseTest {
@@ -43,8 +53,7 @@ class ProductStoreReaderRepositoryImplTest {
             String roadName = "강남";
             Pageable pageable = PageRequest.of(0, 10);
 
-            Store mockStore = mock(Store.class);
-            Page<Store> mockPage = new PageImpl<>(List.of(mockStore));
+            Page<Store> mockPage = new PageImpl<>(List.of(store));
 
             given(storeJpaRepository.findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable))
                     .willReturn(mockPage);
@@ -55,8 +64,7 @@ class ProductStoreReaderRepositoryImplTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            then(storeJpaRepository).should(times(1))
-                    .findDistinctByProductNameContainingIgnoreCase(keyword, roadName, pageable);
+            assertThat(result.getContent().get(0)).isEqualTo(store);
         }
     }
 
@@ -68,15 +76,14 @@ class ProductStoreReaderRepositoryImplTest {
         @DisplayName("storeId로 상점 조회 성공")
         void findById_success() {
             // given
-            UUID storeId = UUID.randomUUID();
-            Store mockStore = mock(Store.class);
-            given(storeJpaRepository.findById(storeId)).willReturn(Optional.of(mockStore));
+            given(storeJpaRepository.findById(storeId)).willReturn(Optional.of(store));
 
             // when
             Optional<Store> result = productStoreReaderRepository.findById(storeId);
 
             // then
             assertThat(result).isPresent();
+            assertThat(result).contains(store);
             then(storeJpaRepository).should(times(1)).findById(storeId);
         }
 
@@ -84,7 +91,6 @@ class ProductStoreReaderRepositoryImplTest {
         @DisplayName("존재하지 않는 storeId일 경우 Optional.empty() 반환")
         void findById_notFound() {
             // given
-            UUID storeId = UUID.randomUUID();
             given(storeJpaRepository.findById(storeId)).willReturn(Optional.empty());
 
             // when
