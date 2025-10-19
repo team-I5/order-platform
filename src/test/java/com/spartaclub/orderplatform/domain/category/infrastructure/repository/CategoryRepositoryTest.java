@@ -29,9 +29,9 @@ public class CategoryRepositoryTest {
     void FindAllCategories() {
         // given
         Page<Category> dummyPage = new PageImpl<>(List.of(mock(Category.class)));
-        given(categoryRepository.findAll(pageable)).willReturn(dummyPage);
+        given(categoryRepository.findAllByDeletedAtIsNull(pageable)).willReturn(dummyPage);
         // when
-        Page<Category> rlt = categoryRepository.findAll(pageable);
+        Page<Category> rlt = categoryRepository.findAllByDeletedAtIsNull(pageable);
         // then
         Assertions.assertNotNull(rlt);
         Assertions.assertEquals(dummyPage.getTotalElements(), rlt.getSize());

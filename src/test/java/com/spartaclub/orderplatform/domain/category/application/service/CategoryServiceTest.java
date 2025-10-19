@@ -2,6 +2,7 @@ package com.spartaclub.orderplatform.domain.category.application.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -87,7 +88,7 @@ public class CategoryServiceTest {
         given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
         categoryService.deleteCategory(manager, categoryId);
         Assertions.assertThat(category.isDeleted()).isTrue();
-        verify(categoryRepository).deleteById(categoryId);
+        verify(categoryRepository, never()).deleteById(categoryId);
     }
 
     @Test
@@ -98,11 +99,11 @@ public class CategoryServiceTest {
         ReflectionTestUtils.setField(category1, "createdId", 1L);
         ReflectionTestUtils.setField(category2, "createdId", 2L);
         Page<Category> categoryPage = new PageImpl<>(List.of(category1, category2), pageable, 2);
-        when(categoryRepository.findAll(pageable)).thenReturn(categoryPage);
+        when(categoryRepository.findAllByDeletedAtIsNull(pageable)).thenReturn(categoryPage);
         Page<CategoryResponseDto> rlt = categoryService.searchCategoryList(pageable);
         Assertions.assertThat(rlt).isNotNull();
         Assertions.assertThat(rlt.getContent()).hasSize(2);
-        verify(categoryRepository).findAll(pageable);
+        verify(categoryRepository).findAllByDeletedAtIsNull(pageable);
     }
 
     @Test
