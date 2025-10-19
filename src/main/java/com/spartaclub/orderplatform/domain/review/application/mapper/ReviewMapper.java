@@ -30,8 +30,10 @@ public interface ReviewMapper {
     @Mapping(target = "productId", source = "product.productId")
     ReviewResponseDto toReviewResponseDto(Review review);
 
+    @Mapping(target = "reviewId", source = "reviewId")
     @Mapping(target = "rating", source = "rating")
     @Mapping(target = "contents", source = "contents")
+    @Mapping(target = "storeName", source = "storeName")
     ReviewSearchResponseDto toReviewSearchResponseDto(Review review);
 
 }
