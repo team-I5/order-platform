@@ -2,11 +2,11 @@ package com.spartaclub.orderplatform.domain.ai.application.service;
 
 import com.google.genai.types.Part;
 import com.spartaclub.orderplatform.domain.ai.domain.entity.AiLog;
-import com.spartaclub.orderplatform.domain.ai.infrastructure.repository.AiLogRepository;
+import com.spartaclub.orderplatform.domain.ai.domain.repository.AiLogRepository;
+import com.spartaclub.orderplatform.domain.ai.infrastructure.repository.AiLogJPARepository;
 import com.spartaclub.orderplatform.domain.ai.presentation.dto.AiResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.google.genai.Client;
@@ -14,7 +14,6 @@ import com.google.genai.types.GenerateContentResponse;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import static java.lang.Thread.sleep;
 
@@ -59,42 +58,49 @@ public class AiService {
     }
 
     /**
-     * Product 저장 시 캐시 → DB 이동
-     * description과 캐시 마지막 응답 비교 후 used 판단
+     * AI 로그 저장 (상품 생성/수정 공통)
+     *
+     * @param userId       사용자 ID
+     * @param productId    상품 ID
+     * @param description  현재 상품 설명
+     * @param isUpdate     수정(update) 시 true, 생성(create) 시 false
      */
     @Transactional
-    public void saveAiLogsIfNeeded(Long userId, UUID productId, Long createdId, String description) {
-        // 1. 캐시에 저장된 응답 조회
-        List<AiResponseDto> responses = aiCacheService.getCachedResponses(userId);
+    public void saveOrUpdateAiLogs(Long userId, UUID productId, String description, boolean isUpdate) {
+        // 1. 수정 요청이라면 기존 USED 로그를 NO_USE로 변경
+        if (isUpdate) {
+            AiLog usedLogs = aiLogRepository.findByProductIdAndStatus(productId, "USED");
+            usedLogs.setStatus("NO_USE");
+        }
 
-        // 2. 저장된 데이터가 없으면 그대로 반환
+        // 2. 캐시에 저장된 응답 조회
+        List<AiResponseDto> responses = aiCacheService.getCachedResponses(userId);
         if (responses == null || responses.isEmpty()) return;
 
-        // 3. 캐시 내의 모든 데이터 DB에 저장
+        // 3. 캐시의 모든 응답을 DB에 저장
         for (int i = 0; i < responses.size(); i++) {
-            // 1. List의 마지막 데이터가 DB에 저장된 product의 설명과 동일한지 확인
             AiResponseDto response = responses.get(i);
             boolean isLast = (i == responses.size() - 1);
             response.setUsed(isLast && response.getGeneratedText().equals(description));
 
-            // 2. 설명이 같으면 USED로, 다르면 NO_USE로 저장
-            AiLog aiLog = AiLog.builder()
-                    .productId(productId)
-                    .prompt(response.getPrompt())
-                    .generatedText(response.getGeneratedText())
-                    .status(response.isUsed() ? "USED" : "NO_USE")
-                    .build();
+            AiLog aiLog = AiLog.create(
+                    productId,
+                    response.getPrompt(),
+                    response.getGeneratedText(),
+                    response.isUsed() ? "USED" : "NO_USE"
+            );
+
             aiLogRepository.save(aiLog);
         }
 
-        // 4. 로그 저장 후 캐시 비움
+        // 4. 캐시 비우기
         aiCacheService.evictCache(userId);
     }
 
     // gemini api 호출
     private String callExternalAi(String prompt) {
         try {
-            String promptWithLimit = "3줄 이내로 답변해주세요.\n" + prompt;
+            String promptWithLimit = "답변은 50글자 또는 3줄 이내로 답변해주세요.\n" + prompt;
 
             GenerateContentResponse response =
                     geminiClient.models.generateContent("gemini-2.5-flash-lite", promptWithLimit, null);
