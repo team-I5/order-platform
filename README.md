@@ -235,7 +235,6 @@ main.java.com.spartaclub.orderplatform
 ## 핵심 기능
 
 ### (한결)
-
 <img width="972" height="546" alt="image" src="https://github.com/user-attachments/assets/0c10e336-b4ab-463c-999f-c20d596b5e6a" />
 <img width="947" height="503" alt="image" src="https://github.com/user-attachments/assets/6d7dc44d-798d-444d-b593-587d487fa049" />
 
