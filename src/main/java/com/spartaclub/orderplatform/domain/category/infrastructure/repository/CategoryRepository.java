@@ -16,6 +16,6 @@ import org.springframework.stereotype.Repository;
 @Repository // spring 레포지토리 컴포넌트로 등록
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
-    Page<Category> findAll(Pageable pageable);
+    Page<Category> findAllByDeletedAtIsNull(Pageable pageable);
 
 }

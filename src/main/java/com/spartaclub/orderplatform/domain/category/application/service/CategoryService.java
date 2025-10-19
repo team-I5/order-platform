@@ -64,7 +64,8 @@ public class CategoryService {
     // 카테고리 목록 조회
     @Transactional(readOnly = true)
     public Page<CategoryResponseDto> searchCategoryList(Pageable pageable) {
-        return categoryRepository.findAll(pageable).map(categoryMapper::toCategoryResponseDto);
+        return categoryRepository.findAllByDeletedAtIsNull(pageable)
+            .map(categoryMapper::toCategoryResponseDto);
     }
 
     // 카테고리 수정
