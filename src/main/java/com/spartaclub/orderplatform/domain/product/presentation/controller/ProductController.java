@@ -74,7 +74,8 @@ public class ProductController {
             @Parameter(description = "상품 ID") @PathVariable UUID productId,
             @Valid @RequestBody ProductUpdateRequestDto productUpdateRequestDto
     ) {
-        ProductResponseDto responseDto = productService.updateProduct(productId, productUpdateRequestDto);
+        Long userId =  getCurrentUserId();
+        ProductResponseDto responseDto = productService.updateProduct(userId, productId, productUpdateRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
     }
 

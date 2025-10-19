@@ -1,9 +1,7 @@
 package com.spartaclub.orderplatform.domain.product.presentation.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -13,7 +11,8 @@ import java.util.UUID;
  * @author 류형선
  * @date 2025-10-01(수)
  */
-@Data
+@Builder
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "상품 등록/조회 응답 DTO")
