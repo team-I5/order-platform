@@ -235,10 +235,9 @@ main.java.com.spartaclub.orderplatform
 ## 핵심 기능
 
 ### (한결)
+
 <img width="972" height="546" alt="image" src="https://github.com/user-attachments/assets/0c10e336-b4ab-463c-999f-c20d596b5e6a" />
 <img width="947" height="503" alt="image" src="https://github.com/user-attachments/assets/6d7dc44d-798d-444d-b593-587d487fa049" />
-
-
 
 ### AI API 요청 및 응답 저장 흐름 설계
 
@@ -251,9 +250,9 @@ main.java.com.spartaclub.orderplatform
 
 <img width="527" height="510" alt="image" src="https://github.com/user-attachments/assets/0e39cb64-7af7-4d6d-aee9-7d389ad07506" />
 
-CUSTOMER 권한 → 해당 고객이 작성한 리뷰 목록 조회
-OWNER 권한 → 본인 소유 가게 기준 리뷰 목록 조회
-MANAGER, MASTER 권한 → 삭제되지 않은 모든 목록 조회
+- CUSTOMER 권한 → 해당 고객이 작성한 리뷰 목록 조회
+- OWNER 권한 → 본인 소유 가게 기준 리뷰 목록 조회
+- MANAGER, MASTER 권한 → 삭제되지 않은 모든 목록 조회
 
 ### N+1 문제 없이 효율적으로 평균 평점과 리뷰 수 갱신
 
