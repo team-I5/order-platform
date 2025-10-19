@@ -35,7 +35,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final ProductStoreReaderRepository storeRepository;
-    private final StoreMapper storeMapper;
     private final ProductAddressReaderRepository addressRepository;
     private final AiService aiService;
     private final ProductOptionGroupRepository productOptionGroupRepository;
@@ -58,7 +57,7 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
 
         // 4. 캐시에 AI 응답이 있으면 로그 저장
-        aiService.saveAiLogsIfNeeded(userId, savedProduct.getProductId(), savedProduct.getCreatedId(), productCreateRequestDto.getProductDescription());
+        aiService.saveOrUpdateAiLogs(userId, savedProduct.getProductId(), productCreateRequestDto.getProductDescription(), false);
 
         // 5. entity → dto 변환 후 반환
         return productMapper.toDto(savedProduct);
@@ -67,6 +66,7 @@ public class ProductService {
     // 상품 수정 서비스 로직
     @Transactional
     public ProductResponseDto updateProduct(
+            Long userId,
             UUID productId,
             ProductUpdateRequestDto productUpdateRequestDto
     ) {
@@ -78,6 +78,9 @@ public class ProductService {
 
         // 3. JPA의 변경 감지(dirty checking)로 자동 저장
         // 별도로 save 호출 안 해도 @Transactional 안에서 commit 시 DB 반영
+
+        // 4. AI 캐시 로그 → DB 저장 및 USED 상태 변경
+        aiService.saveOrUpdateAiLogs(userId, productId, productUpdateRequestDto.getProductDescription(), true);
 
         // 4. entity -> dto 변환 후 반환
         return productMapper.toDto(product);
