@@ -23,4 +23,9 @@ public class AiLogRepositoryImpl implements AiLogRepository {
     public AiLog findByProductIdAndStatus(UUID productId, String used) {
         return aiLogJPARepository.findByProductIdAndStatus(productId, used);
     }
+
+    @Override
+    public List<AiLog> saveAll(List<AiLog> aiLog) {
+        return aiLogJPARepository.saveAll(aiLog);
+    }
 }

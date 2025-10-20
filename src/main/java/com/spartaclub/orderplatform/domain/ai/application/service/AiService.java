@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -77,6 +78,8 @@ public class AiService {
         List<AiResponseDto> responses = aiCacheService.getCachedResponses(userId);
         if (responses == null || responses.isEmpty()) return;
 
+        List<AiLog> logs = new ArrayList<>();
+
         // 3. 캐시의 모든 응답을 DB에 저장
         for (int i = 0; i < responses.size(); i++) {
             AiResponseDto response = responses.get(i);
@@ -90,8 +93,10 @@ public class AiService {
                     response.isUsed() ? "USED" : "NO_USE"
             );
 
-            aiLogRepository.save(aiLog);
+            logs.add(aiLog);
         }
+
+        aiLogRepository.saveAll(logs);
 
         // 4. 캐시 비우기
         aiCacheService.evictCache(userId);
