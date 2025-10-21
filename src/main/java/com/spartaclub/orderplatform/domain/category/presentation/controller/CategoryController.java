@@ -9,11 +9,11 @@ import com.spartaclub.orderplatform.global.presentation.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -122,9 +122,9 @@ public class CategoryController {
     @Operation(summary = "카테고리 목록 조회", description = "카테고리 목록 조회합니다.")
     @PreAuthorize("hasAnyRole({'MASTER','MANAGER'})")
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<CategoryResponseDto>>> searchCategoryList(
+    public ResponseEntity<ApiResponse<Page<CategoryResponseDto>>> searchCategoryList(
         @ParameterObject Pageable pageable) {
-        List<CategoryResponseDto> categories = categoryService
+        Page<CategoryResponseDto> categories = categoryService
             .searchCategoryList(pageable);
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponse.success(categories));
