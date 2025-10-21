@@ -3,7 +3,6 @@ package com.spartaclub.orderplatform.domain.ai.application.service;
 import com.google.genai.types.Part;
 import com.spartaclub.orderplatform.domain.ai.domain.entity.AiLog;
 import com.spartaclub.orderplatform.domain.ai.domain.repository.AiLogRepository;
-import com.spartaclub.orderplatform.domain.ai.infrastructure.repository.AiLogJPARepository;
 import com.spartaclub.orderplatform.domain.ai.presentation.dto.AiResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,10 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static java.lang.Thread.sleep;
+import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
+
 
 @Service
 @Slf4j
@@ -53,7 +54,8 @@ public class AiService {
                 .isUsed(false)
                 .build());
         aiCacheService.updateCachedResponses(userId, responses);
-
+        System.out.println("[DEBUG] cached responses size=" + responses.size());
+        System.out.println("[DEBUG] cached userId=" + userId);
         return generated;
     }
 
@@ -65,7 +67,7 @@ public class AiService {
      * @param description  현재 상품 설명
      * @param isUpdate     수정(update) 시 true, 생성(create) 시 false
      */
-    @Transactional
+    @Transactional(propagation = REQUIRES_NEW)
     public void saveOrUpdateAiLogs(Long userId, UUID productId, String description, boolean isUpdate) {
         // 1. 수정 요청이라면 기존 USED 로그를 NO_USE로 변경
         if (isUpdate) {
@@ -75,7 +77,11 @@ public class AiService {
 
         // 2. 캐시에 저장된 응답 조회
         List<AiResponseDto> responses = aiCacheService.getCachedResponses(userId);
-        if (responses == null || responses.isEmpty()) return;
+        System.out.println("[DEBUG] cached responses size=" + responses.size());
+        System.out.println("[DEBUG] cached userId=" + userId);
+        if (responses.isEmpty()) return;
+
+        List<AiLog> logs = new ArrayList<>();
 
         // 3. 캐시의 모든 응답을 DB에 저장
         for (int i = 0; i < responses.size(); i++) {
@@ -90,8 +96,12 @@ public class AiService {
                     response.isUsed() ? "USED" : "NO_USE"
             );
 
-            aiLogRepository.save(aiLog);
+            logs.add(aiLog);
         }
+
+        System.out.println("[DEBUG] logs to save=" + logs.size());
+        aiLogRepository.saveAll(logs);
+        System.out.println("[DEBUG] logs saved!");
 
         // 4. 캐시 비우기
         aiCacheService.evictCache(userId);

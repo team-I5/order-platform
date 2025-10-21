@@ -10,4 +10,6 @@ public interface AiLogRepository {
     AiLog save(AiLog aiLog);
 
     AiLog findByProductIdAndStatus(UUID productId, String used);
+
+    void saveAll(List<AiLog> aiLog);
 }
