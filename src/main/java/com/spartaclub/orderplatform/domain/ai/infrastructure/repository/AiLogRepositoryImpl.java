@@ -25,7 +25,7 @@ public class AiLogRepositoryImpl implements AiLogRepository {
     }
 
     @Override
-    public List<AiLog> saveAll(List<AiLog> aiLog) {
-        return aiLogJPARepository.saveAll(aiLog);
+    public void saveAll(List<AiLog> aiLog) {
+        aiLogJPARepository.saveAll(aiLog);
     }
 }

@@ -11,5 +11,5 @@ public interface AiLogRepository {
 
     AiLog findByProductIdAndStatus(UUID productId, String used);
 
-    List<AiLog> saveAll(List<AiLog> aiLog);
+    void saveAll(List<AiLog> aiLog);
 }
